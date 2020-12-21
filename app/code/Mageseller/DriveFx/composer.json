@@ -1,0 +1,21 @@
+{
+  "name": "mageseller/drive-fx",
+  "version": "1.0.0",
+  "description": "This module covers an example of how using PHP to insert a client (and also an invoice for that specific client) and supplier (that generates and internal document for that specific supplier)!",
+  "type": "magento2-module",
+  "require": {
+    "magento/framework": "*",
+    "magento/module-sales": "102.0.*"
+  },
+  "license": [
+    "GNU General Public License (GPL)"
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Mageseller\\DriveFx\\": ""
+    }
+  }
+}
