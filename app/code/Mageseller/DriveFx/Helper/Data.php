@@ -18,8 +18,9 @@ class Data extends AbstractHelper
     const DRIVEFX_GENERAL_PASSWORD = 'drivefx/general/password';
     const DRIVEFX_GENERAL_APP_TYPE = 'drivefx/general/app_type';
     const DRIVEFX_GENERAL_COMPANY = 'drivefx/general/company';
+    const DRIVEFX_GENERAL_DEBUG = 'drivefx/general/debug';
     /**
-     * @var \Mageseller\DriveFx\Logger\DrivefxLogger
+     * @var DrivefxLogger
      */
     protected $drivefxlogger;
 
@@ -31,6 +32,7 @@ class Data extends AbstractHelper
     private $ch;
     private $isLogin;
     private $typeOfInvoices;
+    private $_globalData;
 
     /**
      * Data constructor.
@@ -101,11 +103,46 @@ class Data extends AbstractHelper
         return $this->getConfig(self::DRIVEFX_GENERAL_COMPANY);
     }
 
+    /**
+     * @return mixed
+     */
+    public function isEnableDebug()
+    {
+        return $this->getConfig(self::DRIVEFX_GENERAL_DEBUG);
+    }
 
+    /**
+     * @param $info
+     */
+    public function writeToLog($info){
+        if($this->isEnableDebug()){
+            $this->drivefxlogger->info($info);
+        }
+    }
 
+    public function driveFxRequest($url, $params, $ch)
+    {
+        // Build Http query using params
+        $query = http_build_query($params);
 
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+        $response = curl_exec($ch);
 
-
+        // send response as JSON
+        $response = json_decode($response, true);
+        if ($error_msg = curl_error($this->ch)) {
+            $this->writeToLog("$url : Curl Error: ".$error_msg);
+        } elseif (empty($response)) {
+            $this->writeToLog("$url : Response Empty");
+        } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
+            $this->writeToLog("$url :Error: " . $response['messages'][0]['messageCodeLocale']);
+        } else {
+            return $response;
+        }
+        return false;
+    }
     public function initCurl()
     {
         $this->urlBase = $this->getBaseUrl();
@@ -143,19 +180,6 @@ class Data extends AbstractHelper
         curl_setopt($this->ch, CURLOPT_COOKIEFILE, '');
         return $this->ch;
     }
-    public function driveFxRequest($url, $params, $ch)
-    {
-        // Build Http query using params
-        $query = http_build_query($params);
-
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, false);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-        $response = curl_exec($ch);
-
-        // send response as JSON
-        return $response = json_decode($response, true);
-    }
     public function makeLogin()
     {
         if ($this->isLogin == null) {
@@ -167,10 +191,11 @@ class Data extends AbstractHelper
             // send response as JSON
             $response = json_decode($response, true);
             if (curl_error($this->ch)) {
-                $this->isLogin =  false;
+                $this->isLogin = false;
             } elseif (empty($response)) {
                 $this->isLogin = false;
             } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
+                $this->isLogin = false;
                 $this->isLogin = "Error in login. Please verify your username, password, applicationType and company.";
             } else {
                 $this->isLogin = true;
@@ -190,7 +215,7 @@ class Data extends AbstractHelper
     }
     public function obtainInvoices()
     {
-        if(!$this->typeOfInvoices){
+        if (!$this->typeOfInvoices) {
             /*******************************************************************
              * Called webservice that obtain all invoice documents (FT, FS, FR) *
              ********************************************************************/
@@ -216,25 +241,17 @@ class Data extends AbstractHelper
 
             $response = $this->driveFxRequest($url, $params, $this->ch);
             $this->typeOfInvoices = [];
-            if (curl_error($this->ch)) {
-            } elseif (empty($response)) {
-            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-            } else {
-
-                //Create a selectbox that contains all invoice documents (FT, FS or FR)
+            if ($response) {
                 foreach ($response['result'] as $key => $value) {
                     if ($value['tiposaft'] == 'FT' || $value['tiposaft'] == 'FS' || $value['tiposaft'] == 'FR') {
                         $this->typeOfInvoices[] = [
                             "ndoc" => $value['ndoc'],
                             "nmdoc" => $value['nmdoc'],
                         ];
-                        //$_SESSION['typeOfInvoice'] .= "<option value=" . $value['ndoc'] . ">" . $value['nmdoc'] . "</option><br>";
                     }
                 }
             }
         }
-
 
         echo "<form method='post' action=''>";
         echo "Choose type of invoice document that you want generate:<br><br><select id='typeOfInvoices' name='typeOfInvoices'>";
@@ -247,11 +264,9 @@ class Data extends AbstractHelper
         echo "</form>";
     }
 
-
-
     public function generateInvoice($typeOfInvoices, $email = "cliente@phc.pt")
     {
-        if ($this->checkClientExist($email)) {
+        if ($clientId = $this->checkClientExist($email)) {
             if ($this->checkSupplierExist($email)) {
                 if ($this->checkProductExist($email)) {
 
@@ -263,14 +278,7 @@ class Data extends AbstractHelper
                     // Create map with request parameters
                     $params = array('ndos' => $typeOfInvoices);
                     $response = $this->driveFxRequest($url, $params, $this->ch);
-
-                    if (curl_error($this->ch)) {
-                    } elseif (empty($response)) {
-                    } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                        echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                    } else {
-
-
+                    if ($response) {
                         /******************************************************************************
                          *                      Add new line to the invoice document                   *
                          *******************************************************************************/
@@ -513,15 +521,9 @@ class Data extends AbstractHelper
                             'newValue' => json_encode([]));
 
                         $response = $this->driveFxRequest($urlFt, $paramsFt, $this->ch);
-
-                        if (curl_error($this->ch)) {
-                        } elseif (empty($response)) {
-                        } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                            echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                        } else {
-
+                        if ($response) {
                             //Associate client to FT
-                            $response['result'][0]['no'] = $_SESSION['number_client'];
+                            $response['result'][0]['no'] = $this->_globalData['number_client'];
                             /*
                             //Price in line of product
                             $response['result'][0]['fis'][0]['epv'] = 1;
@@ -533,7 +535,7 @@ class Data extends AbstractHelper
                             $response['result'][0]['fis'][0]['desc4'] = 0;
                             $response['result'][0]['fis'][0]['desc5'] = 0;
                             $response['result'][0]['fis'][0]['desc6'] = 0;
-            */
+                            */
                             //Eliminate financial discount of client
                             $response['result'][0]['efinv'] = 0;
                             $response['result'][0]['fin'] = 0;
@@ -549,13 +551,7 @@ class Data extends AbstractHelper
                                 'code' => 0,
                                 'newValue' => json_encode([]));
                             $response = $this->driveFxRequest($urlFt, $paramsFt, $this->ch);
-
-                            if (curl_error($this->ch)) {
-                            } elseif (empty($response)) {
-                            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                            } else {
-
+                            if ($response) {
                                 //Quantity of product
                                 //$response['result'][0]['fis'][0]['qtt'] = 2;
 
@@ -571,12 +567,8 @@ class Data extends AbstractHelper
                                     'newValue' => json_encode([]));
 
                                 $response = $this->driveFxRequest($urlFt, $paramsFt, $this->ch);
+                                if ($response) {
 
-                                if (curl_error($this->ch)) {
-                                } elseif (empty($response)) {
-                                } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                                    echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                                } else {
 
                                     /*******************************************************************
                                      *                   Called webservice that save FT                 *
@@ -589,16 +581,12 @@ class Data extends AbstractHelper
                                     );
 
                                     $response = $this->driveFxRequest($urlFt, $paramsFt, $this->ch);
+                                    if ($response) {
 
-                                    if (curl_error($this->ch)) {
-                                    } elseif (empty($response)) {
-                                    } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                                        echo "<h3>Error in creation of FT in Drive FX</h3>";
-                                    } else {
 
                                         //Enable to sign Document
                                         if ($response['result'][0]['draftRecord'] == 1) {
-                                            $_SESSION['ftstamp'] = $response['result'][0]['ftstamp'];
+                                            $this->_globalData['ftstamp'] = $response['result'][0]['ftstamp'];
 
                                             /*******************************************************************
                                              *                 Called webservice that sign document             *
@@ -609,14 +597,8 @@ class Data extends AbstractHelper
                                             $params = array('ftstamp' => $response['result'][0]['ftstamp']);
 
                                             $response = $this->driveFxRequest($urlFt, $paramsFt, $this->ch);
-
-                                            if (curl_error($this->ch)) {
-                                            } elseif (empty($response)) {
-                                            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                                                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                                            } else {
-                                                echo "<h3>" . $response['result'][0]['nmdoc'] . " nº" . $response['result'][0]['fno'] . " is signed and inserted in Drive FX</h3>";
-
+                                            if ($response) {
+                                                $this->writeToLog("<h3>" . $response['result'][0]['nmdoc'] . " nº" . $response['result'][0]['fno'] . " is signed and inserted in Drive FX</h3>");
                                                 /*******************************************************************
                                                  *     Called webservice that get layout of report to create PDF    *
                                                  ********************************************************************/
@@ -624,25 +606,21 @@ class Data extends AbstractHelper
 
                                                 // Create map with request parameters
                                                 $params = array('entityname' => 'ft',
-                                                    'numdoc' => $_SESSION['typeOfInvoices']);
+                                                    'numdoc' => $this->_globalData['typeOfInvoices']);
 
-                                                $response = $this->driveFxRequest($urlFt, $paramsFt, $this->ch);
+                                                $response = $this->driveFxRequest($url, $params, $this->ch);
+                                                if ($response) {
 
-                                                if (curl_error($this->ch)) {
-                                                } elseif (empty($response)) {
-                                                } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                                                    echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                                                } else {
                                                     //Verify if exists template configurated and select the first
                                                     $i = 0;
                                                     $count = count($response['result']);
-                                                    $_SESSION['sendEmail'] = false;
+                                                    $this->_globalData['sendEmail'] = false;
 
                                                     while ($i < $count) {
                                                         foreach ($response['result'][$i] as $key => $value) {
                                                             if ($key == 'enabled' && $value == 1) {
-                                                                $_SESSION['sendEmail'] = true;
-                                                                $_SESSION['repstamp'] = $response['result'][$i]['repstamp'];
+                                                                $this->_globalData['sendEmail'] = true;
+                                                                $this->_globalData['repstamp'] = $response['result'][$i]['repstamp'];
                                                                 break;
                                                             }
                                                         }
@@ -691,14 +669,11 @@ class Data extends AbstractHelper
             );
 
             $response = $this->driveFxRequest($url, $params, $this->ch);
-
-            if (curl_error($this->ch) || empty($response)) {
-                return false;
-            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                return $this->createNewClient($email);
-                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-            } else {
-                return true;
+            if (!$response) {
+                $response = $this->createNewClient($email);
+                if ($response) {
+                    return $response['result'][0]['no'];
+                }
             }
         }
         return false;
@@ -715,12 +690,7 @@ class Data extends AbstractHelper
             $params = array('ndos' => 0);
 
             $response = $this->driveFxRequest($url, $params, $this->ch);
-
-            if (curl_error($this->ch)) {
-            } elseif (empty($response)) {
-            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-            } else {
+            if ($response) {
                 //Change name and email of client
                 $response['result'][0]['nome'] = $name;
                 $response['result'][0]['email'] = $email;
@@ -737,23 +707,15 @@ class Data extends AbstractHelper
                 );
 
                 $response = $this->driveFxRequest($url, $params, $this->ch);
-
-                if (curl_error($this->ch)) {
-                    $_SESSION['number_client'] = 0;
-                } elseif (empty($response)) {
-                    $_SESSION['number_client'] = 0;
-                } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                    echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                    $_SESSION['number_client'] = 0;
-                } else {
-                    echo "<h3>Client nº" . $response['result'][0]['no'] . " is inserted in Drive FX</h3>";
-
-                    return $_SESSION['number_client'] = $response['result'][0]['no'];
+                if ($response) {
+                    return $response;
                 }
+                return false;
             }
         }
     }
-    private function checkSupplierExist(string $email)
+
+    private function checkSupplierExist(string $email, $name, $mobile)
     {
         if ($this->makeLogin()) {
             /************************************************************************
@@ -781,71 +743,50 @@ class Data extends AbstractHelper
 
             $response = $this->driveFxRequest($url, $params, $this->ch);
 
-            if (curl_error($this->ch)) {
-            } elseif (empty($response)) {
-            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-            } else {
-                //Verify if supplier exists
+            if (!$response) {
+                $response = $this->createNewSupplier($email, $name, $mobile);
+            }
+            if ($response) {
                 if (is_array($response['result']) && !empty($response['result'][0])) {
-                    $_SESSION['number_supplier'] = $response['result'][0]['no'];
-                    echo "<h3>Supplier nº" . $response['result'][0]['no'] . " already exists in Drive FX</h3>";
-                } else {
-                    $this->createNewSupplier();
+                    return $response['result'][0]['no'];
                 }
             }
-
+            return false;
         }
     }
-    private function createNewSupplier()
+
+    private function createNewSupplier($email, $name, $mobile)
     {
         /************************************************************************
          *        Called webservice that obtain a new instance of client         *
          *************************************************************************/
         $url = $this->urlBase . "REST/FlWS/getNewInstance";
-
         // Create map with request parameters
         $params = array('ndos' => 0);
         $response = $this->driveFxRequest($url, $params, $this->ch);
-
-        if (curl_error($this->ch)) {
-        } elseif (empty($response)) {
-        } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-            echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-        } else {
+        if ($response) {
             //Change name and email of supplier
-            $response['result'][0]['nome'] = 'Fornecedor de Teste - Exemplo';
-            $response['result'][0]['email'] = 'fornecedor@phc.pt';
-            $response['result'][0]['ncont'] = '987654321';
-
+            $response['result'][0]['nome'] = $name; //'Fornecedor de Teste - Exemplo';
+            $response['result'][0]['email'] = $email; //'fornecedor@phc.pt';
+            $response['result'][0]['ncont'] = $mobile; //'987654321';
             /************************************************************************
              *                    Called webservice that save supplier                 *
              *************************************************************************/
             $url = $this->urlBase . "REST/FlWS/Save";
-
             // Create map with request parameters
-            $params = array('itemVO' => json_encode($response['result'][0]),
+            $params = [
+                'itemVO' => json_encode($response['result'][0]),
                 'runWarningRules' => 'false'
-            );
-
+            ];
             $response = $this->driveFxRequest($url, $params, $this->ch);
-
-            if (curl_error($this->ch)) {
-                $_SESSION['number_supplier'] = 0;
-            } elseif (empty($response)) {
-                $_SESSION['number_supplier'] = 0;
-            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                echo "Error: " . $response['messages'][0]['messageCodeLocale'];
-                $_SESSION['number_supplier'] = 0;
-            } else {
-                echo "<h3>Supplier nº" . $response['result'][0]['no'] . " is inserted in Drive FX</h3>";
-
-                $_SESSION['number_supplier'] = $response['result'][0]['no'];
+            if ($response) {
+                return $response;
             }
+            return false;
         }
     }
 
-    private function checkProductExist(string $email)
+    private function checkProductExist(string $sku, $name, $price)
     {
         if ($this->makeLogin()) {
             /***********************************************************************
@@ -863,33 +804,27 @@ class Data extends AbstractHelper
 												"filterItems":[{
 																"comparison":0,
 																"filterItem":"ref",
-																"valueItem":"2006035",
+																"valueItem":"' . $sku . '",
 																"groupItem":1,
 																"checkNull":false,
 																"skipCheckType":false,
 																"type":"Number"
 															}]}'
             );
-
             $response = $this->driveFxRequest($url, $params, $this->ch);
-
-            if (curl_error($this->ch)) {
-            } elseif (empty($response)) {
-            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-            } else {
-                //Verify if product exists
+            if (!$response) {
+                $response = $this->createNewProduct($sku, $name, $price);
+            }
+            if ($response) {
                 if (is_array($response['result']) && !empty($response['result'][0])) {
-                    $_SESSION['ref_product'] = $response['result'][0]['ref'];
-                    echo "<h3>Ref: " . $response['result'][0]['ref'] . " already exists in Drive FX</h3>";
-                } else {
-                    $_SESSION['ref_product'] = $this->createNewProduct();
+                    return $response['result'][0]['ref'];
                 }
             }
-
+            return false;
         }
     }
-    private function createNewProduct()
+
+    private function createNewProduct($sku, $name, $price, $taxInclude = true, $inactive = false)
     {
         /************************************************************************
          *        Called webservice that obtain a new instance of product        *
@@ -899,19 +834,13 @@ class Data extends AbstractHelper
         // Create map with request parameters
         $params = array('ndos' => 0);
         $response = $this->driveFxRequest($url, $params, $this->ch);
+        if ($response) {
+            $response['result'][0]['ref'] = $sku; //reference of product
+            $response['result'][0]['design'] = $name; //name of product
 
-
-        if (curl_error($this->ch)) {
-        } elseif (empty($response)) {
-        } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-            echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-        } else {
-            $response['result'][0]['ref'] = '2006035'; //reference of product
-            $response['result'][0]['design'] = 'SABRINA SENHORA'; //name of product
-
-            $response['result'][0]['epv1'] = '14.99';    //retail price 1
-            $response['result'][0]['iva1incl'] = true;  //tax rate included
-            $response['result'][0]['inactivo'] = false; //active
+            $response['result'][0]['epv1'] = $price;    //retail price 1
+            $response['result'][0]['iva1incl'] = $taxInclude;  //tax rate included
+            $response['result'][0]['inactivo'] = $inactive; //active
 
             /************************************************************************
              *                   Called webservice that save product                 *
@@ -919,26 +848,19 @@ class Data extends AbstractHelper
             $url = $this->urlBase . "REST/StWS/Save";
 
             // Create map with request parameters
-            $params = array('itemVO' => json_encode($response['result'][0]),
+            $params = [
+                'itemVO' => json_encode($response['result'][0]),
                 'runWarningRules' => 'false'
-            );
+            ];
 
             $response = $this->driveFxRequest($url, $params, $this->ch);
-
-            if (curl_error($this->ch)) {
-                $_SESSION['ref_product'] = '';
-            } elseif (empty($response)) {
-                $_SESSION['ref_product'] = '';
-            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                $_SESSION['ref_product'] = '';
-            } else {
-                echo "<h3>Ref: " . $response['result'][0]['ref'] . " is inserted in Drive FX</h3>";
-
-                $_SESSION['ref_product'] = $response['result'][0]['ref'];
+            if ($response) {
+                return $response;
             }
+            return false;
         }
     }
+
     public function createNewBo()
     {
         if ($this->makeLogin()) {
@@ -951,13 +873,7 @@ class Data extends AbstractHelper
             // Create map with request parameters
             $params = array('ndos' => 2);
             $response = $this->driveFxRequest($url, $params, $this->ch);
-
-            if (curl_error($this->ch)) {
-            } elseif (empty($response)) {
-            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-            } else {
-
+            if ($response) {
                 /******************************************************************************
                  *                     Add new line to the internal document                   *
                  *******************************************************************************/
@@ -1001,7 +917,7 @@ class Data extends AbstractHelper
 					"qtt":0,
 					"qtt2":0,
 					"rdata":"1900-01-01T00:00:00.000Z",
-					"ref":"' . $_SESSION['ref_product'] . '",
+					"ref":"' . $this->_globalData['ref_product'] . '",
 					"rescli":false,
 					"resfor":false,
 					"stns":false,
@@ -1030,15 +946,9 @@ class Data extends AbstractHelper
                     'newValue' => json_encode([]));
 
                 $response = $this->driveFxRequest($urlBo, $paramsBo, $this->ch);
-
-                if (curl_error($this->ch)) {
-                } elseif (empty($response)) {
-                } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                    echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                } else {
-
+                if ($response) {
                     //Associate client to Bo
-                    $response['result'][0]['no'] = $_SESSION['number_supplier'];
+                    $response['result'][0]['no'] = $this->_globalData['number_supplier'];
 
                     //Price in line of product
                     $response['result'][0]['bis'][0]['epv'] = 200;
@@ -1062,12 +972,8 @@ class Data extends AbstractHelper
                         'code' => 0,
                         'newValue' => json_encode([]));
                     $response = $this->driveFxRequest($urlBo, $paramsBo, $this->ch);
+                    if ($response) {
 
-                    if (curl_error($this->ch)) {
-                    } elseif (empty($response)) {
-                    } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                        echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                    } else {
 
                         //Quantity of product
                         $response['result'][0]['bis'][0]['qtt'] = 2;
@@ -1084,13 +990,7 @@ class Data extends AbstractHelper
                             'newValue' => json_encode([]));
 
                         $response = $this->driveFxRequest($urlBo, $paramsBo, $this->ch);
-
-                        if (curl_error($ch)) {
-                        } elseif (empty($response)) {
-                        } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                            echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                        } else {
-
+                        if ($response) {
                             /*******************************************************************
                              *                   Called webservice that save Bo                 *
                              ********************************************************************/
@@ -1102,16 +1002,9 @@ class Data extends AbstractHelper
                             );
 
                             $response = $this->driveFxRequest($url, $params, $this->ch);
-
-                            if (curl_error($this->ch)) {
-                            } elseif (empty($response)) {
-                            } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                                echo "<h3>Error in creation of Bo in Drive FX</h3>";
-                            } else {
-                                $_SESSION['bostamp'] = $response['result'][0]['bostamp'];
-
-                                echo "<h3>" . $response['result'][0]['nmdos'] . " nº" . $response['result'][0]['obrano'] . " is inserted in Drive FX</h3>";
-
+                            if ($response) {
+                                $this->_globalData['bostamp'] = $response['result'][0]['bostamp'];
+                                $this->writeToLog("<h3>" . $response['result'][0]['nmdos'] . " nº" . $response['result'][0]['obrano'] . " is inserted in Drive FX</h3>");
                                 /*******************************************************************
                                  *     Called webservice that get layout of report to create PDF    *
                                  ********************************************************************/
@@ -1122,21 +1015,17 @@ class Data extends AbstractHelper
                                     'numdoc' => 2);
 
                                 $response = $this->driveFxRequest($url, $params, $this->ch);
+                                if ($response) {
 
-                                if (curl_error($this->ch)) {
-                                } elseif (empty($response)) {
-                                } elseif (isset($response['messages'][0]['messageCodeLocale'])) {
-                                    echo "Error: " . $response['messages'][0]['messageCodeLocale'] . "<br><br>";
-                                } else {
                                     //Verify if exists template configurated and select the first
                                     $i = 0;
                                     $count = count($response['result']);
-                                    $_SESSION['sendEmailSupplier'] = false;
+                                    $this->_globalData['sendEmailSupplier'] = false;
                                     while ($i < $count) {
                                         foreach ($response['result'][$i] as $key => $value) {
                                             if ($key == 'enabled' && $value == 1) {
-                                                $_SESSION['sendEmailSupplier'] = true;
-                                                $_SESSION['repstampSupplier'] = $response['result'][$i]['repstamp'];
+                                                $this->_globalData['sendEmailSupplier'] = true;
+                                                $this->_globalData['repstampSupplier'] = $response['result'][$i]['repstamp'];
                                                 break;
                                             }
                                         }
@@ -1151,7 +1040,84 @@ class Data extends AbstractHelper
         }
     }
 
+    public function sendEmailToSupplier()
+    {
+        $sendEmail = $_POST['sendEmailSupplier'];
+        $repstamp = $_POST['repstampSupplier'];
+        $number_user = $_POST['number_supplier'];
+        $typeOfDocument = $_POST['typeOfInternalDocs'];
+        $stampDocument = $_POST['bostamp'];
+        $entityNameTable = 'Fl';
+        $mainEntityTable = 'Ft';
+        $entityTypeTable = 'Bo';
+        $subjectEmail = 'Internal Document';
+        if ($this->makeLogin()) {
+        }
+    }
 
+    public function sendEmail()
+    {
+        $sendEmail = $_POST['sendEmailSupplier'];
+        $repstamp = $_POST['repstampSupplier'];
+        $number_user = $_POST['number_supplier'];
+        $typeOfDocument = $_POST['typeOfInternalDocs'];
+        $stampDocument = $_POST['bostamp'];
+        $entityNameTable = 'Fl';
+        $mainEntityTable = 'Ft';
+        $entityTypeTable = 'Bo';
+        $subjectEmail = 'Internal Document';
+        if ($this->makeLogin()) {
+        }
+    }
 
+    public function downloadPdf()
+    {
+        $downloadEmail = $_POST['downloadToUser'];
+        $number_user = $_POST['number_client'];
+        $entityNameTable = 'Cl';
+        $entityTypeTable = 'Ft';
 
+        $repstamp = $_POST['repstamp'];
+        $typeOfDocument = $_POST['typeOfInvoices'];
+        $stampDocument = $_POST['ftstamp'];
+        $mainEntityTable = 'Ft';
+        if ($this->makeLogin()) {
+            /*******************************************************************
+             *       Called webservice that create PDF with report enabled      *
+             ********************************************************************/
+            $url = $this->urlBase . "REST/reportws/print";
+            $paramOption = array(
+                'docId' => $typeOfDocument,
+                'emailConfig' =>
+                    array(),
+                'generateOnly' => false,
+                'isPreview' => false,
+                'outputType' => 0,
+                'printerId' => '',
+                'records' =>
+                    array(
+                        0 =>
+                            array(
+                                'docId' => $typeOfDocument,
+                                'entityType' => $mainEntityTable,
+                                'stamp' => $stampDocument,
+                            ),
+                    ),
+                'reportStamp' => $repstamp,
+                'sendToType' => 0,
+                'serie' => 0,
+            );
+            $params = array('options' => json_encode($paramOption));
+            $response = $this->driveFxRequest($url, $params, $this->ch);
+            $filename = $response['result'][0]['phcString'] ?? "";
+            if ($filename) {
+                //Download PDF
+                $urlDownloadPdf = 'https://developer.phcfx.com/app/cfile.aspx?fileName=' . rawurlencode($filename);
+                header('Content-Type: application/pdf');
+                header("Content-Transfer-Encoding: Binary");
+                header("Content-disposition: attachment; filename=" . rawurlencode($filename));
+                readfile($urlDownloadPdf);
+            }
+        }
+    }
 }

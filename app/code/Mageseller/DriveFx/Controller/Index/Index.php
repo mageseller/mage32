@@ -31,9 +31,11 @@ class Index extends Action implements HttpGetActionInterface
      */
     public function execute()
     {
+        $this->helper->writeToLog("ds");
+        die;
         $makeLogin = $this->helper->makeLogin();
         $this->helper->obtainInvoices();
-
+       // $this->helper->createNewBo();
 
         // TODO: Implement execute method.
     }
