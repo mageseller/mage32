@@ -8,19 +8,19 @@ use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NotFoundException;
-use Mageseller\DriveFx\Helper\Data;
+use Mageseller\DriveFx\Helper\ApiHelper;
 
 class Index extends Action implements HttpGetActionInterface
 {
     /**
-     * @var Data
+     * @var ApiHelper
      */
-    private $helper;
+    private $apiHelper;
 
-    public function __construct(Context $context, Data $helper)
+    public function __construct(Context $context, ApiHelper $apiHelper)
     {
         parent::__construct($context);
-        $this->helper = $helper;
+        $this->apiHelper = $apiHelper;
     }
 
     /**
@@ -31,11 +31,13 @@ class Index extends Action implements HttpGetActionInterface
      */
     public function execute()
     {
-        $this->helper->writeToLog("ds");
+        $makeLogin = $this->apiHelper->makeLogin();
+        //$this->helper->makeLogout();
+        $html = $this->apiHelper->obtainInvoices();
+        echo "<pre>";
+        print_r($html);
         die;
-        $makeLogin = $this->helper->makeLogin();
-        $this->helper->obtainInvoices();
-       // $this->helper->createNewBo();
+        // $this->helper->createNewBo();
 
         // TODO: Implement execute method.
     }
