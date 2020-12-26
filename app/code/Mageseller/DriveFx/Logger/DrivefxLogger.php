@@ -8,8 +8,8 @@
 
 namespace  Mageseller\DriveFx\Logger;
 
+use Mageseller\DriveFx\Logger\Handler\HandlerFactory;
 use Monolog\Logger;
-use  Mageseller\DriveFx\Logger\Handler\HandlerFactory;
 
 class DrivefxLogger extends Logger
 {
@@ -38,5 +38,4 @@ class DrivefxLogger extends Logger
         }
         parent::__construct($name, $handlers, $processors);
     }
-
 }

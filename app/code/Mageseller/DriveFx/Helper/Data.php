@@ -5,7 +5,6 @@ namespace Mageseller\DriveFx\Helper;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Store\Model\ScopeInterface;
-use Mageseller\DriveFx\Helper\ApiHelper;
 use Mageseller\DriveFx\Logger\DrivefxLogger;
 
 /**
@@ -14,14 +13,13 @@ use Mageseller\DriveFx\Logger\DrivefxLogger;
 class Data extends AbstractHelper
 {
     /**
-     * @var \Mageseller\DriveFx\Helper\ApiHelper
+     * @var ApiHelper
      */
     private $apiHelper;
     /**
      * @var DrivefxLogger
      */
     private $drivefxlogger;
-
 
     /**
      * Data constructor.
@@ -47,5 +45,49 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->getValue($value, $scope);
     }
+    public function addNewOrder(\Magento\Sales\Model\Order $order)
+    {
+        $orderRequest = [];
+        $makeLogin = $this->apiHelper->makeLogin();
+        if ($makeLogin) {
+            $orderRequest['supplier'] = [];
+            $orderRequest['customer'] = [];
 
+            $orderRequest['customer']['name'] = $order->getCustomerFirstname() . " " . $order->getCustomerLastname();
+            $orderRequest['customer']['email'] = $order->getCustomerEmail();
+            $shippingAddress = $order->getShippingAddress();
+            $billingAddress = $order->getBillingAddress();
+            $street = is_array($billingAddress->getStreet())
+                ? implode(",", $billingAddress->getStreet())
+                : $billingAddress->getStreet();
+
+            $orderRequest['customer']['street'] = $street;
+            $orderRequest['customer']['city'] = $billingAddress->getCity();
+            $orderRequest['customer']['mobile'] = $billingAddress->getTelephone();
+            $orderRequest['customer']['postcode'] = $billingAddress->getPostcode();
+            $orderRequest['customer']['country_id'] = $billingAddress->getCountryId();
+            if ($shippingAddress) {
+                $shippingStreet = is_array($shippingAddress->getStreet())
+                    ? implode(",", $shippingAddress->getStreet())
+                    : $shippingAddress->getStreet();
+                $orderRequest['customer']['shipping_street'] =  $shippingStreet;
+                $orderRequest['customer']['shipping_city'] = $shippingAddress->getCity();
+                $orderRequest['customer']['shipping_postcode'] = $shippingAddress->getPostcode();
+                $orderRequest['customer']['shipping_country_id'] = $shippingAddress->getCountryId();
+            }
+
+
+            $orderRequest['products'] = [];
+            $visibleItem = $order->getAllVisibleItems();
+            foreach ($visibleItem as $item) {
+                $product = $item->getProduct();
+                $orderRequest['products'][] = [
+                    'sku' => $item->getSku(),
+                    'name' => $product->getName(),
+                    'price' => $product->getRowTotal(),
+                    'qty' => intval($item->getQtyOrdered()),
+                ];
+            }
+        }
+    }
 }
