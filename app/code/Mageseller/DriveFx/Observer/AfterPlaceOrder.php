@@ -18,12 +18,35 @@ namespace Mageseller\DriveFx\Observer;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Model\Order;
+use Mageseller\DriveFx\Helper\Data;
+use Mageseller\DriveFx\Helper\ApiHelper;
 
 class AfterPlaceOrder implements ObserverInterface
 {
-    public function __construct(Order $order)
+    /**
+     * @var Order
+     */
+    private $order;
+    /**
+     * @var Data
+     */
+    private $helper;
+    /**
+     * @var ApiHelper
+     */
+    private $apiHelper;
+
+    /**
+     * AfterPlaceOrder constructor.
+     * @param Order $order
+     * @param Data $helper
+     * @param ApiHelper $helper
+     */
+    public function __construct(Order $order, Data $helper, ApiHelper $apiHelper)
     {
         $this->order = $order;
+        $this->helper = $helper;
+        $this->apiHelper = $apiHelper;
     }
 
     /**
@@ -38,16 +61,15 @@ class AfterPlaceOrder implements ObserverInterface
         $order = $observer->getEvent()->getOrder();
         try {
             if ($order->getId()) {
-                echo "<pre>";
-                print_r(json_decode(json_encode($order->getData()), true));
-                die;
+                $this->helper->addNewOrder($order);
             }
-            /*foreach ($orderids as $orderid) {
-                $order = $this->order->load($orderid);
-            }*/
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
+            $this->apiHelper->writeToLog($e->getMessage());
+            $this->apiHelper->writeToLog($e->getTraceAsString());
             // Error logic
         } catch (\Exception $e) {
+            $this->apiHelper->writeToLog($e->getMessage());
+            $this->apiHelper->writeToLog($e->getTraceAsString());
             // Generic error logic
         }
     }

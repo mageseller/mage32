@@ -21,19 +21,19 @@ use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NotFoundException;
-use Mageseller\DriveFx\Helper\ApiHelper;
+use Mageseller\DriveFx\Helper\ApiV3Helper;
 
 class Index extends Action implements HttpGetActionInterface
 {
     /**
-     * @var ApiHelper
+     * @var ApiV3Helper
      */
-    private $apiHelper;
+    private $apiv3Helper;
 
-    public function __construct(Context $context, ApiHelper $apiHelper)
+    public function __construct(Context $context, ApiV3Helper $apiv3Helper)
     {
         parent::__construct($context);
-        $this->apiHelper = $apiHelper;
+        $this->apiv3Helper = $apiv3Helper;
     }
 
     /**
@@ -44,36 +44,14 @@ class Index extends Action implements HttpGetActionInterface
      */
     public function execute()
     {
-        /*$listOfRefs[] = 's001';
 
-        echo json_encode($listOfRefs);
-        echo "<br>\n";
-        if (is_array($listOfRefs)) {
-            foreach ($listOfRefs as $key => $value) {
-                if ($key == 0) {
-                    $listOfRefs = $value;
-                } else {
-                    $listOfRefs .= "\", \"" . $value;
-                }
-            }
-        }
-        echo '["' . $listOfRefs . '"]';die;*/
-        $makeLogin = $this->apiHelper->makeLogin();
-        $E1ws = $this->apiHelper->queryAsEntities('E1ws');
-        echo "<pre>";
-        print_r($E1ws);
-        die;
-        $response = $this->apiHelper->queryAsEntities('TsWS');
-        echo "<pre>";
-        print_r($response);die;
-        $response = $this->apiHelper->getClientList();
-        //$this->helper->makeLogout();
-        //$html = $this->apiHelper->obtainInvoices();
+
+        $response = $this->apiv3Helper->generateAccessToken();
+
+        $response = $this->apiv3Helper->fetchEntity('sl');
         echo "<pre>";
         print_r($response);
         die;
-        // $this->helper->createNewBo();
-
         // TODO: Implement execute method.
     }
 }

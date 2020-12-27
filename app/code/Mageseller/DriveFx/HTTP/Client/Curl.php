@@ -16,7 +16,6 @@
 namespace Mageseller\DriveFx\HTTP\Client;
 
 use Mageseller\DriveFx\Logger\DrivefxLogger;
-use phpDocumentor\Reflection\Types\Parent_;
 
 /**
  * Class to work with HTTP protocol using curl library
@@ -35,6 +34,9 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
      * @var DrivefxLogger
      */
     protected $drivefxlogger;
+    private $curl_errno;
+    private $curl_getinfo;
+    private $url;
 
     /**
      * @param DrivefxLogger $drivefxlogger
@@ -146,10 +148,14 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
         $this->_headerCount = 0;
         $this->_responseHeaders = [];
         $this->_responseBody = curl_exec($this->_ch);
-        $err = curl_errno($this->_ch);
-        if ($err) {
+        $this->curl_errno = curl_errno($this->_ch);
+        $this->curl_getinfo = curl_getinfo($this->_ch);
+        $this->url = $this->curl_getinfo['url'] ?? "";
+        if ($this->curl_errno) {
+            $this->drivefxlogger->addError("$this->url : Curl Error: " . $this->curl_errno);
             $this->doError(curl_error($this->_ch));
         }
+        $this->closeCurl();
     }
 
     /**
@@ -158,6 +164,7 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
     public function closeCurl()
     {
         curl_close($this->_ch);
+        $this->_ch = null;
     }
 
     /**
@@ -173,15 +180,13 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
      */
     public function getBody()
     {
-        if ($error_msg = curl_error($this->_ch)) {
-            $url = curl_getinfo($this->_ch, CURLINFO_EFFECTIVE_URL);
-            $this->drivefxlogger->addError("$url : Curl Error: ".$error_msg);
+        if ($this->curl_errno) {
         } elseif (empty($this->_responseBody)) {
             $url = curl_getinfo($this->_ch, CURLINFO_EFFECTIVE_URL);
-            $this->drivefxlogger->addError("$url : Response Empty");
+            $this->drivefxlogger->addError("{$this->url} : Response Empty");
         } elseif (isset($this->_responseBody['messages'][0]['messageCodeLocale'])) {
             $url = curl_getinfo($this->_ch, CURLINFO_EFFECTIVE_URL);
-            $this->drivefxlogger->addError("$url :Error: " . $this->_responseBody['messages'][0]['messageCodeLocale']);
+            $this->drivefxlogger->addError("{$this->url} :Error: " . $this->_responseBody['messages'][0]['messageCodeLocale']);
         } else {
             return $this->_responseBody;
         }
