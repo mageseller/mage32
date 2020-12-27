@@ -1,4 +1,17 @@
 <?php
+/*
+ * A Magento 2 module named Mageseller/DriveFx
+ * Copyright (C) 2020
+ *
+ *  @author      satish29g@hotmail.com
+ *  @site        https://www.mageseller.com/
+ *
+ * This file included in Mageseller/DriveFx is licensed under OSL 3.0
+ *
+ * http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * Please see LICENSE.txt for the full text of the OSL 3.0 license
+ *
+ */
 
 namespace Mageseller\DriveFx\Helper;
 
@@ -237,166 +250,17 @@ class ApiHelper extends AbstractHelper
         return $html;
     }
 
-    public function generateInvoice($orderRequest, $typeOfInvoices = 'FT')
-    {
-        $name = $orderRequest['customer']['name'] ?? "";
-        $email = $orderRequest['customer']['email'] ?? "";
-        $mobile = $orderData['customer']['mobile'] ?? "";
-
-        $name = $orderRequest['supplier']['name'] ?? "";
-        $email = $orderRequest['supplier']['email'] ?? "";
-        $mobile = $orderRequest['supplier']['mobile'] ?? "";
-        if ($clientId = $this->checkClientExist($name, $email, $mobile)) {
-            if ($supplierId = $this->checkSupplierExist($name, $email, $mobile)) {
-
-                /************************************************************************
-                 *           Called webservice that obtain a new instance of FT          *
-                 *************************************************************************/
-                $response = $this->getNewInstance($this->table[self::INVOICE], $typeOfInvoices);
-
-                if ($response) {
-                    $ftStamp = $response['result'][0]['ftstamp'];
-                    $products = $orderRequest['products'] ?? [];
-                    $productRefs = [];
-                    foreach ($products as $product) {
-                        $sku = $product['sku'];
-                        $productName = $product['name'];
-                        $productPrice = $product['price'];
-                        $productRefs[] = $this->checkProductExist($sku, $productName, $productPrice);
-                    }
-
-                    /******************************************************************************
-                     *                      Add new line to the invoice document                   *
-                     *******************************************************************************/
-                    $response = $this->getNewInstanceByRef(
-                        'FtWS',
-                        'addNewFIsByRef',
-                        'IdFtStamp',
-                        'fiStampEditing',
-                        $ftStamp,
-                        $productRefs
-                    );
-
-                    $response['result'][0]['nome'] = $orderRequest['customer']['name'];
-                    $response['result'][0]['morada'] = $orderRequest['customer']['street'];
-                    $response['result'][0]['local'] = $orderRequest['customer']['city'];
-                    $response['result'][0]['provincia'] = $orderRequest['customer']['city'];
-                    $response['result'][0]['codpost'] = $orderRequest['customer']['postcode'];
-                    $response['result'][0]['telefone'] = $orderRequest['customer']['mobile'];
-
-                    $response['result'][0]['moradato'] = $orderRequest['customer']['shipping_street'] ?? "";
-                    $response['result'][0]['localto'] = $orderRequest['customer']['shipping_city'] ?? "";
-                    $response['result'][0]['codpostto'] = $orderRequest['customer']['shipping_postcode'] ?? "";
-                    $countryId = $orderRequest['customer']['country_id'];
-
-                    $countryResponse = $this->queryAsEntities('LocalizationWS', 'nomeabrv', $countryId);
-                    if ($countryResponse) {
-                        $response['result'][0]['pais'] = $countryResponse['result'][0]['nome'] ?? '';
-                        $response['result'][0]['paisesstamp'] = $countryResponse['result'][0]['paisesstamp'] ?? '';
-                    }
-
-                    $shippingCountryId = $orderRequest['customer']['shipping_country_id'] ?? "";
-                    if ($shippingCountryId) {
-                        $shippingCountryResponse = $this->queryAsEntities('LocalizationWS', 'nomeabrv', $countryId);
-                        $response['result'][0]['paisto'] = $shippingCountryResponse['result'][0]['nome'] ?? '';
-                        $response['result'][0]['paisesstampto'] = $shippingCountryResponse['result'][0]['paisesstamp'] ?? '';
-                    }
-
-                    //Associate client to FT
-                    $response['result'][0]['no'] = $this->_globalData['number_client'];
-                    foreach ($products as $key => $product) {
-                        //Qty in line of product
-                        $response['result'][0]['fis'][$key]['qtt'] = $product['qty'];
-                        //Price in line of product
-                        $response['result'][0]['fis'][$key]['epv'] = $product['price'];
-
-                        //Remove discounts
-                        $response['result'][0]['fis'][$key]['desconto'] = 0;
-
-                        $response['result'][0]['fis'][$key]['desc2'] = 0;
-                        $response['result'][0]['fis'][$key]['desc3'] = 0;
-                        $response['result'][0]['fis'][$key]['desc4'] = 0;
-                        $response['result'][0]['fis'][$key]['desc5'] = 0;
-                        $response['result'][0]['fis'][$key]['desc6'] = 0;
-
-                        //Eliminate financial discount of client
-                        $response['result'][0]['fis'][$key]['efinv'] = 0;
-                        $response['result'][0]['fis'][$key]['fin'] = 0;
-                    }
-                    //$this->addNewLinesDoment();
-                    $response = $this->activateEntity($this->table[self::INVOICE], $response['result'][0]);
-                    if ($response) {
-                        //Eliminate financial discount of client
-                        $response['result'][0]['efinv'] = 0;
-                        $response['result'][0]['fin'] = 0;
-
-                        /****************************************************************************************************
-                         *     Called webservice that update all data in invoice document based on discounts, client, etc    *
-                         *****************************************************************************************************/
-                        $response = $this->activateEntity($this->table[self::INVOICE], $response['result'][0]);
-
-                        if ($response) {
-                            /*******************************************************************
-                             *                   Called webservice that save FT                 *
-                             ********************************************************************/
-                            $response = $this->saveEntity($this->table[self::INVOICE], $response['result'][0]);
-                            if ($response) {
-
-                                //Enable to sign Document
-                                if ($response['result'][0]['draftRecord'] == 1) {
-                                    $this->_globalData['ftstamp'] = $response['result'][0]['ftstamp'];
-
-                                    /*******************************************************************
-                                     *                 Called webservice that sign document             *
-                                     ********************************************************************/
-                                    $response = $this->signDocument($this->table[self::INVOICE], $response['result'][0]['ftstamp']);
-                                    if ($response) {
-                                        $this->writeToLog("<h3>" . $response['result'][0]['nmdoc'] . " nº" . $response['result'][0]['fno'] . " is signed and inserted in Drive FX</h3>");
-                                        /*******************************************************************
-                                         *     Called webservice that get layout of report to create PDF    *
-                                         ********************************************************************/
-                                        $response = $this->getReportForPrint('ft', $this->_globalData['typeOfInvoices']);
-                                        if ($response) {
-
-                                            //Verify if exists template configurated and select the first
-                                            $i = 0;
-                                            $count = count($response['result']);
-                                            $this->_globalData['sendEmail'] = false;
-
-                                            while ($i < $count) {
-                                                foreach ($response['result'][$i] as $key => $value) {
-                                                    if ($key == 'enabled' && $value == 1) {
-                                                        $this->_globalData['sendEmail'] = true;
-                                                        $this->_globalData['repstamp'] = $response['result'][$i]['repstamp'];
-                                                        break;
-                                                    }
-                                                }
-                                                ++$i;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            echo "Client not exist";
-            die;
-        }
-    }
-
-    public function checkClientExist($name, $email, $mobile)
+    public function checkClientExist($orderRequest)
     {
         if ($this->makeLogin()) {
+            $email = $orderRequest['customer']['email'];
             /************************************************************************
              *        Called webservice that find if client already exists           *
              *************************************************************************/
             $response = $this->queryAsEntities($this->entity[self::CLIENT], 'email', $email);
 
             if (!$response) {
-                $response = $this->createNewClient($name, $email, $mobile);
+                $response = $this->createNewClient($orderRequest);
                 if ($response) {
                     return $this->_globalData['number_client'] = $response['result'][0]['no'];
                 }
@@ -493,8 +357,20 @@ class ApiHelper extends AbstractHelper
     {
         $this->getNewInstanceByRef('FtWS', 'addNewFIsByRef', 'IdFtStamp', 'fiStampEditing', $response['result'][0]['ftstamp'], $_SESSION['listOfSku']);
     }*/
-
-    public function createNewClient($name, string $email, $mobile)
+    public function getCountryDetail($countryId)
+    {
+        if (isset($this->countryId[$countryId])) {
+            return  $this->countryId[$countryId];
+        }
+        $countryResponse = $this->queryAsEntities('LocalizationWS', 'nomeabrv', $countryId);
+        if ($countryResponse) {
+            $pais = $countryResponse['result'][0]['nome'] ?? '';
+            $paisesstamp = $countryResponse['result'][0]['paisesstamp'] ?? '';
+            $this->countryId[$countryId] = [$pais,$paisesstamp];
+        }
+        return  $this->countryId[$countryId] ?? ['',''];
+    }
+    public function createNewClient($orderRequest)
     {
         if ($this->makeLogin()) {
             /************************************************************************
@@ -504,9 +380,9 @@ class ApiHelper extends AbstractHelper
 
             if ($response) {
                 //Change name and email of client
-                $response['result'][0]['nome'] = $name;
-                $response['result'][0]['email'] = $email;
-                $response['result'][0]['ncont'] = $mobile;
+                $response = $this->getCustomerParam($orderRequest, $response);
+                $response['result'][0]['email'] = $orderRequest['customer']['email'];
+                $response['result'][0]['ncont'] = $orderRequest['customer']['mobile'];
 
                 /************************************************************************
                  *                    Called webservice that save client                 *
@@ -635,7 +511,17 @@ class ApiHelper extends AbstractHelper
         ];
         return $this->driveFxRequest($url, $params);
     }
-
+    public function activateBo($stamp_bo, $nr_client)
+    {
+        $url = $this->urlBase . "REST/BoWS/ActBo";
+        // Create map with request parameters
+        $params = [
+            'IdBoStamp' => $stamp_bo,
+            'codigo' => 'no',
+            'newValue' => json_encode([$nr_client,0])
+        ];
+        return $this->driveFxRequest($url, $params);
+    }
     public function activateEntity($entity, $paramObject, $code = 0)
     {
         $url = $this->urlBase . "REST/$entity/actEntity";
@@ -676,7 +562,216 @@ class ApiHelper extends AbstractHelper
         return $this->driveFxRequest($url, $params);
     }
 
-    public function createNewBo()
+    public function getCustomerParam($orderRequest, $response)
+    {
+        $response['result'][0]['nome'] = $orderRequest['customer']['name'];
+        $response['result'][0]['morada'] = $orderRequest['customer']['street'];
+        $response['result'][0]['local'] = $orderRequest['customer']['city'];
+        $response['result'][0]['provincia'] = $orderRequest['customer']['city'];
+        $response['result'][0]['codpost'] = $orderRequest['customer']['postcode'];
+        $response['result'][0]['telefone'] = $orderRequest['customer']['mobile'];
+
+        $response['result'][0]['moradato'] = $orderRequest['customer']['shipping_street'] ?? "";
+        $response['result'][0]['localto'] = $orderRequest['customer']['shipping_city'] ?? "";
+        $response['result'][0]['codpostto'] = $orderRequest['customer']['shipping_postcode'] ?? "";
+        //$response['result'][0]['Operation'] = 2;
+        $countryId = $orderRequest['customer']['country_id'];
+        list($pais, $paisesstamp) = $this->getCountryDetail($countryId);
+        $shippingCountryId = $orderRequest['customer']['shipping_country_id'] ?? "";
+        list($paisto, $paisesstampto) = $this->getCountryDetail($shippingCountryId);
+
+        $response['result'][0]['pais'] = $pais;
+        $response['result'][0]['paisesstamp'] = $paisesstamp;
+        $response['result'][0]['paisto'] = $paisto;
+        $response['result'][0]['paisesstampto'] = $paisesstampto;
+        return $response;
+    }
+    public function getProductRefs($products){
+        $productRefs = [];
+        foreach ($products as $product) {
+            $sku = $product['sku'];
+            $productName = $product['name'];
+            $productPrice = $product['price'];
+            $productRefs[] = $this->checkProductExist($sku, $productName, $productPrice);
+        }
+        return $productRefs;
+    }
+    public function addNewOrder($orderRequest)
+    {
+        if ($clientId = $this->checkClientExist($orderRequest)) {
+            $name = $orderRequest['supplier']['name'] ?? "";
+            $email = $orderRequest['supplier']['email'] ?? "";
+            $mobile = $orderRequest['supplier']['mobile'] ?? "";
+
+            if ($supplierId = $this->checkSupplierExist($name, $email, $mobile)) {
+                $incrementId = $orderRequest['order']['increment_id'];
+                $response = $this->queryAsEntities($this->table[self::BO], "bostamp", $incrementId);
+                if (empty($response['result'][0])) {
+                    //Obtain new instance of Bo
+                    $response = $this->getNewInstance($this->table[self::BO], 2);
+
+                    $products = $orderRequest['products'] ?? [];
+                    $productRefs = $this->getProductRefs($products);
+                    if ($response) {
+                        //Obtain VO with updated Bo
+                        $response = $this->activateBo($response['result'][0]['bostamp'], $this->_globalData['number_client']);
+                        if ($response) {
+                            //Obtain VO with updated Bo
+                            $response = $this->getNewInstanceByRef('BoWS', 'addNewBIsByRef', 'IdBoStamp', 'biStampEditing', $response['result'][0]['bostamp'], $productRefs);
+                            if ($response) {
+                                $response = $this->getCustomerParam($orderRequest, $response);
+
+                                //Associate client to FT
+                                $response['result'][0]['no'] = $this->_globalData['number_client'];
+                                foreach ($products as $key => $product) {
+                                    //Qty in line of product
+                                    $response['result'][0]['bis'][$key]['qtt'] = $product['qty'];
+                                    //Price in line of product
+                                    $response['result'][0]['bis'][$key]['ettdeb'] = $product['price'];
+
+                                    //Remove discounts
+                                    $response['result'][0]['bis'][$key]['desconto'] = 0;
+
+                                    $response['result'][0]['bis'][$key]['desc2'] = 0;
+                                    $response['result'][0]['bis'][$key]['desc3'] = 0;
+                                    $response['result'][0]['bis'][$key]['desc4'] = 0;
+                                    $response['result'][0]['bis'][$key]['desc5'] = 0;
+                                    $response['result'][0]['bis'][$key]['desc6'] = 0;
+
+                                    //Eliminate financial discount of client
+                                    $response['result'][0]['bis'][$key]['efinv'] = 0;
+                                    $response['result'][0]['bis'][$key]['fin'] = 0;
+                                }
+                                //If VO yet exists
+                                if (isset($response['result'][0])) {
+                                    $this->saveEntity($this->entity[self::BO], $response);
+                                    $response = $response['result'][0];
+                                    $this->_globalData['responseBo'] = $response;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public function generateInvoice($orderRequest, $typeOfInvoices = 'FT')
+    {
+        if ($clientId = $this->checkClientExist($orderRequest)) {
+            $name = $orderRequest['supplier']['name'] ?? "";
+            $email = $orderRequest['supplier']['email'] ?? "";
+            $mobile = $orderRequest['supplier']['mobile'] ?? "";
+            if ($supplierId = $this->checkSupplierExist($name, $email, $mobile)) {
+
+                /************************************************************************
+                 *           Called webservice that obtain a new instance of FT          *
+                 *************************************************************************/
+                $response = $this->getNewInstance($this->table[self::INVOICE], $typeOfInvoices);
+
+                if ($response) {
+                    $ftStamp = $response['result'][0]['ftstamp'];
+                    $products = $orderRequest['products'] ?? [];
+                    $productRefs = $this->getProductRefs($products);
+
+                    /******************************************************************************
+                     *                      Add new line to the invoice document                   *
+                     *******************************************************************************/
+                    $response = $this->getNewInstanceByRef(
+                        'FtWS',
+                        'addNewFIsByRef',
+                        'IdFtStamp',
+                        'fiStampEditing',
+                        $ftStamp,
+                        $productRefs
+                    );
+
+                    $response = $this->getCustomerParam($orderRequest, $response);
+
+                    //Associate client to FT
+                    $response['result'][0]['no'] = $this->_globalData['number_client'];
+                    foreach ($products as $key => $product) {
+                        //Qty in line of product
+                        $response['result'][0]['fis'][$key]['qtt'] = $product['qty'];
+                        //Price in line of product
+                        $response['result'][0]['fis'][$key]['epv'] = $product['price'];
+
+                        //Remove discounts
+                        $response['result'][0]['fis'][$key]['desconto'] = 0;
+
+                        $response['result'][0]['fis'][$key]['desc2'] = 0;
+                        $response['result'][0]['fis'][$key]['desc3'] = 0;
+                        $response['result'][0]['fis'][$key]['desc4'] = 0;
+                        $response['result'][0]['fis'][$key]['desc5'] = 0;
+                        $response['result'][0]['fis'][$key]['desc6'] = 0;
+
+                        //Eliminate financial discount of client
+                        $response['result'][0]['fis'][$key]['efinv'] = 0;
+                        $response['result'][0]['fis'][$key]['fin'] = 0;
+                    }
+                    //$this->addNewLinesDoment();
+                    $response = $this->activateEntity($this->table[self::INVOICE], $response['result'][0]);
+                    if ($response) {
+                        //Eliminate financial discount of client
+                        $response['result'][0]['efinv'] = 0;
+                        $response['result'][0]['fin'] = 0;
+
+                        /****************************************************************************************************
+                         *     Called webservice that update all data in invoice document based on discounts, client, etc    *
+                         *****************************************************************************************************/
+                        $response = $this->activateEntity($this->table[self::INVOICE], $response['result'][0]);
+
+                        if ($response) {
+                            /*******************************************************************
+                             *                   Called webservice that save FT                 *
+                             ********************************************************************/
+                            $response = $this->saveEntity($this->table[self::INVOICE], $response['result'][0]);
+                            if ($response) {
+
+                                //Enable to sign Document
+                                if ($response['result'][0]['draftRecord'] == 1) {
+                                    $this->_globalData['ftstamp'] = $response['result'][0]['ftstamp'];
+
+                                    /*******************************************************************
+                                     *                 Called webservice that sign document             *
+                                     ********************************************************************/
+                                    $response = $this->signDocument($this->table[self::INVOICE], $response['result'][0]['ftstamp']);
+                                    if ($response) {
+                                        $this->writeToLog("<h3>" . $response['result'][0]['nmdoc'] . " nº" . $response['result'][0]['fno'] . " is signed and inserted in Drive FX</h3>");
+                                        /*******************************************************************
+                                         *     Called webservice that get layout of report to create PDF    *
+                                         ********************************************************************/
+                                        $response = $this->getReportForPrint($this->entity[self::INVOICE], $this->_globalData['typeOfInvoices']);
+                                        if ($response) {
+
+                                            //Verify if exists template configurated and select the first
+                                            $i = 0;
+                                            $count = count($response['result']);
+                                            $this->_globalData['sendEmail'] = false;
+
+                                            while ($i < $count) {
+                                                foreach ($response['result'][$i] as $key => $value) {
+                                                    if ($key == 'enabled' && $value == 1) {
+                                                        $this->_globalData['sendEmail'] = true;
+                                                        $this->_globalData['repstamp'] = $response['result'][$i]['repstamp'];
+                                                        break;
+                                                    }
+                                                }
+                                                ++$i;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            echo "Client not exist";
+            die;
+        }
+    }
+    public function createNewBo($orderRequest)
     {
         if ($this->makeLogin()) {
             $ch = $this->ch;

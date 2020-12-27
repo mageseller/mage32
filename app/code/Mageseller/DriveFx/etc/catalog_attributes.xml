@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <!--
   ~ A Magento 2 module named Mageseller/DriveFx
   ~ Copyright (C) 2020
@@ -14,6 +14,8 @@
   -->
 
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <preference for="Magento\Framework\HTTP\Client\Curl" type="Mageseller\DriveFx\HTTP\Client\Curl"/>
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Catalog:etc/catalog_attributes.xsd">
+    <group name="quote_item">
+        <attribute name="drivefx_ref_id"/>
+    </group>
 </config>
