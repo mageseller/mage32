@@ -60,14 +60,8 @@ class Index extends \Magento\Framework\App\Action\Action
         $productId = $this->getRequest()->getParam('product_id');
         $product = $this->product->load($productId);
         $mediaDirectory = $this->_filesystem->getDirectoryRead(DirectoryList::MEDIA);
-        $mainImage = $product->getData('image');
-        $filepath = $mediaDirectory->getAbsolutePath("catalog/product" . $mainImage);
 
         $files = [];
-        /*if (($mediaDirectory->isExist($filepath)  && $mediaDirectory->isFile($filepath))) {
-            $files[] = $filepath;
-        }*/
-        //if (!$mainImage || !($mediaDirectory->isExist($filepath) && $mediaDirectory->isFile($filepath))) {
         $mediaGallery = $product->getData('media_gallery');
         $imageToDownload = $mediaGallery['images'] ?? [];
         $image = "";
@@ -76,12 +70,15 @@ class Index extends \Magento\Framework\App\Action\Action
             $filepath = $mediaDirectory->getAbsolutePath("catalog/product" . $image);
             if (($mediaDirectory->isExist($filepath) && $mediaDirectory->isFile($filepath))) {
                 $files[] = $filepath;
-                //break;
             }
         }
-        //}
+        if (count($files) == 1) {
+            $filepath = $files[0] ?? "";
+        } else {
+            $sku = strtolower(preg_replace('/[^a-zA-Z_0-9]/','_', $product->getSku()));;
+            $filepath = $mediaDirectory->getAbsolutePath("catalog\product\ProductImages_SKU_$sku.zip");
+        }
 
-        $filepath = $mediaDirectory->getAbsolutePath("ProductImages.zip");
         $this->create_zip($files, $filepath);
         if ($mediaDirectory->isExist($filepath)) {
             $this->getResponse()
@@ -94,6 +91,7 @@ class Index extends \Magento\Framework\App\Action\Action
             $this->getResponse()->clearBody();
             $this->getResponse()->sendHeaders();
             readfile($filepath);
+            unlink($filepath);
             exit;
         }
     }
