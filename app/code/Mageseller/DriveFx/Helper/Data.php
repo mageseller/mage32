@@ -86,6 +86,8 @@ class Data extends AbstractHelper
         $orderRequest['customer']['mobile'] = $billingAddress->getTelephone();
         $orderRequest['customer']['postcode'] = $billingAddress->getPostcode();
         $orderRequest['customer']['country_id'] = $billingAddress->getCountryId();
+        $orderRequest['customer']['taxNumber'] = $billingAddress->getVatId();
+
         if ($shippingAddress) {
             $shippingStreet = is_array($shippingAddress->getStreet())
                 ? implode(",", $shippingAddress->getStreet())

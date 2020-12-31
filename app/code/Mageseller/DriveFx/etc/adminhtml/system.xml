@@ -27,41 +27,57 @@
             <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0"
                    showInStore="0">
                 <label>General Configuration</label>
-                <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0"
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>Module Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="url" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0"
+                <field id="url" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>Base Url</label>
                     <comment>https://developer.phcfx.com/app/</comment>
                 </field>
-                <field id="username" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0"
+                <field id="username" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>Username</label>
                     <comment>Ex. parceiro</comment>
                 </field>
-                <field id="password" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0"
+                <field id="password" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>Password</label>
                     <comment>Ex. parceiro2015</comment>
                 </field>
-                <field id="app_type" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0"
+                <field id="app_type" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>App Type</label>
                     <comment>Ex. D61151BF98</comment>
                 </field>
-                <field id="company" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="0"
+                <field id="company" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>Company</label>
                     <comment>Ex. Dev000001</comment>
                 </field>
-                <field id="debug" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0"
+                <field id="debug" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>Enable Debug</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Will be saved at : var/log/drivefxlogger</comment>
+                </field>
+            </group>
+            <group id="supplier" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0"
+                   showInStore="0">
+                <label>Supplier Details</label>
+                <field id="name" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0"
+                       showInStore="0">
+                    <label>Supplier Name</label>
+                </field>
+                <field id="email" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0"
+                       showInStore="0">
+                    <label>Supplier Email</label>
+                </field>
+                <field id="contact" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0"
+                       showInStore="0">
+                    <label>Supplier Contact</label>
                 </field>
             </group>
         </section>

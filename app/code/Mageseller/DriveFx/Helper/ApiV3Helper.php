@@ -24,6 +24,9 @@ use Mageseller\DriveFx\Logger\DrivefxLogger;
  */
 class ApiV3Helper extends ApiHelper
 {
+    const DRIVEFX_SUPPLIER_NAME = 'drivefx/supplier/name';
+    const DRIVEFX_SUPPLIER_EMAIL = 'drivefx/supplier/email';
+    const DRIVEFX_SUPPLIER_CONTACT = 'drivefx/supplier/contact';
     private $baseUrl = "https://interface.phcsoftware.com/v3/";
     private $accessToken;
 
@@ -42,7 +45,18 @@ class ApiV3Helper extends ApiHelper
         $this->drivefxlogger = $drivefxlogger;
         $this->curlClient = $curl;
     }
-
+    public function getSupplierName()
+    {
+        return $this->getConfig(self::DRIVEFX_SUPPLIER_NAME);
+    }
+    public function getSupplierEmail()
+    {
+        return $this->getConfig(self::DRIVEFX_SUPPLIER_EMAIL);
+    }
+    public function getSupplierContact()
+    {
+        return $this->getConfig(self::DRIVEFX_SUPPLIER_CONTACT);
+    }
     public function generateAccessToken()
     {
         if ($this->accessToken == null) {
@@ -162,9 +176,41 @@ class ApiV3Helper extends ApiHelper
         }
         return  $this->countryId[$countryId] ?? ['',''];
     }
+
+    public function fetchEntity($entityName)
+    {
+        $request = [ "entity"  => $entityName ];
+        $url = "$this->baseUrl/fetchRecords";
+        $response = $this->driveFxRequest($url, $request);
+        return $response;
+    }
+
+    public function createNewProduct($productObject)
+    {
+        $request =   [
+            "product" => [
+                "reference" => $productObject['sku'] ?? "",
+                "designation" => $productObject['name'] ?? "",
+                "unitCode" => "M",
+                "family" => "Aluguer",
+                "category" => 2,
+                "unitPrice1" => 15.55,
+                "taxIncluded1" => true,
+                "tecDescription" => "its a tec description",
+
+            ]
+        ];
+
+        $url = "$this->baseUrl/createProduct";
+        $response = $this->driveFxRequest($url, $request);
+        return $response;
+    }
     public function getCustomerParam($customerObject, $response)
     {
+        $taxNumber = $customerObject['taxNumber'] ?? "702214825";
         $response['nome'] = $customerObject['name'];
+        $response['email'] = $customerObject['email'];
+        $response['ncont'] = $taxNumber ? $taxNumber : "702214825";
         if (isset($customerObject['street'])) {
             $response['morada'] = $customerObject['street'] ?? "";
             $response['local'] = $customerObject['city'] ?? "";
@@ -193,53 +239,32 @@ class ApiV3Helper extends ApiHelper
 
         return $response;
     }
-    public function fetchEntity($entityName)
-    {
-        $request = [ "entity"  => $entityName ];
-        $url = "$this->baseUrl/fetchRecords";
-        $response = $this->driveFxRequest($url, $request);
-        return $response;
-    }
     public function createNewCustomer($customerObject)
     {
+        /*$taxNumber = $customerObject['taxNumber'] ?? "233936688";
+        $taxNumber = $taxNumber ? $taxNumber : "233936688";*/
+        // $customerObject['country_id'] = "UK";
+        $countryId = $customerObject['country_id'] ?? "PT";
+        $countryResponse = $this->searchEntities('Country', "pncont", $customerObject['country_id']);
+
+        if (!$countryResponse) {
+            $countryResponse = $this->searchEntities('Country', "nomeabrv", $customerObject['country_id']);
+        }
+        $countryId = $countryResponse[0]['nomeabrv'] ?? "PT";
         $request =  [
             "customer" => [
                 "name" => $customerObject['name'] ?? "",
                 "address" => $customerObject['street'] ?? "",
                 "postalCode" => $customerObject['postcode'] ?? "",
                 "city" => $customerObject['city'] ?? "",
-                "country" => $customerObject['country_id'] ?? "",
+                "country" => $countryId ,
                 "email" => $customerObject['email'] ?? "",
                 "taxNumber" => $customerObject['taxNumber'] ?? "",
                 "phone" => $customerObject['mobile'] ?? "",
                 "mobilePhone" => $customerObject['mobile'] ?? "",
-                "iban" => "",
-                "bic" => "",
-                "observations" => ""
             ]
         ];
-
         $url = "$this->baseUrl/createCustomer";
-        $response = $this->driveFxRequest($url, $request);
-        return $response;
-    }
-    public function createNewProduct($productObject)
-    {
-        $request =   [
-            "product" => [
-                "reference" => $productObject['sku'] ?? "",
-                "designation" => $productObject['name'] ?? "",
-                "unitCode" => "M",
-                "family" => "Aluguer",
-                "category" => 2,
-                "unitPrice1" => 15.55,
-                "taxIncluded1" => true,
-                "tecDescription" => "its a tec description",
-
-            ]
-        ];
-
-        $url = "$this->baseUrl/createProduct";
         $response = $this->driveFxRequest($url, $request);
         return $response;
     }
@@ -249,20 +274,18 @@ class ApiV3Helper extends ApiHelper
         $email = is_array($customerObject) ? $customerObject['email'] : $customerObject;
         $response = $this->searchEntities($clientEntityTable, 'email', $email);
         $client = $response[0] ?? [];
+
         if ($client) {
             return  $client;
         } else {
             $response = $this->createNewCustomer($customerObject);
             $response = $this->searchEntities($clientEntityTable, 'email', $email);
             return $response[0] ?? [];
-            /* $response = $this->getNewInstance($clientEntityTable, 1);
-             $response = $this->getCustomerParam($customerObject, $response);
-             $response['email'] = $customerObject['email'];
-             $response['ncont'] = $customerObject['mobile'];
-             echo "<pre>";
-             print_r($response);
-             die;
-             $response = $this->saveInstance($clientEntityTable, $response, 1);*/
+
+            /*$response = $this->getNewInstance($clientEntityTable, 1);
+            $response = $this->getCustomerParam($customerObject, $response);
+            $response = $this->saveInstance($clientEntityTable, $response, 1);
+            $response = $this->searchEntities($clientEntityTable, 'email', $email);*/
         }
         return $response;
     }
@@ -291,12 +314,36 @@ class ApiV3Helper extends ApiHelper
         }
         return $response[0] ?? [];
     }
+    private function getSupplierParam($response)
+    {
+        $response['nome'] = $this->getSupplierName();
+        $response['email'] = $this->getSupplierEmail();
+        $response['ncont'] = $this->getSupplierContact();
+        return $response;
+    }
+    public function getSupplier()
+    {
+        $supplierEntityTable = $this->entity[parent::SUPPLIER];
+        $email = $this->getSupplierEmail();
+        $response = $this->searchEntities($supplierEntityTable, 'email', $email);
+        $supplier = $response[0] ?? [];
+        if ($supplier) {
+            return  $supplier;
+        } else {
+            $response = $this->getNewInstance($supplierEntityTable, 1);
+            $response = $this->getSupplierParam($response);
+            $this->saveInstance($supplierEntityTable, $response, 1);
+            $response = $this->searchEntities($supplierEntityTable, 'email', $email);
+        }
+        return $response[0] ?? [];
+    }
 
     public function createDocument($orderRequest)
     {
         $this->generateAccessToken();
         $customerObject = $orderRequest['customer'] ?? [];
         $customer = $this->getClient($customerObject);
+        $supplier = $this->getSupplier();
         $this->writeToLog($customer, "CustomerId");
 
         //  $customer['email'] = $customer['email'];
@@ -307,6 +354,7 @@ class ApiV3Helper extends ApiHelper
         //die;
 
         $customerId = $customer['no'] ?? "";
+        $supplierId = $supplier['no'] ?? "";
         $requestWarehouse = [];
         $request =  [
             "customer" => [
@@ -330,7 +378,8 @@ class ApiV3Helper extends ApiHelper
         $requestWarehouse['requestOptions']['reportName']  = "Minimal Customer Order";
         $request['document'] = [
             "docType" => 1,
-            "customerNumber" => $customerId,
+            "customerNumber" => $supplierId,
+            "salesmanName" => $this->getSupplierName(),
            /* "customerName" => $customerObject['name'],
             "invoicingAddress1" => $customerObject['shipping_street'] ?? $customerObject['street'] ?? "",
             "invoicingPostalCode" => $customerObject['shipping_postcode'] ?? $customerObject['postcode'] ?? "",
@@ -339,6 +388,7 @@ class ApiV3Helper extends ApiHelper
         ];
         $requestWarehouse['internalDocument'] = $request['document'];
         $requestWarehouse['internalDocument']["docType"] = 5;
+        $requestWarehouse['internalDocument']["description"] = "Order";
         $requestWarehouse['internalDocument']["documentObservations"] = "Warehouse transfer via API";
 
         $request['products'] = [];
@@ -350,7 +400,7 @@ class ApiV3Helper extends ApiHelper
             $productRef['qttcli'] = intval($product['qty']);
             $productRef['epv1'] = floatval($product['unitPrice']);
             $this->writeToLog($productRef, "ProductRef");
-            $response = $this->updateInstance($this->entity[parent::PRODUCT],$productRef,1);
+            $response = $this->updateInstance($this->entity[parent::PRODUCT], $productRef, 1);
             $this->writeToLog($response, "UpdateProduct");
             $productArray = [
                 "reference" => $product['sku'],
@@ -365,17 +415,18 @@ class ApiV3Helper extends ApiHelper
         }
 
         /*echo "<pre>";
-        echo json_encode($request);die;*/
+        print_r($request);
+        die;*/
         /*echo "<pre>";
         print_r($requestWarehouse);
         die;*/
 
-        /*$url = "$this->baseUrl/createInternalDocument";
+        $url = "$this->baseUrl/createInternalDocument";
         $response = $this->driveFxRequest($url, $requestWarehouse);
-        $this->writeToLog($response, "createInternalDocument");*/
-       /* echo "<pre>";
-        print_r($response);
-        die;*/
+        $this->writeToLog($response, "createInternalDocument");
+        echo "<pre>";
+         print_r($response);
+
 
         $url = "$this->baseUrl/createDocument";
         $response = $this->driveFxRequest($url, $request);
