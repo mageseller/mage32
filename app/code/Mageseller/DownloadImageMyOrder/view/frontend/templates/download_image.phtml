@@ -1,0 +1,42 @@
+<?php
+/*
+ * A Magento 2 module named Mageseller/DownloadImageMyOrder
+ * Copyright (C) 2019
+ *
+ * This file included in Mageseller/DownloadImageMyOrder is licensed under OSL 3.0
+ *
+ *  http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ *  Please see LICENSE.txt for the full text of the OSL 3.0 license
+ */
+
+$_item = $block->getItem();
+$productId = $_item->getProduct()->getId();
+
+?>
+<?php if($block->isFilesExist($_item)) : ?>
+<tr class="download_image">
+    <td colspan="5" style="background: none;">
+        <a href="<?= $this->getUrl('download_image/index/index', ['product_id' => $productId]) ?>">
+            <button class="action primary" >
+                <span>Download <i class="fa fa-download" aria-hidden="true"></i></span>
+            </button>
+        </a>
+    </td>
+</tr>
+<style>
+    .download_image1 button {
+        font-size: 13px;
+        width: auto;
+        padding: 0 34px;
+        background-color: #56cfe1;
+        border: 1px solid #56cfe1;
+        color: #fff;
+        border-radius: 40px;
+        line-height: 40px;
+        font-weight: 600;
+        text-transform: uppercase;
+
+        padding: 0 25px;
+    }
+</style>
+<?php endif; ?>
