@@ -1,42 +1,54 @@
 <?php
 /*
  * A Magento 2 module named Mageseller/DownloadImageMyOrder
- * Copyright (C) 2019
+ * Copyright (C) 2020
  *
- * This file included in Mageseller/DownloadImageMyOrder is licensed under OSL 3.0
+ *  @author      satish29g@hotmail.com
+ *  @site        https://www.mageseller.com/
  *
- *  http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- *  Please see LICENSE.txt for the full text of the OSL 3.0 license
+ * This file included in Mageseller/DriveFx is licensed under OSL 3.0
+ *
+ * http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * Please see LICENSE.txt for the full text of the OSL 3.0 license
+ *
  */
+/* @var $block \Mageseller\DownloadImageMyOrder\Block\Index\Index */
 
 $_item = $block->getItem();
 $productId = $_item->getProduct()->getId();
-
 ?>
-<?php if($block->isFilesExist($_item)) : ?>
-<tr class="download_image">
-    <td colspan="5" style="background: none;">
-        <a href="<?= $this->getUrl('download_image/index/index', ['product_id' => $productId]) ?>">
-            <button class="action primary" >
-                <span>Download <i class="fa fa-download" aria-hidden="true"></i></span>
-            </button>
-        </a>
-    </td>
-</tr>
-<style>
-    .download_image1 button {
-        font-size: 13px;
-        width: auto;
-        padding: 0 34px;
-        background-color: #56cfe1;
-        border: 1px solid #56cfe1;
-        color: #fff;
-        border-radius: 40px;
-        line-height: 40px;
-        font-weight: 600;
-        text-transform: uppercase;
-
-        padding: 0 25px;
-    }
-</style>
+<?php if ($block->isFilesExist($_item)) : ?>
+    <?php
+    $galleryImages = $block->getGalleryImages($_item);
+    $images = $galleryImages->getItems();
+    ?>
+    <tr class="preview_image">
+        <td colspan="2" >
+            <ul class="video-list">
+                <?php foreach ($images as $image): ?>
+                    <li class="gallery-placeholder">
+                        <img alt="small product photo"
+                             class="gallery-placeholder__image"
+                             src="<?= /* @noEscape */
+                             $image->getData('small_image_url') ?>"
+                        />
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </td>
+        <td colspan="3">
+        </td>
+    </tr>
+    <tr class="download_image">
+        <td class="download_image_btn" colspan="2">
+            <a class="download-video-btn"
+               href="<?= $this->getUrl('download_image/index/index', ['product_id' => $productId]) ?>">
+                <button class="action primary">
+                    <span>Download <i class="fa fa-download" aria-hidden="true"></i></span>
+                </button>
+            </a>
+        </td>
+        <td colspan="3">
+        </td>
+    </tr>
 <?php endif; ?>

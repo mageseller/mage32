@@ -1,27 +1,42 @@
 <?php
 /*
  * A Magento 2 module named Mageseller/DownloadImageMyOrder
- * Copyright (C) 2019
+ * Copyright (C) 2020
  *
- * This file included in Mageseller/DownloadImageMyOrder is licensed under OSL 3.0
+ *  @author      satish29g@hotmail.com
+ *  @site        https://www.mageseller.com/
  *
- *  http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- *  Please see LICENSE.txt for the full text of the OSL 3.0 license
+ * This file included in Mageseller/DriveFx is licensed under OSL 3.0
+ *
+ * http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * Please see LICENSE.txt for the full text of the OSL 3.0 license
+ *
  */
 
 namespace Mageseller\DownloadImageMyOrder\Controller\Index;
 
+use Magento\Catalog\Model\Product;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\App\Response\Http\FileFactory;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Filesystem;
+use Magento\Store\Model\StoreManagerInterface;
 use ZipArchive;
 
-class Index extends \Magento\Framework\App\Action\Action
+class Index extends Action
 {
     /**
-     * @var \Magento\Catalog\Model\Product
+     * @var FileFactory
+     */
+    protected $fileFactory;
+    /**
+     * @var Product
      */
     private $product;
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     private $storeManager;
     /**
@@ -32,28 +47,32 @@ class Index extends \Magento\Framework\App\Action\Action
     /**
      * Constructor
      *
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Catalog\Model\Product $product
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Framework\Filesystem $filesystem
+     * @param Context $context
+     * @param Product $product
+     * @param StoreManagerInterface $storeManager
+     * @param Filesystem $filesystem
+     * @param FileFactory $fileFactory
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Catalog\Model\Product $product,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\Filesystem $filesystem
-    ) {
+        Context $context,
+        Product $product,
+        StoreManagerInterface $storeManager,
+        Filesystem $filesystem,
+        FileFactory $fileFactory
+    )
+    {
         $this->product = $product;
         $this->_url = $context->getUrl();
         $this->storeManager = $storeManager;
         $this->_filesystem = $filesystem;
+        $this->fileFactory = $fileFactory;
         parent::__construct($context);
     }
 
     /**
      * Execute view action
      *
-     * @return \Magento\Framework\Controller\ResultInterface
+     * @return ResultInterface
      */
     public function execute()
     {
@@ -64,7 +83,6 @@ class Index extends \Magento\Framework\App\Action\Action
         $files = [];
         $mediaGallery = $product->getData('media_gallery');
         $imageToDownload = $mediaGallery['images'] ?? [];
-        $image = "";
         foreach ($imageToDownload as $imageTo) {
             $image = $imageTo['file'];
             $filepath = $mediaDirectory->getAbsolutePath("catalog/product" . $image);
@@ -74,27 +92,20 @@ class Index extends \Magento\Framework\App\Action\Action
         }
         if (count($files) == 1) {
             $filepath = $files[0] ?? "";
+            $downloadName = basename($filepath);
         } else {
-            $sku = strtolower(preg_replace('/[^a-zA-Z_0-9]/','_', $product->getSku()));;
-            $filepath = $mediaDirectory->getAbsolutePath("catalog\product\ProductImages_SKU_$sku.zip");
+            $sku = strtolower(preg_replace('/[^a-zA-Z_0-9]/', '_', $product->getSku()));
+            $filepath = $mediaDirectory->getAbsolutePath("catalog\product\productimages_$sku.zip");
+            $downloadName = "ProductImages_SKU_$sku.zip";
         }
 
         $this->create_zip($files, $filepath);
-        if ($mediaDirectory->isExist($filepath)) {
-            $this->getResponse()
-                ->setHttpResponseCode(200)
-                ->setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0', true)
-                ->setHeader('Pragma', 'public', true)
-                ->setHeader('Content-type', 'application/force-download')
-                ->setHeader('Content-Length', filesize($filepath))
-                ->setHeader('Content-Disposition', 'attachment' . '; filename=' . basename($filepath));
-            $this->getResponse()->clearBody();
-            $this->getResponse()->sendHeaders();
-            readfile($filepath);
-            unlink($filepath);
-            exit;
-        }
+        $content['type'] = 'filename';
+        $content['value'] = $filepath;
+        $content['rm'] = 1; // If you will set here 1 then, it will remove file from location.
+        return $this->fileFactory->create($downloadName, $content, DirectoryList::PUB);
     }
+
     public function create_zip($files = [], $filepath)
     {
         $zip = new ZipArchive();

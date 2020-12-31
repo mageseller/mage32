@@ -1,4 +1,3 @@
-<?php
 /*
  * A Magento 2 module named Mageseller/DownloadImageMyOrder
  * Copyright (C) 2020
@@ -13,8 +12,16 @@
  *
  */
 
-\Magento\Framework\Component\ComponentRegistrar::register(
-    \Magento\Framework\Component\ComponentRegistrar::MODULE,
-    'Mageseller_DownloadImageMyOrder',
-    __DIR__
-);
+.preview_image ul.video-list {
+    list-style: none;
+    clear: both;
+}
+.preview_image li.gallery-placeholder {
+    float: left;
+}
+.preview_image td, .download_image td{
+    background : none!important;
+}
+td.download_image_btn {
+    text-align: center;
+}
