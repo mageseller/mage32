@@ -6,7 +6,7 @@
  *  @author      satish29g@hotmail.com
  *  @site        https://www.mageseller.com/
  *
- * This file included in Mageseller/DriveFx is licensed under OSL 3.0
+ * This file included in Mageseller/DownloadImageMyOrder is licensed under OSL 3.0
  *
  * http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * Please see LICENSE.txt for the full text of the OSL 3.0 license
@@ -90,15 +90,10 @@ class Index extends Action
                 $files[] = $filepath;
             }
         }
-        if (count($files) == 1) {
-            $filepath = $files[0] ?? "";
-            $downloadName = basename($filepath);
-        } else {
-            $sku = strtolower(preg_replace('/[^a-zA-Z_0-9]/', '_', $product->getSku()));
-            $filepath = $mediaDirectory->getAbsolutePath("catalog\product\productimages_$sku.zip");
-            $downloadName = "ProductImages_SKU_$sku.zip";
-        }
 
+        $sku = strtolower(preg_replace('/[^a-zA-Z_0-9]/', '_', $product->getSku()));
+        $filepath = $mediaDirectory->getAbsolutePath("catalog\product\productimages_$sku.zip");
+        $downloadName = "ProductImages_SKU_$sku.zip";
         $this->create_zip($files, $filepath);
         $content['type'] = 'filename';
         $content['value'] = $filepath;
