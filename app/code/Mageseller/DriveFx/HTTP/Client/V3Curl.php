@@ -15,6 +15,8 @@
 
 namespace Mageseller\DriveFx\HTTP\Client;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
 use Mageseller\DriveFx\Logger\DrivefxLogger;
 
 /**
@@ -23,8 +25,9 @@ use Mageseller\DriveFx\Logger\DrivefxLogger;
  * @author      Mageseller <satis29g@hotmail.com>
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class Curl extends \Magento\Framework\HTTP\Client\Curl
+class V3Curl extends \Magento\Framework\HTTP\Client\Curl
 {
+    const DRIVEFX_GENERAL_DEBUG = 'drivefx/general/debug';
     /**
      * Max supported protocol by curl CURL_SSLVERSION_TLSv1_2
      * @var int
@@ -37,16 +40,37 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
     private $curl_errno;
     private $curl_getinfo;
     private $url;
+    private $customLogger;
+    /**
+     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     */
+    protected $scopeConfig;
 
     /**
      * @param DrivefxLogger $drivefxlogger
      * @param int|null $sslVersion
      */
-    public function __construct(DrivefxLogger $drivefxlogger, $sslVersion = null)
+    public function __construct(DrivefxLogger $drivefxlogger, \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, $sslVersion = null)
     {
         parent::__construct($sslVersion);
         $this->sslVersion = $sslVersion;
+        $this->scopeConfig = $scopeConfig;
         $this->drivefxlogger = $drivefxlogger;
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/drivefxV3Log.log');
+        $this->customLogger = new \Zend\Log\Logger();
+        $this->customLogger->addWriter($writer);
+    }
+    public function getConfig($path, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT)
+    {
+        return $this->scopeConfig->getValue(
+            $path,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $scope
+        );
+    }
+    public function isEnableDebug()
+    {
+        return $this->getConfig(self::DRIVEFX_GENERAL_DEBUG); // Pass store id in second parameter
     }
     /**
      * Make GET request
@@ -76,7 +100,16 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
     {
         $this->makeRequest("POST", $uri, $params, $post);
     }
-
+    public function writeToLog($info, $comment = "")
+    {
+        if ($this->isEnableDebug()) {
+            $info = is_array($info) || is_object($info) ? json_decode(json_encode($info), true) : $info;
+            if ($comment) {
+                $info = "$comment : " . print_r($info, true);
+            }
+            $this->customLogger->notice($info);
+        }
+    }
     /**
      * Make request
      *
@@ -94,6 +127,10 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
      */
     protected function makeRequest($method, $uri, $params = [], $post = true)
     {
+        $this->writeToLog("----------------------------------------------------");
+        $this->writeToLog("URL : $uri");
+        $this->writeToLog("METHOD : $method");
+        $this->writeToLog("REQUEST : " . print_r($params, true));
         if ($this->_ch == null) {
             $this->_ch = curl_init();
         }
@@ -151,11 +188,16 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
         $this->curl_errno = curl_errno($this->_ch);
         $this->curl_getinfo = curl_getinfo($this->_ch);
         $this->url = $this->curl_getinfo['url'] ?? "";
+        $httpCode = $this->curl_getinfo['http_code'] ?? "";
         if ($this->curl_errno) {
             $this->drivefxlogger->addError("$this->url : Curl Error: " . $this->curl_errno);
             $this->doError(curl_error($this->_ch));
+            $this->writeToLog("RESPONSE ERROR: " . $this->curl_errno);
         }
-        //$this->closeCurl();
+        $this->writeToLog("HTTP STATUS CODE : " . $httpCode);
+        $this->writeToLog("RESPONSE : " . print_r($this->_responseBody, true));
+        $this->writeToLog("----------------------------------------------------");
+        $this->closeCurl();
     }
 
     /**

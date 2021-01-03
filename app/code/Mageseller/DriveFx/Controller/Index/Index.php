@@ -44,11 +44,18 @@ class Index extends Action implements HttpGetActionInterface
      */
     public function execute()
     {
-
-
+        //$response = $this->apiv3Helper->makeLogin();
+        /*$this->apiv3Helper->getProductStock([]);
+        $response = $this->apiv3Helper->makeLogin();
+        die;
+        $this->apiv3Helper->getProductStock([]);
+        echo "<pre>";
+        print_r(json_decode($response,true));
+        die;*/
+        /*
+         $this->apiv3Helper->getProductStock([]);*/
         $response = $this->apiv3Helper->generateAccessToken();
-
-        $response = $this->apiv3Helper->fetchEntity('sl');
+        $response = $this->apiv3Helper->fetchV3Entity('Ft');
         echo "<pre>";
         print_r($response);
         die;

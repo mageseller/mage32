@@ -15,11 +15,13 @@
 
 namespace Mageseller\DriveFx\Helper;
 
+use Magento\CatalogInventory\Model\Stock\StockItemRepository;
+use Magento\Customer\Model\CustomerFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Sales\Model\Order;
 use Magento\Store\Model\ScopeInterface;
 use Mageseller\DriveFx\Logger\DrivefxLogger;
-use const Magento\Sales\Model\Order\Item;
 
 /**
  * Class Data
@@ -34,21 +36,35 @@ class Data extends AbstractHelper
      * @var DrivefxLogger
      */
     private $drivefxlogger;
+    /**
+     * @var Magento\CatalogInventory\Model\Stock\StockItemRepository
+     */
+    protected $stockItemRepository;
+    /**
+     * @var CustomerFactory
+     */
+    private $customerFactory;
 
     /**
      * Data constructor.
      * @param Context $context
      * @param DrivefxLogger $drivefxlogger
      * @param ApiV3Helper $apiHelper
+     * @param CustomerFactory $customerFactory
+     * @param StockItemRepository $stockItemRepository
      */
     public function __construct(
         Context $context,
         DrivefxLogger $drivefxlogger,
-        ApiV3Helper $apiHelper
+        ApiV3Helper $apiHelper,
+        CustomerFactory $customerFactory,
+        StockItemRepository $stockItemRepository
     ) {
         parent::__construct($context);
         $this->drivefxlogger = $drivefxlogger;
         $this->apiHelper = $apiHelper;
+        $this->stockItemRepository = $stockItemRepository;
+        $this->customerFactory = $customerFactory;
     }
     /**
      * @param $value
@@ -59,18 +75,30 @@ class Data extends AbstractHelper
     {
         return $this->scopeConfig->getValue($value, $scope);
     }
-    public function addNewOrder(\Magento\Sales\Model\Order $order)
+
+    public function getStockItem($productId)
     {
-        /*$this->apiHelper->generateAccessToken();
-        $response = $this->apiHelper->fetchEntity('st');
-        echo "<pre>";
-        print_r($response);
-        die;*/
+        return $this->stockItemRepository->get($productId);
+    }
+    public function addNewOrder(Order $order)
+    {
+        $customerId = $order->getCustomerId();
+        if ($order->getData('bodata_reposnse') && $order->getData('bodata_reposnse')) {
+            return $this;
+        }
         $orderRequest = [];
 
         $orderRequest['supplier'] = [];
         $orderRequest['customer'] = [];
         $orderRequest['order'] = $order->getData();
+        $orderRequest['orderObject'] = $order;
+        $customerId = $order->getCustomerId();
+        echo $customerId;
+        die;
+        if ($customerId) {
+            $customer = $this->customerFactory->create()->load($customerId);
+            $orderRequest['customerObject'] = $customer;
+        }
 
         $orderRequest['customer']['customer_id'] = $order->getCustomerId();
         $orderRequest['customer']['name'] = $order->getCustomerFirstname() . " " . $order->getCustomerLastname();
@@ -98,11 +126,12 @@ class Data extends AbstractHelper
             $orderRequest['customer']['shipping_country_id'] = $shippingAddress->getCountryId();
         }
 
-
         $orderRequest['products'] = [];
+        $orderRequest['productsObject'] = [];
         $visibleItem = $order->getAllVisibleItems();
-        foreach ($visibleItem as  $item) {
+        foreach ($visibleItem as $item) {
             $product = $item->getProduct();
+            $orderRequest['productObjects'][] = $product;
             $orderRequest['products'][] = [
                 'sku' => $item->getSku(),
                 'name' => $product->getName(),
@@ -110,9 +139,10 @@ class Data extends AbstractHelper
                 'unitPrice' => floatval($item->getPrice()),
                 'price' => $product->getRowTotal(),
                 'qty' => intval($item->getQtyOrdered()),
+                'stock_qty' => $this->getStockItem($product->getId())->getQty(),
+                'is_virtual' => $product->isVirtual()
             ];
         }
         $this->apiHelper->createDocument($orderRequest);
-
     }
 }

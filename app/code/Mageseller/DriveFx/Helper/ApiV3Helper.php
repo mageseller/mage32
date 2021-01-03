@@ -17,6 +17,7 @@ namespace Mageseller\DriveFx\Helper;
 
 use Magento\Framework\App\Helper\Context;
 use Mageseller\DriveFx\HTTP\Client\Curl;
+use Mageseller\DriveFx\HTTP\Client\V3Curl;
 use Mageseller\DriveFx\Logger\DrivefxLogger;
 
 /**
@@ -27,23 +28,39 @@ class ApiV3Helper extends ApiHelper
     const DRIVEFX_SUPPLIER_NAME = 'drivefx/supplier/name';
     const DRIVEFX_SUPPLIER_EMAIL = 'drivefx/supplier/email';
     const DRIVEFX_SUPPLIER_CONTACT = 'drivefx/supplier/contact';
+    const DRIVEFX_GENERAL_V_3_URL = 'drivefx/general/v3url';
     private $baseUrl = "https://interface.phcsoftware.com/v3/";
     private $accessToken;
+    /**
+     * @var V3Curl
+     */
+    private $v3CurlClient;
+    /**
+     * @var EavAtrributeUpdateHelper
+     */
+    private $eavAtrributeUpdateHelper;
 
     /**
      * Data constructor.
      * @param Context $context
      * @param DrivefxLogger $drivefxlogger
      * @param Curl $curl
+     * @param EavAtrributeUpdateHelper $eavAtrributeUpdateHelper
+     * @param V3Curl $v3url
      */
     public function __construct(
         Context $context,
         DrivefxLogger $drivefxlogger,
-        Curl $curl
+        Curl $curl,
+        EavAtrributeUpdateHelper $eavAtrributeUpdateHelper,
+        V3Curl $v3url
     ) {
         parent::__construct($context, $drivefxlogger, $curl);
         $this->drivefxlogger = $drivefxlogger;
-        $this->curlClient = $curl;
+        $this->v3CurlClient = $v3url;
+        $this->eavAtrributeUpdateHelper = $eavAtrributeUpdateHelper;
+
+        $this->baseUrl = rtrim($this->getApiV3Url(), '/');
     }
     public function getSupplierName()
     {
@@ -57,6 +74,11 @@ class ApiV3Helper extends ApiHelper
     {
         return $this->getConfig(self::DRIVEFX_SUPPLIER_CONTACT);
     }
+    public function getApiV3Url()
+    {
+        return $this->getConfig(self::DRIVEFX_GENERAL_V_3_URL);
+    }
+
     public function generateAccessToken()
     {
         if ($this->accessToken == null) {
@@ -65,7 +87,6 @@ class ApiV3Helper extends ApiHelper
             $this->password = $this->getPassword();
             $this->appType = $this->getAppType();
             $this->company = $this->getCompany();
-
             $params = [
                 "credentials" => [
                     "backendUrl" => $this->urlBase,
@@ -78,27 +99,43 @@ class ApiV3Helper extends ApiHelper
             ];
 
             $url = "$this->baseUrl/generateAccessToken";
-            $response = $this->driveFxRequest($url, $params);
+            $response = $this->driveFxV3Request($url, $params);
             $this->accessToken = $response['token'] ?? "";
         }
+
         return $this->accessToken;
     }
 
-    public function driveFxRequest($url, $params, $isJson = true)
+    public function driveFxV3Request($url, $params, $isJson = true)
     {
         if ($this->accessToken) {
-            $this->curlClient->setOption(CURLOPT_HTTPHEADER, ["Authorization: " . $this->accessToken]);
+            $this->v3CurlClient->setOption(CURLOPT_HTTPHEADER, ["Authorization: " . $this->accessToken]);
         }
         if ($isJson) {
             $params = json_encode($params);
         }
-        $this->curlClient->post($url, $params, false);
-        $response = $this->curlClient->getBody();
+        $this->v3CurlClient->post($url, $params, false);
+        $response = $this->v3CurlClient->getBody();
         $response = json_decode($response, true);
         return $response;
     }
-
-    public function searchEntities($entityName, $filterItem = '', $valueitem = '')
+    public function getLastV3OrderId()
+    {
+        $response = $this->searchV3Entities('Bo', "", "", [
+            "limit" => 1,
+            "orderByItems" => [
+                [
+                    "AggregateType" => 0,
+                    "fieldStruc" => [
+                    ],
+                    "OrderItem" => "obrano",
+                    "OrderType" => 1
+                ]
+            ],"SelectItems" => ["obrano"]
+        ]);
+        return $response[0]['obrano'] ?? "0";
+    }
+    public function searchV3Entities($entityName, $filterItem = '', $valueitem = '', $customFilter = [])
     {
         $filterItems = $filterItem ? [
             [
@@ -113,11 +150,15 @@ class ApiV3Helper extends ApiHelper
                 "filterItems" => $filterItems
             ]
         ];
+        if ($customFilter) {
+            $request["queryObject"] = array_merge($request["queryObject"], $customFilter);
+        }
+
         $url = "$this->baseUrl/searchEntities";
-        $response = $this->driveFxRequest($url, $request);
+        $response = $this->driveFxV3Request($url, $request);
         return $response['entities'] ?? [];
     }
-    public function getNewInstance($entity, $ndoc)
+    public function getNewV3Instance($entity, $ndoc)
     {
         $request = [
             "entity" => $entity,
@@ -125,10 +166,10 @@ class ApiV3Helper extends ApiHelper
         ];
 
         $url = "$this->baseUrl/getNew";
-        $response = $this->driveFxRequest($url, $request);
+        $response = $this->driveFxV3Request($url, $request);
         return $response;
     }
-    public function saveInstance($entity, $val, $ndoc)
+    public function saveV3Instance($entity, $val, $ndoc)
     {
         $request = [
             "entity" => $entity,
@@ -137,19 +178,19 @@ class ApiV3Helper extends ApiHelper
         ];
 
         $url = "$this->baseUrl/saveInstance";
-        $response = $this->driveFxRequest($url, $request);
+        $response = $this->driveFxV3Request($url, $request);
         return $response;
     }
-    public function updateInstance($entity, $val, $ndoc)
+    public function updateV3Instance($entity, $val, $ndoc)
     {
         $val['Operation'] = 1;
-        return $this->saveInstance($entity, $val, $ndoc);
+        return $this->saveV3Instance($entity, $val, $ndoc);
     }
     public function getTypeOfInvoice()
     {
         if ($this->typeOfInvoices == null) {
             $this->typeOfInvoices = [];
-            $response = $this->searchEntities($this->entity[parent::ALL_INVOICE], 'inactivo', 0);
+            $response = $this->searchV3Entities($this->entity[parent::ALL_INVOICE], 'inactivo', 0);
             if ($response) {
                 foreach ($response as $value) {
                     if ($value['tiposaft'] == 'FT' || $value['tiposaft'] == 'FS' || $value['tiposaft'] == 'FR') {
@@ -168,7 +209,7 @@ class ApiV3Helper extends ApiHelper
         if (isset($this->countryId[$countryId])) {
             return  $this->countryId[$countryId];
         }
-        $countryResponse = $this->searchEntities('LocalizationWS', 'nomeabrv', $countryId);
+        $countryResponse = $this->searchV3Entities('LocalizationWS', 'nomeabrv', $countryId);
         if ($countryResponse) {
             $pais = $countryResponse['entities'][0]['nome'] ?? '';
             $paisesstamp = $countryResponse['entities'][0]['paisesstamp'] ?? '';
@@ -177,11 +218,11 @@ class ApiV3Helper extends ApiHelper
         return  $this->countryId[$countryId] ?? ['',''];
     }
 
-    public function fetchEntity($entityName)
+    public function fetchV3Entity($entityName)
     {
         $request = [ "entity"  => $entityName ];
         $url = "$this->baseUrl/fetchRecords";
-        $response = $this->driveFxRequest($url, $request);
+        $response = $this->driveFxV3Request($url, $request);
         return $response;
     }
 
@@ -202,7 +243,7 @@ class ApiV3Helper extends ApiHelper
         ];
 
         $url = "$this->baseUrl/createProduct";
-        $response = $this->driveFxRequest($url, $request);
+        $response = $this->driveFxV3Request($url, $request);
         return $response;
     }
     public function getCustomerParam($customerObject, $response)
@@ -245,10 +286,10 @@ class ApiV3Helper extends ApiHelper
         $taxNumber = $taxNumber ? $taxNumber : "233936688";*/
         // $customerObject['country_id'] = "UK";
         $countryId = $customerObject['country_id'] ?? "PT";
-        $countryResponse = $this->searchEntities('Country', "pncont", $customerObject['country_id']);
+        $countryResponse = $this->searchV3Entities('Country', "pncont", $customerObject['country_id']);
 
         if (!$countryResponse) {
-            $countryResponse = $this->searchEntities('Country', "nomeabrv", $customerObject['country_id']);
+            $countryResponse = $this->searchV3Entities('Country', "nomeabrv", $customerObject['country_id']);
         }
         $countryId = $countryResponse[0]['nomeabrv'] ?? "PT";
         $request =  [
@@ -265,27 +306,27 @@ class ApiV3Helper extends ApiHelper
             ]
         ];
         $url = "$this->baseUrl/createCustomer";
-        $response = $this->driveFxRequest($url, $request);
+        $response = $this->driveFxV3Request($url, $request);
         return $response;
     }
     public function getClient($customerObject)
     {
         $clientEntityTable = $this->entity[parent::CLIENT];
         $email = is_array($customerObject) ? $customerObject['email'] : $customerObject;
-        $response = $this->searchEntities($clientEntityTable, 'email', $email);
+        $response = $this->searchV3Entities($clientEntityTable, 'email', $email);
         $client = $response[0] ?? [];
 
         if ($client) {
             return  $client;
         } else {
             $response = $this->createNewCustomer($customerObject);
-            $response = $this->searchEntities($clientEntityTable, 'email', $email);
+            $response = $this->searchV3Entities($clientEntityTable, 'email', $email);
             return $response[0] ?? [];
 
-            /*$response = $this->getNewInstance($clientEntityTable, 1);
+            /*$response = $this->getNewV3Instance($clientEntityTable, 1);
             $response = $this->getCustomerParam($customerObject, $response);
-            $response = $this->saveInstance($clientEntityTable, $response, 1);
-            $response = $this->searchEntities($clientEntityTable, 'email', $email);*/
+            $response = $this->saveV3Instance($clientEntityTable, $response, 1);
+            $response = $this->searchV3Entities($clientEntityTable, 'email', $email);*/
         }
         return $response;
     }
@@ -296,21 +337,53 @@ class ApiV3Helper extends ApiHelper
         $response['epv1'] = $productObject['unitPrice'] ?? 0;    //retail price 1
         $response['iva1incl'] = $productObject['iva1incl'] ?? true;  //tax rate included
         $response['inactivo'] = $productObject['inactive'] ?? false; //activ
+        $isVirtual = $productObject['is_virtual'] ?? false;
+        $response['stns'] = $isVirtual ? true : false; //activ
+
         return $response;
     }
     public function getProduct($productObject)
     {
         $productEntityTable = $this->entity[parent::PRODUCT];
         $ref = is_array($productObject) ? $productObject['sku'] : $productObject;
-        $response = $this->searchEntities($productEntityTable, 'ref', $ref);
+        $response = $this->searchV3Entities($productEntityTable, 'ref', $ref);
         $client = $response[0] ?? [];
         if ($client) {
             return  $client;
         } else {
-            $response = $this->getNewInstance($productEntityTable, 1);
+            $response = $this->getNewV3Instance($productEntityTable, 1);
             $response = $this->getProductParam($productObject, $response);
-            $this->saveInstance($productEntityTable, $response, 1);
-            $response = $this->searchEntities($productEntityTable, 'ref', $ref);
+            $this->saveV3Instance($productEntityTable, $response, 1);
+            $response = $this->searchV3Entities($productEntityTable, 'ref', $ref);
+        }
+        return $response[0] ?? [];
+    }
+
+    public function getStockProductParam(array $productObject, $response)
+    {
+        $productStock = $productObject['stock_qty'] ?? 10;
+        $response['ref'] = $productObject['sku']; //reference of product
+        $response['design'] = $productObject['name'] ?? 0; //name of product
+        $response['cm'] = 5;
+        $response['cmdesc'] = "Stock Inicial";
+        $response['qtt'] = $productStock > 0 ? $productStock : 10;
+        $response["movdescription"] = "Stock Inicial";
+        $response["Cm2LabelField"] = "5 - Stock Inicial (Entrada)";
+        return $response;
+    }
+    public function getProductStock($productObject)
+    {
+        $productStockEntityTable = $this->entity[parent::PRODUCTSTOCK];
+        $ref = is_array($productObject) ? $productObject['sku'] : $productObject;
+        $response = $this->searchV3Entities($productStockEntityTable, 'ref', $ref);
+        $client = $response[0] ?? [];
+        if ($client) {
+            return  $client;
+        } else {
+            $response = $this->getNewV3Instance($productStockEntityTable, 1);
+            $response = $this->getStockProductParam($productObject, $response);
+            $res = $this->saveV3Instance($productStockEntityTable, $response, 1);
+            $response = $this->searchV3Entities($productStockEntityTable, 'ref', $ref);
         }
         return $response[0] ?? [];
     }
@@ -325,15 +398,15 @@ class ApiV3Helper extends ApiHelper
     {
         $supplierEntityTable = $this->entity[parent::SUPPLIER];
         $email = $this->getSupplierEmail();
-        $response = $this->searchEntities($supplierEntityTable, 'email', $email);
+        $response = $this->searchV3Entities($supplierEntityTable, 'email', $email);
         $supplier = $response[0] ?? [];
         if ($supplier) {
             return  $supplier;
         } else {
-            $response = $this->getNewInstance($supplierEntityTable, 1);
+            $response = $this->getNewV3Instance($supplierEntityTable, 1);
             $response = $this->getSupplierParam($response);
-            $this->saveInstance($supplierEntityTable, $response, 1);
-            $response = $this->searchEntities($supplierEntityTable, 'email', $email);
+            $this->saveV3Instance($supplierEntityTable, $response, 1);
+            $response = $this->searchV3Entities($supplierEntityTable, 'email', $email);
         }
         return $response[0] ?? [];
     }
@@ -341,20 +414,22 @@ class ApiV3Helper extends ApiHelper
     public function createDocument($orderRequest)
     {
         $this->generateAccessToken();
-        $customerObject = $orderRequest['customer'] ?? [];
-        $customer = $this->getClient($customerObject);
+        $orderId = $orderRequest['order']['entity_id'] ?? "";
+        $customerData = $orderRequest['customer'] ?? [];
+        $customer = $customerData['customerObject'] ?? [];
+        $customerId = $customer ? $customer->getData('drive_fx_customer_id') : "";
+        if (!$customerId) {
+            $customer = $this->getClient($customerData);
+            $customerId = $customer['no'] ?? "";
+            if ($customerId) {
+                $this->eavAtrributeUpdateHelper->updateCustomerAttributes($customer->getId(), [
+                    'drive_fx_customer_id' => $customerId
+                ], 0);
+            }
+        }
         $supplier = $this->getSupplier();
-        $this->writeToLog($customer, "CustomerId");
-
-        //  $customer['email'] = $customer['email'];
-        //$this->writeToLog($customer, "ProductRef");
-        //$response = $this->updateInstance($this->entity[parent::CLIENT],$customer,1);
-        //echo "<pre>";
-        //print_r($customer);
-        //die;
-
-        $customerId = $customer['no'] ?? "";
         $supplierId = $supplier['no'] ?? "";
+
         $requestWarehouse = [];
         $request =  [
             "customer" => [
@@ -368,71 +443,91 @@ class ApiV3Helper extends ApiHelper
                 "taxNumber" => $customerObject['taxNumber'] ?? "",
             ]
         ];
-        //$requestWarehouse['customer'] = $request['customer'];
+        $requestWarehouse['customer'] = $request['customer'];
         $request['requestOptions'] =  [
-            "option" => 1,
-            "requestedFields" =>["fno", "ftstamp", "etotal", "ettiva"]
+            "option" => 0,
+            "requestedFields" =>["fno", "ftstamp", "etotal", "ettiva"],
+            "reportName" => "Minimal Customer Invoice"
         ];
-        $requestWarehouse['requestOptions'] = $request['requestOptions'];
+        $requestWarehouse['requestOptions'] =  [
+            "option" => 0,
+            "requestedFields" =>["obrano","no", "obranome"],
+            "reportName" => "Minimal Customer Order"
+        ];
         //$requestWarehouse['requestOptions']['requestedFields'] = [ "no","obranome"];
-        $requestWarehouse['requestOptions']['reportName']  = "Minimal Customer Order";
+        //$requestWarehouse['requestOptions']['reportName']  = "Minimal Customer Order";
         $request['document'] = [
             "docType" => 1,
-            "customerNumber" => $supplierId,
-            "salesmanName" => $this->getSupplierName(),
-           /* "customerName" => $customerObject['name'],
+            "customerNumber" => $customerId,
             "invoicingAddress1" => $customerObject['shipping_street'] ?? $customerObject['street'] ?? "",
             "invoicingPostalCode" => $customerObject['shipping_postcode'] ?? $customerObject['postcode'] ?? "",
             "invoicingLocality" => $customerObject['shipping_city'] ?? $customerObject['city'] ?? "",
-            "documentObservations" => "Document Observations"*/
+            "documentObservations" => "Invoice Document"
         ];
-        $requestWarehouse['internalDocument'] = $request['document'];
-        $requestWarehouse['internalDocument']["docType"] = 5;
-        $requestWarehouse['internalDocument']["description"] = "Order";
-        $requestWarehouse['internalDocument']["documentObservations"] = "Warehouse transfer via API";
 
+        $requestWarehouse['internalDocument'] = [
+            "docType" => 1,
+            "customerNumber" => $customerId,
+            "supplierNumber" => $supplierId,
+            "customerName" => $customerObject['name'] ?? "Generaric Client",
+            "salesmanName" => $this->getSupplierName(),
+            "description" => "Order",
+            "issuingAddress1" => "Issue Address 1",
+            "issuingPostalCode" => "2010-152",
+            "issuingLocality" => "Issue locality",
+            "documentObservations" =>"This is an observation"
+        ];
+        $orderId = $this->getLastV3OrderId();
+        if ($orderId) {
+            $requestWarehouse['internalDocument']['number'] = $orderId + 1;
+        }
         $request['products'] = [];
         $products = $orderRequest['products'] ?? [];
         foreach ($products as $key => $product) {
             $productRef = $this->getProduct($product);
-            $productRef['stock'] = intval($product['qty']);
+            $productStock = $this->getProductStock($product);
+            $currentQty = $productStock['qtt'] ?? 0;
+            if ($currentQty < intval($product['qty'])) {
+                $productStock['qtt'] = intval($product['qty']);
+                $response = $this->updateV3Instance($this->entity[parent::PRODUCTSTOCK], $productStock, 1);
+            }
+            /*$productRef['stock'] = intval($product['qty']);
             $productRef['qttfor'] = intval($product['qty']);
             $productRef['qttcli'] = intval($product['qty']);
             $productRef['epv1'] = floatval($product['unitPrice']);
             $this->writeToLog($productRef, "ProductRef");
-            $response = $this->updateInstance($this->entity[parent::PRODUCT], $productRef, 1);
-            $this->writeToLog($response, "UpdateProduct");
+            $response = $this->updateV3Instance($this->entity[parent::PRODUCT], $productRef, 1);
+            $this->writeToLog($response, "UpdateProduct");*/
             $productArray = [
                 "reference" => $product['sku'],
                 "designation" => $product['name'],
                 "unitPrice" => floatval($product['unitPrice']),
                 "quantity" => intval($product['qty']),
+                'warehouse' => 1
             ];
             $request['products'][] = $productArray;
-            $productArray["warehouse"] = 1;
-            $productArray["targetWarehouse"] = 2;
+            $productArray["unitCode"] = "M";
             $requestWarehouse['products'][] = $productArray;
         }
-
-        /*echo "<pre>";
-        print_r($request);
-        die;*/
-        /*echo "<pre>";
-        print_r($requestWarehouse);
-        die;*/
-
-        $url = "$this->baseUrl/createInternalDocument";
-        $response = $this->driveFxRequest($url, $requestWarehouse);
-        $this->writeToLog($response, "createInternalDocument");
-        echo "<pre>";
-         print_r($response);
-
-
-        $url = "$this->baseUrl/createDocument";
-        $response = $this->driveFxRequest($url, $request);
-        $this->writeToLog($response, "createDocument");
-
-        print_r($response);
-        die;
+        $order = $orderRequest['orderObject'];
+        if (!$order->getData('bodata_reposnse')) {
+            $url = "$this->baseUrl/createInternalDocument";
+            $response = $this->driveFxV3Request($url, $requestWarehouse);
+            $code  = $response['code'] ?? 1;
+            if ($code == 0) {
+                $obrano  = $response['requestedFields']['obrano'] ?? "";
+                $order->setData('bodata_reposnse', $obrano);
+            }
+        }
+        if (!$order->getData('invoice_response')) {
+            $url = "$this->baseUrl/createDocument";
+            $response = $this->driveFxV3Request($url, $request);
+            $code  = $response['code'] ?? 1;
+            if ($code == 0) {
+                $fno  = $response['requestedFields']['fno'] ?? "";
+                $order->setData('invoice_response', $fno);
+            }
+        }
+        $order->save();
     }
 }

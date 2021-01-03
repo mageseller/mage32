@@ -36,6 +36,7 @@ class ApiHelper extends AbstractHelper
     const CLIENT = 'Client';
     const SUPPLIER = 'Supplier';
     const PRODUCT = 'Product';
+    const PRODUCTSTOCK = 'Product_Stock';
     const INVOICE = 'Invoice';
     const ALL_INVOICE = 'AllInvoice';
     const BO = 'Bo';
@@ -48,6 +49,7 @@ class ApiHelper extends AbstractHelper
         self::CLIENT => 'ClWS',
         self::SUPPLIER => 'FlWS',
         self::PRODUCT => 'StWS',
+        self::PRODUCTSTOCK => 'SlWS',
         self::INVOICE => 'FtWS',
         self::BO => 'BoWS',
         'TsWS','TsWS'
@@ -56,6 +58,7 @@ class ApiHelper extends AbstractHelper
         self::CLIENT => 'Cl',
         self::SUPPLIER => 'Fl',
         self::PRODUCT => 'St',
+        self::PRODUCTSTOCK => 'Sl',
         self::INVOICE => 'Ft',
         self::ALL_INVOICE => 'Td',
         self::BO => self::BO,
@@ -69,7 +72,7 @@ class ApiHelper extends AbstractHelper
     protected $typeOfInvoices;
     protected $_globalData;
     protected $countryId;
-    protected $customeUrl = "https://sis08.drivefx.net/5F9732BE/PHCWS/";
+    protected $customeUrl = "";
 
     /**
      * Data constructor.
@@ -188,6 +191,7 @@ class ApiHelper extends AbstractHelper
 
     public function driveFxRequest($url, $params)
     {
+
         $this->curlClient->post($url, $params, false);
         $response = $this->curlClient->getBody();
         $response = json_decode($response, true);
@@ -305,6 +309,8 @@ class ApiHelper extends AbstractHelper
         $this->password = $this->getPassword();
         $this->appType = $this->getAppType();
         $this->company = $this->getCompany();
+        $this->customeUrl = $this->urlBase . "/PHCWS/";
+
 
         $this->curlClient->setOption(CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/32.0.1700.107 Chrome/32.0.1700.107 Safari/537.36');
         $this->curlClient->setOption(CURLOPT_POST, true);
@@ -373,14 +379,24 @@ class ApiHelper extends AbstractHelper
         }
         return  $this->countryId[$countryId] ?? ['',''];
     }
+    public function getProductStock($productRequest)
+    {
+        if ($isLogin = $this->makeLogin()) {
+            echo "<pre>";
+            echo $this->table[self::CLIENT];
+            $response = $this->getNewInstance("SlWS", 0);
+            print_r($response);
+            die;
+        }
+    }
     public function createNewClient($orderRequest)
     {
-        if ($this->makeLogin()) {
+        if ($isLogin = $this->makeLogin()) {
+
             /************************************************************************
              *        Called webservice that obtain a new instance of client         *
              *************************************************************************/
             $response = $this->getNewInstance($this->table[self::CLIENT], 0);
-
             if ($response) {
                 //Change name and email of client
                 $response = $this->getCustomerParam($orderRequest, $response);

@@ -37,6 +37,11 @@
                     <label>Base Url</label>
                     <comment>https://developer.phcfx.com/app/</comment>
                 </field>
+                <field id="v3url" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0"
+                       showInStore="0">
+                    <label>Api V3 Url</label>
+                    <comment>https://interface.phcsoftware.com/v3/</comment>
+                </field>
                 <field id="username" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>Username</label>
