@@ -313,14 +313,36 @@ class ApiV3Helper extends ApiHelper
     {
         $clientEntityTable = $this->entity[parent::CLIENT];
         $email = is_array($customerObject) ? $customerObject['email'] : $customerObject;
-        $response = $this->searchV3Entities($clientEntityTable, 'email', $email);
+        $response = $this->searchV3Entities($clientEntityTable, 'email', $email, [
+            "limit" => 1,
+            "orderByItems" => [
+                [
+                    "AggregateType" => 0,
+                    "fieldStruc" => [
+                    ],
+                    "OrderItem" => "no",
+                    "OrderType" => 1
+                ]
+            ],"SelectItems" => ["no"]
+        ]);
         $client = $response[0] ?? [];
 
         if ($client) {
             return  $client;
         } else {
             $response = $this->createNewCustomer($customerObject);
-            $response = $this->searchV3Entities($clientEntityTable, 'email', $email);
+            $response = $this->searchV3Entities($clientEntityTable, 'email', $email, [
+                "limit" => 1,
+                "orderByItems" => [
+                    [
+                        "AggregateType" => 0,
+                        "fieldStruc" => [
+                        ],
+                        "OrderItem" => "no",
+                        "OrderType" => 1
+                    ]
+                ],"SelectItems" => ["no"]
+            ]);
             return $response[0] ?? [];
 
             /*$response = $this->getNewV3Instance($clientEntityTable, 1);
@@ -375,7 +397,19 @@ class ApiV3Helper extends ApiHelper
     {
         $productStockEntityTable = $this->entity[parent::PRODUCTSTOCK];
         $ref = is_array($productObject) ? $productObject['sku'] : $productObject;
-        $response = $this->searchV3Entities($productStockEntityTable, 'ref', $ref);
+        $filter['filterItems'] = [
+            [
+                "filterItem" => 'ref',
+                "comparison" => 0,
+                "valueItem" => $ref
+            ],
+            [
+                "filterItem" => 'cm',
+                "comparison" => 0,
+                "valueItem" => 5
+            ]
+        ];
+        $response = $this->searchV3Entities($productStockEntityTable, '', '', $filter);
         $client = $response[0] ?? [];
         if ($client) {
             return  $client;
@@ -415,25 +449,23 @@ class ApiV3Helper extends ApiHelper
     {
         $this->generateAccessToken();
         $orderId = $orderRequest['order']['entity_id'] ?? "";
-        $customerData = $orderRequest['customer'] ?? [];
-        $customer = $customerData['customerObject'] ?? [];
+        $customerObject = $orderRequest['customer'] ?? [];
+        $customer = $orderRequest['customerObject'] ?? [];
+
         $customerId = $customer ? $customer->getData('drive_fx_customer_id') : "";
         if (!$customerId) {
-            $customer = $this->getClient($customerData);
-            $customerId = $customer['no'] ?? "";
+            $_customer = $this->getClient($customerObject);
+            $customerId = $_customer['no'] ?? "";
             if ($customerId) {
-                $this->eavAtrributeUpdateHelper->updateCustomerAttributes($customer->getId(), [
-                    'drive_fx_customer_id' => $customerId
-                ], 0);
+                $customer->setData('drive_fx_customer_id', $customerId)->save();
             }
         }
         $supplier = $this->getSupplier();
         $supplierId = $supplier['no'] ?? "";
-
         $requestWarehouse = [];
         $request =  [
             "customer" => [
-                "number" => $customerId,
+                "number" => (int) $customerId,
                 "name" => $customerObject['name'] ?? "Generaric Client",
                 "address" => $customerObject['street'] ?? "Generaric Street",
                 "postalCode" => $customerObject['postcode'] ?? "",
@@ -458,7 +490,9 @@ class ApiV3Helper extends ApiHelper
         //$requestWarehouse['requestOptions']['reportName']  = "Minimal Customer Order";
         $request['document'] = [
             "docType" => 1,
-            "customerNumber" => $customerId,
+            "customerNumber" => (int) $customerId,
+            "customerName" => $customerObject['name'] ?? "Generaric Client",
+            "salesmanName" => $this->getSupplierName(),
             "invoicingAddress1" => $customerObject['shipping_street'] ?? $customerObject['street'] ?? "",
             "invoicingPostalCode" => $customerObject['shipping_postcode'] ?? $customerObject['postcode'] ?? "",
             "invoicingLocality" => $customerObject['shipping_city'] ?? $customerObject['city'] ?? "",
@@ -467,8 +501,8 @@ class ApiV3Helper extends ApiHelper
 
         $requestWarehouse['internalDocument'] = [
             "docType" => 1,
-            "customerNumber" => $customerId,
-            "supplierNumber" => $supplierId,
+            "customerNumber" => (int) $customerId,
+            "supplierNumber" => (int) $supplierId,
             "customerName" => $customerObject['name'] ?? "Generaric Client",
             "salesmanName" => $this->getSupplierName(),
             "description" => "Order",
@@ -484,11 +518,24 @@ class ApiV3Helper extends ApiHelper
         $request['products'] = [];
         $products = $orderRequest['products'] ?? [];
         foreach ($products as $key => $product) {
-            $productRef = $this->getProduct($product);
+            $productObject = $product['productObjects'] ?? "";
+            if (!$productObject->getData('productObjects')) {
+                $productRef = $this->getProduct($product);
+                if ($productRef) {
+                    $this->eavAtrributeUpdateHelper->updateProductAttributes([$productObject->getId()], [
+                        'drivefx_ref_id' => $productRef['ref']
+                    ], $productObject->getStoreId());
+                }
+            }
+
             $productStock = $this->getProductStock($product);
             $currentQty = $productStock['qtt'] ?? 0;
-            if ($currentQty < intval($product['qty'])) {
-                $productStock['qtt'] = intval($product['qty']);
+            $stock = $productStock['stock'] ?? 0;
+            $sastock = $productStock['sastock'] ?? 0;
+            if ($currentQty < intval($product['qty']) + 1 || $stock < intval($product['qty']) + 1 || $sastock < intval($product['qty']) + 1) {
+                $productStock['qtt'] = intval($product['qty']) + 1;
+                $productStock['stock'] = intval($product['qty']) + 1;
+                $productStock['sastock'] = intval($product['qty']) + 1;
                 $response = $this->updateV3Instance($this->entity[parent::PRODUCTSTOCK], $productStock, 1);
             }
             /*$productRef['stock'] = intval($product['qty']);
@@ -518,6 +565,7 @@ class ApiV3Helper extends ApiHelper
                 $obrano  = $response['requestedFields']['obrano'] ?? "";
                 $order->setData('bodata_reposnse', $obrano);
             }
+            $order->addStatusToHistory(false, json_encode($response));
         }
         if (!$order->getData('invoice_response')) {
             $url = "$this->baseUrl/createDocument";
@@ -527,6 +575,7 @@ class ApiV3Helper extends ApiHelper
                 $fno  = $response['requestedFields']['fno'] ?? "";
                 $order->setData('invoice_response', $fno);
             }
+            $order->addStatusToHistory(false, json_encode($response));
         }
         $order->save();
     }

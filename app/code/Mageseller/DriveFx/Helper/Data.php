@@ -82,8 +82,7 @@ class Data extends AbstractHelper
     }
     public function addNewOrder(Order $order)
     {
-        $customerId = $order->getCustomerId();
-        if ($order->getData('bodata_reposnse') && $order->getData('bodata_reposnse')) {
+        if ($order->getData('bodata_reposnse') && $order->getData('invoice_response ')) {
             return $this;
         }
         $orderRequest = [];
@@ -93,8 +92,6 @@ class Data extends AbstractHelper
         $orderRequest['order'] = $order->getData();
         $orderRequest['orderObject'] = $order;
         $customerId = $order->getCustomerId();
-        echo $customerId;
-        die;
         if ($customerId) {
             $customer = $this->customerFactory->create()->load($customerId);
             $orderRequest['customerObject'] = $customer;
@@ -131,7 +128,7 @@ class Data extends AbstractHelper
         $visibleItem = $order->getAllVisibleItems();
         foreach ($visibleItem as $item) {
             $product = $item->getProduct();
-            $orderRequest['productObjects'][] = $product;
+
             $orderRequest['products'][] = [
                 'sku' => $item->getSku(),
                 'name' => $product->getName(),
@@ -140,7 +137,8 @@ class Data extends AbstractHelper
                 'price' => $product->getRowTotal(),
                 'qty' => intval($item->getQtyOrdered()),
                 'stock_qty' => $this->getStockItem($product->getId())->getQty(),
-                'is_virtual' => $product->isVirtual()
+                'is_virtual' => $product->isVirtual(),
+                'productObjects' =>  $product
             ];
         }
         $this->apiHelper->createDocument($orderRequest);
