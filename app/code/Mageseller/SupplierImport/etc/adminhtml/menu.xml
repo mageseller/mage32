@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+	<menu>
+		<add id="Mageseller::top_level" module="Mageseller_SupplierImport" resource="Magento_Backend::content" sortOrder="9999" title="Mageseller"/>
+		<add action="mageseller_supplierimport/xitcategory/index" id="Mageseller_SupplierImport::mageseller_supplierimport_xitcategory" module="Mageseller_SupplierImport" parent="Mageseller::top_level" resource="Magento_Backend::content" sortOrder="9999" title="XitCategory"/>
+
+		<add id="Mageseller::Xit_category" title="Xit Category Mapping" module="Mageseller_SupplierImport" sortOrder="0" action="mageseller_supplierimport/xitcategory/category" parent="Mageseller::top_level" resource="Magento_Backend::content" />
+	</menu>
+</config>
