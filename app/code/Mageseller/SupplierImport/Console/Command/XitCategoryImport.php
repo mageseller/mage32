@@ -19,6 +19,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class XitCategoryImport extends Command
 {
+    /**
+     * @var \Mageseller\SupplierImport\Helper\Xit
+     */
+    private $xitHelper;
+
+    /**
+     * XitCategoryImport constructor.
+     * @param string|null $name
+     */
+    public function __construct(\Mageseller\SupplierImport\Helper\Xit $xitHelper, string $name = null)
+    {
+        $this->xitHelper = $xitHelper;
+        parent::__construct($name);
+    }
+
     const NAME_ARGUMENT = "name";
     const NAME_OPTION = "option";
 
@@ -29,9 +44,8 @@ class XitCategoryImport extends Command
         InputInterface $input,
         OutputInterface $output
     ) {
-        $name = $input->getArgument(self::NAME_ARGUMENT);
-        $option = $input->getOption(self::NAME_OPTION);
-        $output->writeln("Hello " . $name);
+        $this->xitHelper->importXitCategory();
+        $output->writeln("All Xit Category successfully imported ");
     }
 
     /**

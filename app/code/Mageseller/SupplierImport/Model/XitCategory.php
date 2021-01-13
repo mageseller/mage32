@@ -11,13 +11,12 @@
 
 namespace Mageseller\SupplierImport\Model;
 
+use Magento\Framework\Api\DataObjectHelper;
 use Mageseller\SupplierImport\Api\Data\XitCategoryInterface;
 use Mageseller\SupplierImport\Api\Data\XitCategoryInterfaceFactory;
-use Magento\Framework\Api\DataObjectHelper;
 
 class XitCategory extends \Magento\Framework\Model\AbstractModel
 {
-
     protected $xitcategoryDataFactory;
 
     protected $dataObjectHelper;
@@ -54,14 +53,14 @@ class XitCategory extends \Magento\Framework\Model\AbstractModel
     public function getDataModel()
     {
         $xitcategoryData = $this->getData();
-        
+
         $xitcategoryDataObject = $this->xitcategoryDataFactory->create();
         $this->dataObjectHelper->populateWithArray(
             $xitcategoryDataObject,
             $xitcategoryData,
             XitCategoryInterface::class
         );
-        
+
         return $xitcategoryDataObject;
     }
 }

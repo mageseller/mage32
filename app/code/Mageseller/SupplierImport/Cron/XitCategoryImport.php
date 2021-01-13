@@ -15,14 +15,19 @@ class XitCategoryImport
 {
 
     protected $logger;
+    /**
+     * @var \Mageseller\SupplierImport\Helper\Xit
+     */
+    private $xitHelper;
 
     /**
      * Constructor
      *
      * @param \Psr\Log\LoggerInterface $logger
      */
-    public function __construct(\Psr\Log\LoggerInterface $logger)
+    public function __construct(\Psr\Log\LoggerInterface $logger,\Mageseller\SupplierImport\Helper\Xit $xitHelper,)
     {
+        $this->xitHelper = $xitHelper;
         $this->logger = $logger;
     }
 
@@ -33,6 +38,7 @@ class XitCategoryImport
      */
     public function execute()
     {
-        $this->logger->addInfo("Cronjob XitCategoryImport is executed.");
+        $this->xitHelper->importXitCategory();
+        $this->logger->addInfo("All Xit Category successfully imported from cron");
     }
 }
