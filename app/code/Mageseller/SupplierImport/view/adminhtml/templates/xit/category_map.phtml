@@ -7,14 +7,10 @@ $objectManager = ObjectManager::getInstance();
 $scopeConfig = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface');
 $helper = $objectManager->get(\Mageseller\SupplierImport\Helper\Xit::class);
 $isEnableEdsModule = $helper->getEnable();
-$productFeedUrl = $scopeConfig->getValue('eds/general/eds_feed_url', ScopeInterface::SCOPE_STORE);
-$newProductFeedUrl = $scopeConfig->getValue('eds/general/eds_new_feed_url', ScopeInterface::SCOPE_STORE);
 if ($isEnableEdsModule) {
     ?>
 
     <div class="Category-Map">
-
-
     </div>
     <table class="Category-Map-Table">
         <tr>
@@ -24,9 +20,14 @@ if ($isEnableEdsModule) {
             <td>Action</td>
         </tr>
         <tr>
-            <td><input type="text" name="supplier-input" id="supplier-input" value=""></td>
-            <td><input type="text" name="shop-input" id="shop-input" value="">
-                <input type="hidden" name="shop-input1" id="shop-input1" value=""></td>
+            <td>
+                <input type="text" name="supplier_input" id="supplier_input" value="">
+                <input type="hidden" name="supplier_input_id" id="supplier_input_id" value="">
+            </td>
+            <td>
+                <input type="text" name="shop_input" id="shop_input" value="">
+                <input type="hidden" name="shop_input_id" id="shop_input_id" value="">
+            </td>
             <!-- <td><input type="text" name="sort-order" id="sort-order" value="0"></td> -->
             <td>
                 <button name="submit" id="submit" value="Submit" class="action- scalable primary"> Submit</button>
@@ -34,32 +35,38 @@ if ($isEnableEdsModule) {
         </tr>
     </table>
     <?php
-    $supplierCategories = $objectManager->create('\Mageseller\SupplierImport\Model\XitCategoryFactory')->create()->getCollection();
-    $categoryArray = $supplierCategories->getColumnValues('name');
+
     $categories = $objectManager->create('Magento\Catalog\Model\ResourceModel\Category\CollectionFactory')->create()
         ->addAttributeToSelect('*');
+    $xitCategoryIds = [];
+    $categoryMapArray = [];
     $categoryNameArray = [];
-
     foreach ($categories as $category) {
-        $mappedCategories = explode(",", $category->getData('xit_category_ids'));
-        foreach ($mappedCategories as $mapCategory) {
-            if ($mapCategory) {
-                $categoryNameArray[] = $mapCategory;
-                $categoryMapArray[$mapCategory] = $category->getName();
+        $xitMappedCategories = explode(",", $category->getData('xit_category_ids'));
+        foreach ($xitMappedCategories as $xitCategoryId) {
+            if ($xitCategoryId) {
+                $xitCategoryIds[] = $xitCategoryId;
+                $categoryMapArray[$xitCategoryId] = $category->getName();
             }
         }
-    } ?>
+    }
+    $supplierCategories = $objectManager->create('\Mageseller\SupplierImport\Model\XitCategoryFactory')->create()->getCollection();
+    ?>
     <div style="display: flex;">
         <div class="supplier-category left tree" id="tree">
             <h3>Supplier category</h1>
                 <div class="supplier-category-body tree">
                     <ul>
-                        <?php foreach ($categoryArray as $category): ?>
+                        <?php foreach ($supplierCategories as $supplierCategory): ?>
+                            <?php
+                            $supplierCategoryId = $supplierCategory->getId();
+                            $categoryNameArray[] = $supplierCategory->getName();
+                            ?>
                             <li>
-                                <a href="javascript:void(0)" <?php if (in_array($category, $categoryNameArray)) {
+                                <a data-id="<?= $supplierCategoryId ?>" href="javascript:void(0)" <?php if (in_array($supplierCategoryId, $xitCategoryIds)) {
                                     echo "style=color:green";
-                                } ?>><?php echo $category; ?></a><?php if (in_array($category, $categoryNameArray)) {
-                                    echo " ===> " . $categoryMapArray[$category];
+                                } ?>><?= $supplierCategory->getName(); ?></a><?php if (in_array($supplierCategoryId, $xitCategoryIds)) {
+                                    echo " ===> " . $categoryMapArray[$supplierCategoryId];
                                 } ?>
                             </li>
                         <?php endforeach; ?>
@@ -74,30 +81,31 @@ if ($isEnableEdsModule) {
 
 
     <?php
-    $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-    $baseUrl = $objectManager->get('Magento\Store\Model\StoreManagerInterface')
-        ->getStore($storeManager->getStore()->getId())
-        ->getBaseUrl();
-    $saveCategoryUrl = $baseUrl . "mageseller_supplierimport/xitcategory/savecategory";
-    $supplierCategoryUrl = $baseUrl . "mageseller_supplierimport/xitcategory/suppliercategory";
-    $delCategoryUrl = $baseUrl . "mageseller_supplierimport/xitcategory/delcategory"; ?>
+    $saveCategoryUrl = $this->getUrl("mageseller_supplierimport/xitcategory/savecategory");
+    $supplierCategoryUrl = $this->getUrl("mageseller_supplierimport/xitcategory/suppliercategory");
+    $delCategoryUrl = $this->getUrl("mageseller_supplierimport/xitcategory/delcategory");
+    ?>
     <script type="text/javascript">
         require(['jquery', 'jquery/ui'], function ($) {
             $(document).ready(function () {
                 $('.supplier-category').find("li a").live('click', function () {
-                    $("#supplier-input").val($(this).html());
+                    $("#supplier_input").val($(this).html());
+                    $("#supplier_input_id").val($(this).data("id"));
+
                 });
 
                 $('.shop-category-body').find("li .shop-category-li").live('click', function () {
-                    $("#shop-input").val($(this).html());
-                    $("#shop-input1").val($(this).attr("data"));
+                    $("#shop_input").val($(this).html());
+                    $("#shop_input_id").val($(this).data("id"));
                 });
 
                 $('#submit').live('click', function () {
                     var url = '<?php echo $saveCategoryUrl; ?>';
-                    var supplier = $("#supplier-input").val();
-                    var shop = $("#shop-input").val();
-                    var shopId = $("#shop-input1").val();
+                    var supplier = $("#supplier_input").val();
+                    var shop = $("#shop_input").val();
+                    var shopId = $("#shop_input_id").val();
+                    var supplierId = $("#supplier_input_id").val();
+
                     var flag = 1;
                     var alreadyMappedArray = <?php echo json_encode($categoryNameArray); ?>;
                     for (var i = 0; i < alreadyMappedArray.length; i++) {
@@ -108,16 +116,17 @@ if ($isEnableEdsModule) {
 
 
                     if (flag == 2) {
-                        $("#shop-input").val("");
-                        $("#shop-input1").val("");
-                        $("#supplier-input").val("");
+                        $("#shop_input").val("");
+                        $("#shop_input_id").val("");
+                        $("#supplier_input").val("");
+                        $("#supplier_input_id").val("");
                         alert(supplier + " is already mapped");
 
                     } else {
                         if (supplier && shop) {
                             $.ajax({
                                 url: url,
-                                data: {"supplier": supplier, "shop": shop, "sortorder": 0, "shopId": shopId},
+                                data: {"supplier": supplier, "shop": shop, "sortorder": 0, "shopId": shopId, "supplierId": supplierId},
                                 type: "POST",
                                 showLoader: true,
                                 success: function (response) {
@@ -129,9 +138,10 @@ if ($isEnableEdsModule) {
                                         showLoader: true,
                                         success: function (response) {
                                             $('.supplier-category-body').html(response);
-                                            $("#shop-input").val("");
-                                            $("#shop-input1").val("");
-                                            $("#supplier-input").val("");
+                                            $("#shop_input").val("");
+                                            $("#shop_input_id").val("");
+                                            $("#supplier_input").val("");
+                                            $("#supplier_input_id").val("");
                                             //window.location.reload();
                                         }
                                     });

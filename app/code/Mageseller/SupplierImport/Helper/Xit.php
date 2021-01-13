@@ -268,7 +268,7 @@ class Xit extends AbstractHelper
                 $subcat->load($subcat->getId());
                 if ($subcat->getIsActive()) {
                     $subcat_url = $subcat->getUrl();
-                    $html .= '<li><a href="javascript:void(0)" class="shop-category-li" data="' . $subcat->getId() . '" >' . $subcat->getName() . "</a> ";
+                    $html .= '<li><a href="javascript:void(0)" class="shop-category-li" data-id="' . $subcat->getId() . '" >' . $subcat->getName() . "</a> ";
                     if ($subcat->getMapCategory()) {
                         $html .= " =====> " . $subcat->getData('xit_category_ids') . "  ";
                         $html .= ' <a href="javascript:void(0)" style="color:red;" class="remove-shop-category" data="' . $subcat->getId() . '" >remove map</a>';
@@ -307,7 +307,7 @@ class Xit extends AbstractHelper
 
         $html = "<ul>";
         foreach ($categoryArray as $category) {
-            $html.='<li><a href="javascript:void(0)"';
+            $html.='<li><a data-id="<?= $category->getId()?>" href="javascript:void(0)"';
             if (in_array($category, $categoryNameArray)) {
                 $html.="style=color:green";
             }
