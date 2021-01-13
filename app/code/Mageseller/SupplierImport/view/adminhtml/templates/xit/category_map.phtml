@@ -1,22 +1,18 @@
 <?php
-
-use Magento\Framework\App\ObjectManager;
-use Magento\Store\Model\ScopeInterface;
-
-$objectManager = ObjectManager::getInstance();
-$scopeConfig = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface');
-$helper = $objectManager->get(\Mageseller\SupplierImport\Helper\Xit::class);
+/** @var \Mageseller\SupplierImport\Block\Adminhtml\Category $block */
+$helper = $this->helper(\Mageseller\SupplierImport\Helper\Xit::class);
 $isEnableEdsModule = $helper->getEnable();
-if ($isEnableEdsModule) {
+?>
+<?php if ($isEnableEdsModule) : ?>
+    <?php
+    $categoryNameArray = [];
+    $categoryMapArray = $helper->getMappedCategory();
+    $supplierCategories = $helper->getSupplierCategory();
     ?>
-
-    <div class="Category-Map">
-    </div>
     <table class="Category-Map-Table">
         <tr>
             <td><label style="float: left;">Supplier Category</label></td>
             <td><label style="float: left;">Shop Category</label></td>
-            <!-- <td><label style="float: left;">Sort Order</label></td> -->
             <td>Action</td>
         </tr>
         <tr>
@@ -28,220 +24,55 @@ if ($isEnableEdsModule) {
                 <input type="text" name="shop_input" id="shop_input" value="">
                 <input type="hidden" name="shop_input_id" id="shop_input_id" value="">
             </td>
-            <!-- <td><input type="text" name="sort-order" id="sort-order" value="0"></td> -->
             <td>
                 <button name="submit" id="submit" value="Submit" class="action- scalable primary"> Submit</button>
             </td>
         </tr>
     </table>
-    <?php
-
-    $categories = $objectManager->create('Magento\Catalog\Model\ResourceModel\Category\CollectionFactory')->create()
-        ->addAttributeToSelect('*');
-    $xitCategoryIds = [];
-    $categoryMapArray = [];
-    $categoryNameArray = [];
-    foreach ($categories as $category) {
-        $xitMappedCategories = explode(",", $category->getData('xit_category_ids'));
-        foreach ($xitMappedCategories as $xitCategoryId) {
-            if ($xitCategoryId) {
-                $xitCategoryIds[] = $xitCategoryId;
-                $categoryMapArray[$xitCategoryId] = $category->getName();
-            }
-        }
-    }
-    $supplierCategories = $objectManager->create('\Mageseller\SupplierImport\Model\XitCategoryFactory')->create()->getCollection();
-    ?>
     <div style="display: flex;">
         <div class="supplier-category left tree" id="tree">
-            <h3>Supplier category</h1>
-                <div class="supplier-category-body tree">
-                    <ul>
-                        <?php foreach ($supplierCategories as $supplierCategory): ?>
-                            <?php
+            <h1>Supplier category</h1>
+            <div class="supplier-category-body tree">
+                <ul>
+                    <?php foreach ($supplierCategories as $supplierCategory): ?>
+                        <?php
                             $supplierCategoryId = $supplierCategory->getId();
                             $categoryNameArray[] = $supplierCategory->getName();
+                        ?>
+                        <li>
+                            <a data-id="<?= $supplierCategoryId ?>" href="javascript:void(0)"
+                                <?= isset($categoryMapArray[$supplierCategoryId]) ? "style=color:green" : "" ?>
+                            ><?= $supplierCategory->getName(); ?></a>
+                            <?= isset($categoryMapArray[$supplierCategoryId]) ?
+                                $categoryMapArray[$supplierCategoryId]
+
+                                : "";
                             ?>
-                            <li>
-                                <a data-id="<?= $supplierCategoryId ?>" href="javascript:void(0)" <?php if (in_array($supplierCategoryId, $xitCategoryIds)) {
-                                    echo "style=color:green";
-                                } ?>><?= $supplierCategory->getName(); ?></a><?php if (in_array($supplierCategoryId, $xitCategoryIds)) {
-                                    echo " ===> " . $categoryMapArray[$supplierCategoryId];
-                                } ?>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
         </div>
         <div class="shop-category right">
-            <h3>Shop category</h1>
-                <div class="shop-category-body tree" id="tree"><?php echo $helper->getCategories(1); ?></div>
+            <h1>Shop category</h1>
+            <div class="shop-category-body tree" id="tree"><?php echo $helper->getCategories(1); ?></div>
         </div>
     </div>
-
-
     <?php
-    $saveCategoryUrl = $this->getUrl("mageseller_supplierimport/xitcategory/savecategory");
-    $supplierCategoryUrl = $this->getUrl("mageseller_supplierimport/xitcategory/suppliercategory");
-    $delCategoryUrl = $this->getUrl("mageseller_supplierimport/xitcategory/delcategory");
-    ?>
-    <script type="text/javascript">
-        require(['jquery', 'jquery/ui'], function ($) {
-            $(document).ready(function () {
-                $('.supplier-category').find("li a").live('click', function () {
-                    $("#supplier_input").val($(this).html());
-                    $("#supplier_input_id").val($(this).data("id"));
-
-                });
-
-                $('.shop-category-body').find("li .shop-category-li").live('click', function () {
-                    $("#shop_input").val($(this).html());
-                    $("#shop_input_id").val($(this).data("id"));
-                });
-
-                $('#submit').live('click', function () {
-                    var url = '<?php echo $saveCategoryUrl; ?>';
-                    var supplier = $("#supplier_input").val();
-                    var shop = $("#shop_input").val();
-                    var shopId = $("#shop_input_id").val();
-                    var supplierId = $("#supplier_input_id").val();
-
-                    var flag = 1;
-                    var alreadyMappedArray = <?php echo json_encode($categoryNameArray); ?>;
-                    for (var i = 0; i < alreadyMappedArray.length; i++) {
-                        if (alreadyMappedArray[i] == supplier) {
-                            flag = 2;
-                        }
-                    }
-
-
-                    if (flag == 2) {
-                        $("#shop_input").val("");
-                        $("#shop_input_id").val("");
-                        $("#supplier_input").val("");
-                        $("#supplier_input_id").val("");
-                        alert(supplier + " is already mapped");
-
-                    } else {
-                        if (supplier && shop) {
-                            $.ajax({
-                                url: url,
-                                data: {"supplier": supplier, "shop": shop, "sortorder": 0, "shopId": shopId, "supplierId": supplierId},
-                                type: "POST",
-                                showLoader: true,
-                                success: function (response) {
-                                    $('.shop-category-body').html(response);
-                                    $.ajax({
-                                        url: '<?php echo $supplierCategoryUrl; ?>',
-                                        data: {"supplier": supplier, "shop": shop, "sortorder": 0, "shopId": shopId},
-                                        type: "POST",
-                                        showLoader: true,
-                                        success: function (response) {
-                                            $('.supplier-category-body').html(response);
-                                            $("#shop_input").val("");
-                                            $("#shop_input_id").val("");
-                                            $("#supplier_input").val("");
-                                            $("#supplier_input_id").val("");
-                                            //window.location.reload();
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    }
-                });
-                $('.remove-shop-category').live('click', function () {
-                    var url = '<?php echo $delCategoryUrl; ?>';
-                    var shopId = $(this).attr("data");
-                    if (shopId) {
-                        $.ajax({
-                            url: url,
-                            data: {"shopId": shopId},
-                            type: "POST",
-                            showLoader: true,
-                            success: function (response) {
-                                $('.shop-category-body').html(response);
-                                //window.location.reload();
-                                $.ajax({
-                                    url: '<?php echo $supplierCategoryUrl; ?>',
-                                    data: {"shopId": shopId},
-                                    type: "POST",
-                                    showLoader: true,
-                                    success: function (response) {
-                                        $('.supplier-category-body').html(response);
-                                        //window.location.reload();
-                                    }
-                                });
-                            }
-                        });
-
-                    }
-                });
-            });
-        });
-
+    $formData = [];
+    $formData['save_category_url'] = $this->getUrl("mageseller_supplierimport/xitcategory/savecategory");
+    $formData['delete_category_url'] = $this->getUrl("mageseller_supplierimport/xitcategory/delcategory");
+    $formData['supplier_category_url'] = $this->getUrl("mageseller_supplierimport/xitcategory/suppliercategory");
+    $formData['already_mapped_array'] = json_encode($categoryNameArray);
+    $serializedFormData = $this->helper('Magento\Framework\Json\Helper\Data')->jsonEncode($formData); ?>
+    <script type="text/x-magento-init">
+        {
+            "*": {
+                "Mageseller_SupplierImport/js/categorymap": <?php /* @noEscape */
+        echo $serializedFormData; ?>
+            }
+        }
     </script>
-    <?php
-} else {
-    ?>
+<?php else: ?>
     <p>Please Enable Module to Map Category.</p>
-    <?php
-}
-?>
-<style type="text/css">
-    .supplier-category {
-        width: 50%;
-        float: left;
-    }
-
-    .shop-category {
-        width: 50%;
-        float: right;
-    }
-
-    .Category-Map-Table td {
-        padding-right: 20px;
-    }
-
-    .Category-Map-Table {
-        margin-bottom: 20px;
-    }
-
-    ul {
-        padding-left: 20px !important;
-    }
-
-    .tree, .tree ul {
-        list-style-type: none;
-        background: url(vline.png) repeat-y;
-        margin: 0;
-        padding: 0;
-    }
-
-    .tree ul {
-        margin-left: 10px;
-    }
-
-    .tree li {
-        margin: 0;
-        padding: 0 12px;
-        line-height: 20px;
-        background: url(node.png) no-repeat;
-        color: #369;
-        font-weight: bold;
-    }
-
-    .tree li.last {
-        background: #fff url(lastnode.png) no-repeat;
-    }
-
-    .supplier-category-body.tree {
-        overflow: scroll;
-        height: 87vh;
-    }
-
-    .shop-category-body.tree {
-        overflow: scroll;
-        height: 87vh;
-    }
-</style>
+<?php endif; ?>

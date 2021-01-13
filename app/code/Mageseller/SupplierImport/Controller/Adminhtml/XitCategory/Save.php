@@ -15,7 +15,6 @@ use Magento\Framework\Exception\LocalizedException;
 
 class Save extends \Magento\Backend\App\Action
 {
-
     protected $dataPersistor;
 
     /**
@@ -42,20 +41,20 @@ class Save extends \Magento\Backend\App\Action
         $data = $this->getRequest()->getPostValue();
         if ($data) {
             $id = $this->getRequest()->getParam('xitcategory_id');
-        
+
             $model = $this->_objectManager->create(\Mageseller\SupplierImport\Model\XitCategory::class)->load($id);
             if (!$model->getId() && $id) {
                 $this->messageManager->addErrorMessage(__('This Xitcategory no longer exists.'));
                 return $resultRedirect->setPath('*/*/');
             }
-        
+
             $model->setData($data);
-        
+
             try {
                 $model->save();
                 $this->messageManager->addSuccessMessage(__('You saved the Xitcategory.'));
                 $this->dataPersistor->clear('mageseller_supplierimport_xitcategory');
-        
+
                 if ($this->getRequest()->getParam('back')) {
                     return $resultRedirect->setPath('*/*/edit', ['xitcategory_id' => $model->getId()]);
                 }
@@ -65,7 +64,7 @@ class Save extends \Magento\Backend\App\Action
             } catch (\Exception $e) {
                 $this->messageManager->addExceptionMessage($e, __('Something went wrong while saving the Xitcategory.'));
             }
-        
+
             $this->dataPersistor->set('mageseller_supplierimport_xitcategory', $data);
             return $resultRedirect->setPath('*/*/edit', ['xitcategory_id' => $this->getRequest()->getParam('xitcategory_id')]);
         }

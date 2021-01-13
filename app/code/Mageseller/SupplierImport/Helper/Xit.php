@@ -11,10 +11,14 @@
 
 namespace Mageseller\SupplierImport\Helper;
 
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Select;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Store\Model\ScopeInterface;
+use SimpleXMLElement;
 
 class Xit extends AbstractHelper
 {
@@ -31,7 +35,6 @@ class Xit extends AbstractHelper
      * @var \Magento\Store\Model\StoreManager
      */
     protected $_storeManager;
-    protected $_formulaFactory;
     /**
      *
      * @var unknown
@@ -68,6 +71,16 @@ class Xit extends AbstractHelper
      * @var \Magento\Catalog\Model\CategoryFactory
      */
     private $categoryFactory;
+    /**
+     * @var CollectionFactory
+     */
+    private $categoryCollectionFactory;
+    /**
+     * @var ResourceConnection
+     */
+    private $resourceConnection;
+
+    private $supplierCategories;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -80,6 +93,8 @@ class Xit extends AbstractHelper
      * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
      * @param \Mageseller\SupplierImport\Logger\XitImport $xitimportLogger
      * @param \Mageseller\SupplierImport\Model\XitCategoryFactory $xitCategoryFactory
+     * @param CollectionFactory $categoryCollectionFactory
+     * @param ResourceConnection $resourceConnection
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
      * @throws \Magento\Framework\Exception\FileSystemException
      */
@@ -94,6 +109,8 @@ class Xit extends AbstractHelper
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
         \Mageseller\SupplierImport\Logger\XitImport $xitimportLogger,
         \Mageseller\SupplierImport\Model\XitCategoryFactory $xitCategoryFactory,
+        CollectionFactory $categoryCollectionFactory,
+        ResourceConnection $resourceConnection,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory
     ) {
         parent::__construct($context);
@@ -106,7 +123,9 @@ class Xit extends AbstractHelper
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->xitimportLogger = $xitimportLogger;
         $this->xitCategoryFactory = $xitCategoryFactory;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryFactory = $categoryFactory;
+        $this->resourceConnection = $resourceConnection;
     }
 
     /**
@@ -133,7 +152,7 @@ class Xit extends AbstractHelper
         $filepath = $this->downloadFile($apiUrl);
         $categories = [];
         $xml = simplexml_load_file($filepath);
-        if ($xml instanceof \SimpleXMLElement) {
+        if ($xml instanceof SimpleXMLElement) {
             $items = $xml->xpath("/Catalogue/Items/Item");
             foreach ($items as $item) {
                 $category = $this->parseObject($item->ItemDetail->Classifications->Classification);
@@ -251,14 +270,24 @@ class Xit extends AbstractHelper
     {
         return isset($value) ? trim($value) : "";
     }
-    public function getCategories($catId=1)
+    public function getSupplierCatData()
     {
+        if ($this->supplierCategories == null) {
+            $supplierCategory = $this->getSupplierCategory();
+            $select = $supplierCategory->getSelect()->reset(Select::COLUMNS)->columns(['xitcategory_id','name']);
+            $this->supplierCategories = $this->resourceConnection->getConnection()->fetchAssoc($select);
+        }
+        return $this->supplierCategories;
+    }
+    public function getCategories($catId = 1)
+    {
+        $supplierData = $this->getSupplierCatData();
         $subcategory = $this->categoryFactory->create()->load($catId);
         $subcats = $subcategory->getChildrenCategories();
         $html = null;
-        $s="";
-        if ($catId ==1) {
-            $s='id="expList"';
+        $s = "";
+        if ($catId == 1) {
+            $s = 'id="expList"';
         }
         $html .= "<ul  ";
         $html .= $s;
@@ -269,9 +298,15 @@ class Xit extends AbstractHelper
                 if ($subcat->getIsActive()) {
                     $subcat_url = $subcat->getUrl();
                     $html .= '<li><a href="javascript:void(0)" class="shop-category-li" data-id="' . $subcat->getId() . '" >' . $subcat->getName() . "</a> ";
-                    if ($subcat->getMapCategory()) {
-                        $html .= " =====> " . $subcat->getData('xit_category_ids') . "  ";
-                        $html .= ' <a href="javascript:void(0)" style="color:red;" class="remove-shop-category" data="' . $subcat->getId() . '" >remove map</a>';
+                    if ($xit_category_ids = $subcat->getData('xit_category_ids')) {
+                        $xit_category_ids = explode(",", $xit_category_ids);
+                        foreach ($xit_category_ids as $xit_category_id) {
+                            $supplierCatName = $supplierData[$xit_category_id]['name'] ?? $xit_category_id;
+                            $html .= "<div class='supplier-categories-name'>";
+                            $html .= " =====> " . $supplierCatName . "  ";
+                            $html .= ' <a href="javascript:void(0)" style="color:red;" class="remove-shop-category" data-supplier-id="' . $xit_category_id . '" data-id="' . $subcat->getId() . '" >remove map</a>';
+                            $html .= "</div>";
+                        }
                     }
                     $html .= '</li>';
                     $html .= $this->getCategories($subcat->getId());
@@ -282,43 +317,59 @@ class Xit extends AbstractHelper
 
         return $html;
     }
+
     public function getCategoryById($categoryId)
     {
         $category = $this->categoryFactory->create();
         $category->load($categoryId);
         return $category;
     }
+
     public function getSupplierCategoryData()
     {
-        $supplierCategories = $this->xitCategoryFactory->create()->getCollection();
-        $categoryArray = $supplierCategories->getColumnValues('name');
+        $categoryMapArray = $this->getMappedCategory();
+        $supplierCategories = $this->getSupplierCategory();
+        $html = "<ul>";
+        foreach ($supplierCategories as $supplierCategory) {
+            $supplierCategoryId = $supplierCategory->getId();
+            $style = isset($categoryMapArray[$supplierCategoryId]) ? "style=color:green;" : "";
+            $name = isset($categoryMapArray[$supplierCategoryId]) ? $categoryMapArray[$supplierCategoryId] : "";
+            $supplierCategoryName = $supplierCategory->getName();
+            $html .= "<li>
+                        <a data-id='$supplierCategoryId' href='javascript:void(0)' $style>$supplierCategoryName</a>
+                        $name
+                    </li>";
+        }
+        $html .= "</ul>";
+        return $html;
+    }
 
-        $categories = $this->categoryFactory->create()->getCollection()->addAttributeToSelect('*');
-        $categoryNameArray = [];
+    public function getMappedCategory()
+    {
+        $categoryMapArray = [];
+        $categories = $this->getMagentoCategory()->getData();
         foreach ($categories as $category) {
-            $mappedCategories = explode(",", $category->getData('xit_category_ids'));
-            foreach ($mappedCategories as $mapCategory) {
-                if ($mapCategory) {
-                    $categoryNameArray[] = $mapCategory;
-                    $categoryMapArray[$mapCategory] = $category->getName();
+            $xitMappedCategories = explode(",", $category['xit_category_ids']);
+            foreach ($xitMappedCategories as $xitCategoryId) {
+                if (isset($categoryMapArray[$xitCategoryId])) {
+                    $categoryMapArray[$xitCategoryId] .=  "<div class='shop-category-name'>  ===> " . $category['name'] . "</div>";
+                } else {
+                    $categoryMapArray[$xitCategoryId] =  "<div class='shop-category-name'>  ===> " . $category['name'] . "</div>";
                 }
             }
         }
+        return $categoryMapArray;
+    }
 
-        $html = "<ul>";
-        foreach ($categoryArray as $category) {
-            $html.='<li><a data-id="<?= $category->getId()?>" href="javascript:void(0)"';
-            if (in_array($category, $categoryNameArray)) {
-                $html.="style=color:green";
-            }
-            $html.= ">";
-            $html.= $category . "</a>";
-            if (in_array($category, $categoryNameArray)) {
-                $html.=  " ===> " . $categoryMapArray[$category] . "</li>";
-            }
-        }
-        $html.= "</ul>";
+    public function getMagentoCategory()
+    {
+        return $this->categoryCollectionFactory->create()
+            ->addAttributeToSelect('name', 'left')
+            ->addAttributeToSelect('xit_category_ids', 'left');
+    }
 
-        return $html;
+    public function getSupplierCategory()
+    {
+        return $this->xitCategoryFactory->create()->getCollection();
     }
 }
