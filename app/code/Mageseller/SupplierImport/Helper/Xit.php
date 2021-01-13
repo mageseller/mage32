@@ -241,31 +241,6 @@ class Xit extends AbstractHelper
         }) : $value : [];
     }
 
-    public function stripInvalidXml($value)
-    {
-        $ret = "";
-        $current;
-        if (empty($value)) {
-            return $ret;
-        }
-
-        $length = strlen($value);
-        for ($i = 0; $i < $length; $i++) {
-            $current = ord($value{$i});
-            if (($current == 0x9) ||
-                ($current == 0xA) ||
-                ($current == 0xD) ||
-                (($current >= 0x20) && ($current <= 0xD7FF)) ||
-                (($current >= 0xE000) && ($current <= 0xFFFD)) ||
-                (($current >= 0x10000) && ($current <= 0x10FFFF))) {
-                $ret .= chr($current);
-            } else {
-                $ret .= " ";
-            }
-        }
-        return $ret;
-    }
-
     public function parseValue($value)
     {
         return isset($value) ? trim($value) : "";
@@ -299,7 +274,7 @@ class Xit extends AbstractHelper
                     $subcat_url = $subcat->getUrl();
                     $html .= '<li><a href="javascript:void(0)" class="shop-category-li" data-id="' . $subcat->getId() . '" >' . $subcat->getName() . "</a> ";
                     if ($xit_category_ids = $subcat->getData('xit_category_ids')) {
-                        $xit_category_ids = explode(",", $xit_category_ids);
+                        $xit_category_ids = array_filter(explode(",", $xit_category_ids));
                         foreach ($xit_category_ids as $xit_category_id) {
                             $supplierCatName = $supplierData[$xit_category_id]['name'] ?? $xit_category_id;
                             $html .= "<div class='supplier-categories-name'>";

@@ -11,9 +11,24 @@
 
 namespace Mageseller\SupplierImport\Model\Category\Attribute\Source;
 
-class XitCategoryIds extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
-{
+use Magento\Framework\Data\OptionSourceInterface;
+use Mageseller\SupplierImport\Helper\Xit;
 
+class XitCategoryIds extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource implements OptionSourceInterface
+{
+    /**
+     * @var Xit
+     */
+    private $helper;
+
+    public function __construct(Xit $helper)
+    {
+        $this->helper = $helper;
+    }
+    public function toOptionArray()
+    {
+        return $this->getAllOptions();
+    }
     /**
      * getAllOptions
      *
@@ -22,9 +37,10 @@ class XitCategoryIds extends \Magento\Eav\Model\Entity\Attribute\Source\Abstract
     public function getAllOptions()
     {
         if ($this->_options === null) {
-            $this->_options = [
-                ['value' => (string) '', 'label' => __('')]
-            ];
+            $supplierData = $this->helper->getSupplierCatData();
+            foreach ($supplierData as $supplierId => $supplier) {
+                $this->_options[] = ['value' => $supplierId , 'label' => __($supplier['name'])];
+            }
         }
         return $this->_options;
     }

@@ -16,4 +16,8 @@
 			</argument>
 		</arguments>
 	</type>
+	<type name="Magento\Catalog\Model\Category\DataProvider">
+		<plugin name="Mageplaza_HelloWorld_Plugin" type="Mageseller\SupplierImport\Plugin\CategoryDropdownPlugin" sortOrder="10"   />
+	</type>
+
 </config>
