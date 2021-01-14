@@ -13,7 +13,6 @@ namespace Mageseller\SupplierImport\Cron;
 
 class XitCategoryImport
 {
-
     protected $logger;
     /**
      * @var \Mageseller\SupplierImport\Helper\Xit
@@ -24,8 +23,9 @@ class XitCategoryImport
      * Constructor
      *
      * @param \Psr\Log\LoggerInterface $logger
+     * @param \Mageseller\SupplierImport\Helper\Xit $xitHelper
      */
-    public function __construct(\Psr\Log\LoggerInterface $logger,\Mageseller\SupplierImport\Helper\Xit $xitHelper,)
+    public function __construct(\Psr\Log\LoggerInterface $logger, \Mageseller\SupplierImport\Helper\Xit $xitHelper)
     {
         $this->xitHelper = $xitHelper;
         $this->logger = $logger;

@@ -61,7 +61,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     public function insertOnDuplicate($data)
     {
         try {
-            return $this->getConnection()->insertOnDuplicate($this->getMainTable(), $data,['name']);
+            return $this->getConnection()->insertOnDuplicate($this->getMainTable(), $data);
         } catch (\Exception $e) {
             if ($e->getCode() === self::ERROR_CODE_DUPLICATE_ENTRY
                 && preg_match('#SQLSTATE\[23000\]: [^:]+: 1062[^\d]#', $e->getMessage())

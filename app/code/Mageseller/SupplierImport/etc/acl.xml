@@ -12,7 +12,13 @@
 				<resource id="Magento_Backend::stores">
 					<resource id="Magento_Backend::stores_settings">
 						<resource id="Magento_Config::config">
-							<resource id="Mageseller_SupplierImport::config_mageseller_supplierimport" title="Xit"/>
+							<resource id="Mageseller_SupplierImport::top_level" title="Supplier's">
+								<resource id="Mageseller_SupplierImport::xit" title="Xit">
+									<resource id="Mageseller_SupplierImport::category" title="Xit Category"/>
+									<resource id="Mageseller_SupplierImport::category_map" title="Xit Category Mapping"/>
+									<resource id="Mageseller_SupplierImport::xit_config" title="Xit Configuration"/>
+								</resource>
+							</resource>
 						</resource>
 					</resource>
 				</resource>

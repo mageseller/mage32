@@ -7,7 +7,7 @@
 		<section id="xit" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label">
 			<label>Xit</label>
 			<tab>supplier</tab>
-			<resource>Mageseller_SupplierImport::config_mageseller_supplierimport</resource>
+			<resource>Mageseller_SupplierImport::xit_config</resource>
 			<group id="importconfig" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label">
 				<label>Import Config</label>
 				<field id="is_enable" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="select">

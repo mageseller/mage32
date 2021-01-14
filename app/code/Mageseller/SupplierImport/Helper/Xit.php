@@ -150,21 +150,47 @@ class Xit extends AbstractHelper
     {
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
-        $categories = [];
+        $allCategories = [];
+        $categoriesWithParents = [];
         $xml = simplexml_load_file($filepath);
         if ($xml instanceof SimpleXMLElement) {
             $items = $xml->xpath("/Catalogue/Items/Item");
+
             foreach ($items as $item) {
-                $category = $this->parseObject($item->ItemDetail->Classifications->Classification);
-                unset($category['@attributes']);
-                $categories = array_unique(array_merge($categories, $category));
+                $categories = $this->parseObject($item->ItemDetail->Classifications->Classification);
+                unset($categories['@attributes']);
+                $allCategories = array_unique(array_merge($allCategories, $categories));
+                $lastCat = "";
+                foreach ($categories as $category) {
+                    $key = $lastCat ? $lastCat : "Default";
+                    $categoriesWithParents[$category] = $lastCat;
+                    $lastCat = $category;
+                }
             }
         }
+        /*Adding category names start*/
         $collection = $this->xitCategoryFactory->create()->getCollection();
-        $categories = array_map(function ($v) {
+        $allCategories = array_map(function ($v) {
             return ['name' => $v];
-        }, $categories);
-        $collection->insertOnDuplicate($categories);
+        }, $allCategories);
+        $collection->insertOnDuplicate($allCategories);
+        /*Adding category names ends*/
+
+        /*Adding parent id to child category starts*/
+        $select = (clone $collection->getSelect())
+                    ->reset(Select::COLUMNS)
+                    ->columns(['name' => 'name','id' => 'xitcategory_id']);
+        $connection = $this->resourceConnection->getConnection();
+        $allCategoryIds = $connection->fetchAssoc($select);
+        $parentMap = [];
+        foreach ($categoriesWithParents as $childCategory => $parentCategory) {
+            $parentMap[] = [
+                'name' => $childCategory,
+                'parent_id' => $allCategoryIds[$parentCategory]['id'] ?? 0
+            ];
+        }
+        $collection->insertOnDuplicate($parentMap);
+        /*Adding parent id to child category ends*/
         return true;
     }
 
@@ -203,17 +229,18 @@ class Xit extends AbstractHelper
     public function downloadFile($source)
     {
         //download file to var/dropship/ folder from url provided in config
-
         $this->xitimportLogger->debug('Cron Download File : ' . $source);
 
         $fileName = self::FILENAME;
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
+
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);
         }
+
         if (!$this->fileFactory->fileExists($filepath)) {
             $this->xitimportLogger->debug('Importing file Xit : ' . $source);
             $ch = curl_init($source);
@@ -224,11 +251,17 @@ class Xit extends AbstractHelper
             curl_close($ch);
             fclose($fp);
         } else {
-            return $filepath;
             $this->xitimportLogger->info('Import File Already Exists: ' . $filepath);
             $this->xitimportLogger->debug('Importing file to tmp file: ' . $source);
+            $tmpFilePath = $downloadFolder . '/' . $tmpFileName;
+            $ch = curl_init($source);
+            $fp = fopen($tmpFilePath, 'wb');
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_exec($ch);
+            curl_close($ch);
+            fclose($fp);
             $this->fileFactory->open(['path' => $downloadFolder]);
-            $this->fileFactory->write($tmpFileName, @file_get_contents($source), 0755);
             $this->fileFactory->mv($tmpFileName, $fileName);
         }
         return $filepath;
@@ -327,9 +360,13 @@ class Xit extends AbstractHelper
             $xitMappedCategories = explode(",", $category['xit_category_ids']);
             foreach ($xitMappedCategories as $xitCategoryId) {
                 if (isset($categoryMapArray[$xitCategoryId])) {
-                    $categoryMapArray[$xitCategoryId] .=  "<div class='shop-category-name'>  ===> " . $category['name'] . "</div>";
+                    $categoryMapArray[$xitCategoryId] .=  "<div class='shop-category-name'>  ===> " .
+                                                                $category['name'] .
+                                                            "</div>";
                 } else {
-                    $categoryMapArray[$xitCategoryId] =  "<div class='shop-category-name'>  ===> " . $category['name'] . "</div>";
+                    $categoryMapArray[$xitCategoryId] =  "<div class='shop-category-name'>  ===> " .
+                                                            $category['name'] .
+                                                        "</div>";
                 }
             }
         }
@@ -346,5 +383,40 @@ class Xit extends AbstractHelper
     public function getSupplierCategory()
     {
         return $this->xitCategoryFactory->create()->getCollection();
+    }
+    public function buildTreeFromArray($items)
+    {
+        $childs = [];
+
+        foreach ($items as &$item) {
+            $childs[$item['parent_id'] ?? 0][] = &$item;
+        }
+
+        unset($item);
+
+        foreach ($items as &$item) {
+            if (isset($childs[$item['id']])) {
+                $item['childs'] = $childs[$item['id']];
+            }
+        }
+
+        return $childs[0] ?? [];
+    }
+
+    public function buildTreeFromObjects($items)
+    {
+        $childs = [];
+
+        foreach ($items as $item) {
+            $childs[$item->parent_id ?? 0][] = $item;
+        }
+
+        foreach ($items as $item) {
+            if (isset($childs[$item->id])) {
+                $item->childs = $childs[$item->id];
+            }
+        }
+
+        return $childs[0] ?? [];
     }
 }
