@@ -231,7 +231,10 @@ return [
         'Klarna_Kp' => 1,
         'Magento_PaypalReCaptcha' => 1,
         'MSP_TwoFactorAuth' => 1,
-        'Mageseller_SupplierImport' => 1,
+        'Mageseller_DickerdataImport' => 1,
+        'Mageseller_IngrammicroImport' => 1,
+        'Mageseller_LeadersystemsImport' => 1,
+        'Mageseller_XitImport' => 1,
         'Temando_Shipping' => 1,
         'Vertex_Tax' => 1
     ]

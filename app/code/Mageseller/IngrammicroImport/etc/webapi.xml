@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+	<route method="POST" url="/V1/mageseller-ingrammicroimport/ingrammicrocategory">
+		<service class="Mageseller\IngrammicroImport\Api\IngrammicroCategoryRepositoryInterface" method="save"/>
+		<resources>
+			<resource ref="Mageseller_IngrammicroImport::IngrammicroCategory_save"/>
+		</resources>
+	</route>
+	<route method="GET" url="/V1/mageseller-ingrammicroimport/ingrammicrocategory/search">
+		<service class="Mageseller\IngrammicroImport\Api\IngrammicroCategoryRepositoryInterface" method="getList"/>
+		<resources>
+			<resource ref="Mageseller_IngrammicroImport::IngrammicroCategory_view"/>
+		</resources>
+	</route>
+	<route method="GET" url="/V1/mageseller-ingrammicroimport/ingrammicrocategory/:ingrammicrocategoryId">
+		<service class="Mageseller\IngrammicroImport\Api\IngrammicroCategoryRepositoryInterface" method="getById"/>
+		<resources>
+			<resource ref="Mageseller_IngrammicroImport::IngrammicroCategory_view"/>
+		</resources>
+	</route>
+	<route method="PUT" url="/V1/mageseller-ingrammicroimport/ingrammicrocategory/:ingrammicrocategoryId">
+		<service class="Mageseller\IngrammicroImport\Api\IngrammicroCategoryRepositoryInterface" method="save"/>
+		<resources>
+			<resource ref="Mageseller_IngrammicroImport::IngrammicroCategory_update"/>
+		</resources>
+	</route>
+	<route method="DELETE" url="/V1/mageseller-ingrammicroimport/ingrammicrocategory/:ingrammicrocategoryId">
+		<service class="Mageseller\IngrammicroImport\Api\IngrammicroCategoryRepositoryInterface" method="deleteById"/>
+		<resources>
+			<resource ref="Mageseller_IngrammicroImport::IngrammicroCategory_delete"/>
+		</resources>
+	</route>
+</routes>

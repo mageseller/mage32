@@ -1,0 +1,62 @@
+main .supplier-category {
+    width: 50%;
+    float: left;
+}
+
+main .shop-category {
+    width: 50%;
+    float: right;
+}
+
+main .Category-Map-Table td {
+    padding-right: 20px;
+}
+
+main .Category-Map-Table {
+    margin-bottom: 20px;
+}
+
+main ul {
+    padding-left: 20px !important;
+}
+
+main .tree, .tree ul {
+    list-style-type: none;
+    //background: url(../images/vline.png) repeat-y;
+    margin: 0;
+    padding: 0;
+}
+
+main .tree ul {
+    margin-left: 10px;
+}
+
+main .tree li {
+    margin: 0;
+    padding: 0 12px;
+    line-height: 20px;
+    background: url(../images/node.png) no-repeat;
+    color: #369;
+    font-weight: bold;
+}
+
+main .tree li.last {
+    background: #fff url(../images/lastnode.png) no-repeat;
+}
+
+.supplier-category-body.tree {
+    overflow: scroll;
+    height: 87vh;
+}
+
+main .shop-category-body.tree {
+    overflow: scroll;
+    height: 87vh;
+}
+
+main .supplier-categories-name {
+    margin-left: 50px;
+}
+main .shop-category-name {
+    margin-left: 50px;
+}

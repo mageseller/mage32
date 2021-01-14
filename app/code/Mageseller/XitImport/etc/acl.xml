@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+	<acl>
+		<resources>
+			<resource id="Magento_Backend::admin">
+				<resource id="Mageseller_XitImport::XitCategory" sortOrder="10" title="XitCategory">
+					<resource id="Mageseller_XitImport::XitCategory_save" sortOrder="10" title="Save XitCategory"/>
+					<resource id="Mageseller_XitImport::XitCategory_delete" sortOrder="20" title="Delete XitCategory"/>
+					<resource id="Mageseller_XitImport::XitCategory_update" sortOrder="30" title="Update XitCategory"/>
+					<resource id="Mageseller_XitImport::XitCategory_view" sortOrder="40" title="View XitCategory"/>
+				</resource>
+				<resource id="Magento_Backend::stores">
+					<resource id="Magento_Backend::stores_settings">
+						<resource id="Magento_Config::config">
+							<resource id="Mageseller_XitImport::top_level" title="Supplier's">
+								<resource id="Mageseller_XitImport::xit" title="Xit">
+									<resource id="Mageseller_XitImport::category" title="Xit Category"/>
+									<resource id="Mageseller_XitImport::category_map" title="Xit Category Mapping"/>
+									<resource id="Mageseller_XitImport::xit_config" title="Xit Configuration"/>
+								</resource>
+							</resource>
+						</resource>
+					</resource>
+				</resource>
+			</resource>
+		</resources>
+	</acl>
+</config>

@@ -1,0 +1,45 @@
+<?php /* @var $block \Skumar\Sync\Block\System\Config\Synchronize */ ?>
+    <script>
+        require([
+            'jquery',
+            'prototype',
+        ], function(jQuery){
+            function import_category() {
+                params = {
+                };
+                new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getAjaxSyncUrl() ?>', {
+                    loaderArea:     true,
+                    asynchronous:   true,
+                    parameters:     params,
+                    onSuccess: function(transport) {
+                        var response = JSON.parse(transport.responseText);
+                        var newDiv = '';
+                        var ingrammicro_category_msg = jQuery('.ingrammicro_category_msg');
+                        if(response.status == 1){
+
+                            if(ingrammicro_category_msg.length < 1 ){
+                                newDiv = '<div style="color: green" class="ingrammicro_category_msg success_message">'+ response.message +'</div>';
+                                jQuery('#import_category_button').parent().append(newDiv);
+                            }else{
+                                ingrammicro_category_msg.html( response.message).removeClass('error_message').addClass('success_message');
+                            }
+
+                        }else{
+                            if(ingrammicro_category_msg.length < 1 ){
+                                newDiv = '<div style="color: red" class="ingrammicro_category_msg error_message">'+ response.message +'</div>';
+                                jQuery('#import_category_button').parent().append(newDiv);
+                            }else{
+                                ingrammicro_category_msg.html( response.message).addClass('error_message').removeClass('success_message');
+                            }
+                        }
+                    }
+                });
+            }
+
+            jQuery('#import_category_button').click(function () {
+                import_category();
+            });
+        });
+    </script>
+
+<?php echo $block->getButtonHtml() ?>

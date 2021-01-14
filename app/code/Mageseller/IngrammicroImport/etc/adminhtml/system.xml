@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+	<system>
+		<tab id="supplier" sortOrder="10" translate="label">
+			<label>4X Supplier</label>
+		</tab>
+		<section id="ingrammicro" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label">
+			<label>Ingrammicro</label>
+			<tab>supplier</tab>
+			<resource>Mageseller_IngrammicroImport::ingrammicro_config</resource>
+			<group id="importconfig" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label">
+				<label>Import Config</label>
+				<field id="is_enable" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="5" translate="label" type="select">
+					<label>Is Enable</label>
+					<comment/>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="host" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="text">
+					<label>Host</label>
+					<comment/>
+					<depends>
+						<field id="ingrammicro/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+				<field id="port" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="text">
+					<label>Port</label>
+					<comment/>
+					<depends>
+						<field id="ingrammicro/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+				<field id="username" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="label" type="text">
+					<label>Username</label>
+					<comment/>
+					<depends>
+						<field id="ingrammicro/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+				<field id="password" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label" type="text">
+					<label>Password</label>
+					<comment/>
+					<depends>
+						<field id="ingrammicro/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+				<field id="path" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="50" translate="label" type="text">
+					<label>Path</label>
+					<comment/>
+					<depends>
+						<field id="ingrammicro/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+				<field id="import_category" translate="label comment tooltip" type="button" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+					<label>Import Ingrammicro Category</label>
+					<frontend_model>Mageseller\IngrammicroImport\Block\System\Config\ImportIngrammicroCategory</frontend_model>
+					<depends>
+						<field id="ingrammicro/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+			</group>
+		</section>
+	</system>
+</config>

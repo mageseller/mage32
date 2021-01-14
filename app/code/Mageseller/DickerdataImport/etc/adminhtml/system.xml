@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+	<system>
+		<tab id="supplier" sortOrder="10" translate="label">
+			<label>4X Supplier</label>
+		</tab>
+		<section id="dickerdata" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label">
+			<label>Dickerdata</label>
+			<tab>supplier</tab>
+			<resource>Mageseller_DickerdataImport::dickerdata_config</resource>
+			<group id="importconfig" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label">
+				<label>Import Config</label>
+				<field id="is_enable" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="select">
+					<label>Is Enable</label>
+					<comment/>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="url" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="text">
+					<label>Url</label>
+					<comment/>
+					<depends>
+						<field id="dickerdata/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+				<field id="import_category" translate="label comment tooltip" type="button" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+					<label>Import Dickerdata Category</label>
+					<frontend_model>Mageseller\DickerdataImport\Block\System\Config\ImportDickerdataCategory</frontend_model>
+					<depends>
+						<field id="dickerdata/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+			</group>
+		</section>
+	</system>
+</config>

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+	<preference for="Mageseller\DickerdataImport\Api\DickerdataCategoryRepositoryInterface" type="Mageseller\DickerdataImport\Model\DickerdataCategoryRepository"/>
+	<preference for="Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface" type="Mageseller\DickerdataImport\Model\Data\DickerdataCategory"/>
+	<preference for="Mageseller\DickerdataImport\Api\Data\DickerdataCategorySearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+	<virtualType name="Mageseller\DickerdataImport\Model\ResourceModel\DickerdataCategory\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+		<arguments>
+			<argument name="mainTable" xsi:type="string">mageseller_dickerdataimport_dickerdatacategory</argument>
+			<argument name="resourceModel" xsi:type="string">Mageseller\DickerdataImport\Model\ResourceModel\DickerdataCategory\Collection</argument>
+		</arguments>
+	</virtualType>
+	<type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+		<arguments>
+			<argument name="collections" xsi:type="array">
+				<item name="mageseller_dickerdataimport_dickerdatacategory_listing_data_source" xsi:type="string">Mageseller\DickerdataImport\Model\ResourceModel\DickerdataCategory\Grid\Collection</item>
+			</argument>
+		</arguments>
+	</type>
+	<type name="Magento\Catalog\Model\Category\DataProvider">
+		<plugin name="Mageplaza_HelloWorld_Plugin" type="Mageseller\DickerdataImport\Plugin\CategoryDropdownPlugin" sortOrder="10"   />
+	</type>
+	<type name="Magento\Framework\Console\CommandList">
+		<arguments>
+			<argument name="commands" xsi:type="array">
+				<item name="DickerdataCategoryImport" xsi:type="object">Mageseller\DickerdataImport\Console\Command\DickerdataCategoryImport</item>
+			</argument>
+		</arguments>
+	</type>
+</config>

@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add
+                id="Mageseller_IngrammicroImport::ingrammicro"
+                module="Mageseller_IngrammicroImport"
+                resource="Mageseller_IngrammicroImport::ingrammicro"
+                parent="Mageseller_XitImport::top_level"
+                sortOrder="0"
+                title="Ingrammicro Supplier"
+        />
+        <add
+                id="Mageseller_IngrammicroImport::mageseller_ingrammicroimport_ingrammicrocategory"
+                module="Mageseller_IngrammicroImport"
+                action="mageseller_ingrammicroimport/ingrammicrocategory/index"
+                parent="Mageseller_IngrammicroImport::ingrammicro"
+                resource="Mageseller_IngrammicroImport::category"
+                sortOrder="10"
+                title="Ingrammicro Category"
+        />
+        <add
+                id="Mageseller_IngrammicroImport::Ingrammicro_category"
+                title="Ingrammicro Category Mapping"
+                module="Mageseller_IngrammicroImport"
+                sortOrder="20" action="mageseller_ingrammicroimport/ingrammicrocategory/category"
+                parent="Mageseller_IngrammicroImport::ingrammicro"
+                resource="Mageseller_IngrammicroImport::category_map"
+        />
+        <add
+                id="Mageseller_IngrammicroImport::config"
+                title="Ingrammicro Configuration"
+                module="Mageseller_IngrammicroImport"
+                sortOrder="30"
+                parent="Mageseller_IngrammicroImport::ingrammicro"
+                action="adminhtml/system_config/edit/section/ingrammicro"
+                resource="Mageseller_IngrammicroImport::ingrammicro_config"
+        />
+    </menu>
+</config>

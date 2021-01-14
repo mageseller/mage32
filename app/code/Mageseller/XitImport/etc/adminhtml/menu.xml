@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add
+                id="Mageseller_XitImport::top_level"
+                module="Mageseller_XitImport"
+                resource="Mageseller_XitImport::top_level"
+                sortOrder="10"
+                title="Supplier's"
+        />
+        <add
+                id="Mageseller_XitImport::xit"
+                module="Mageseller_XitImport"
+                resource="Mageseller_XitImport::xit"
+                parent="Mageseller_XitImport::top_level"
+                sortOrder="0"
+                title="Xit Supplier"
+        />
+        <add
+                id="Mageseller_XitImport::mageseller_xitimport_xitcategory"
+                module="Mageseller_XitImport"
+                action="mageseller_xitimport/xitcategory/index"
+                parent="Mageseller_XitImport::xit"
+                resource="Mageseller_XitImport::category"
+                sortOrder="10"
+                title="Xit Category"
+        />
+        <add
+                id="Mageseller_XitImport::Xit_category"
+                title="Xit Category Mapping"
+                module="Mageseller_XitImport"
+                sortOrder="20" action="mageseller_xitimport/xitcategory/category"
+                parent="Mageseller_XitImport::xit"
+                resource="Mageseller_XitImport::category_map"
+        />
+        <add
+                id="Mageseller_XitImport::config"
+                title="Xit Configuration"
+                module="Mageseller_XitImport"
+                sortOrder="30"
+                parent="Mageseller_XitImport::xit"
+                action="adminhtml/system_config/edit/section/xit"
+                resource="Mageseller_XitImport::xit_config"
+        />
+    </menu>
+</config>

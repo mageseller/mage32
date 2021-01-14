@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add
+                id="Mageseller_LeadersystemsImport::leadersystems"
+                module="Mageseller_LeadersystemsImport"
+                resource="Mageseller_LeadersystemsImport::leadersystems"
+                parent="Mageseller_XitImport::top_level"
+                sortOrder="0"
+                title="Leadersystems Supplier"
+        />
+        <add
+                id="Mageseller_LeadersystemsImport::mageseller_leadersystemsimport_leadersystemscategory"
+                module="Mageseller_LeadersystemsImport"
+                action="mageseller_leadersystemsimport/leadersystemscategory/index"
+                parent="Mageseller_LeadersystemsImport::leadersystems"
+                resource="Mageseller_LeadersystemsImport::category"
+                sortOrder="10"
+                title="Leadersystems Category"
+        />
+        <add
+                id="Mageseller_LeadersystemsImport::Leadersystems_category"
+                title="Leadersystems Category Mapping"
+                module="Mageseller_LeadersystemsImport"
+                sortOrder="20" action="mageseller_leadersystemsimport/leadersystemscategory/category"
+                parent="Mageseller_LeadersystemsImport::leadersystems"
+                resource="Mageseller_LeadersystemsImport::category_map"
+        />
+        <add
+                id="Mageseller_LeadersystemsImport::config"
+                title="Leadersystems Configuration"
+                module="Mageseller_LeadersystemsImport"
+                sortOrder="30"
+                parent="Mageseller_LeadersystemsImport::leadersystems"
+                action="adminhtml/system_config/edit/section/leadersystems"
+                resource="Mageseller_LeadersystemsImport::leadersystems_config"
+        />
+    </menu>
+</config>

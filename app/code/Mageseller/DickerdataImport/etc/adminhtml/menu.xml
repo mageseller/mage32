@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add
+                id="Mageseller_DickerdataImport::dickerdata"
+                module="Mageseller_DickerdataImport"
+                resource="Mageseller_DickerdataImport::dickerdata"
+                parent="Mageseller_XitImport::top_level"
+                sortOrder="0"
+                title="Dickerdata Supplier"
+        />
+        <add
+                id="Mageseller_DickerdataImport::mageseller_dickerdataimport_dickerdatacategory"
+                module="Mageseller_DickerdataImport"
+                action="mageseller_dickerdataimport/dickerdatacategory/index"
+                parent="Mageseller_DickerdataImport::dickerdata"
+                resource="Mageseller_DickerdataImport::category"
+                sortOrder="10"
+                title="Dickerdata Category"
+        />
+        <add
+                id="Mageseller_DickerdataImport::Dickerdata_category"
+                title="Dickerdata Category Mapping"
+                module="Mageseller_DickerdataImport"
+                sortOrder="20" action="mageseller_dickerdataimport/dickerdatacategory/category"
+                parent="Mageseller_DickerdataImport::dickerdata"
+                resource="Mageseller_DickerdataImport::category_map"
+        />
+        <add
+                id="Mageseller_DickerdataImport::config"
+                title="Dickerdata Configuration"
+                module="Mageseller_DickerdataImport"
+                sortOrder="30"
+                parent="Mageseller_DickerdataImport::dickerdata"
+                action="adminhtml/system_config/edit/section/dickerdata"
+                resource="Mageseller_DickerdataImport::dickerdata_config"
+        />
+    </menu>
+</config>

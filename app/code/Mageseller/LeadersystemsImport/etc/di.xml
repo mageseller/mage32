@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+	<preference for="Mageseller\LeadersystemsImport\Api\LeadersystemsCategoryRepositoryInterface" type="Mageseller\LeadersystemsImport\Model\LeadersystemsCategoryRepository"/>
+	<preference for="Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface" type="Mageseller\LeadersystemsImport\Model\Data\LeadersystemsCategory"/>
+	<preference for="Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategorySearchResultsInterface" type="Magento\Framework\Api\SearchResults"/>
+	<virtualType name="Mageseller\LeadersystemsImport\Model\ResourceModel\LeadersystemsCategory\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+		<arguments>
+			<argument name="mainTable" xsi:type="string">mageseller_leadersystemsimport_leadersystemscategory</argument>
+			<argument name="resourceModel" xsi:type="string">Mageseller\LeadersystemsImport\Model\ResourceModel\LeadersystemsCategory\Collection</argument>
+		</arguments>
+	</virtualType>
+	<type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+		<arguments>
+			<argument name="collections" xsi:type="array">
+				<item name="mageseller_leadersystemsimport_leadersystemscategory_listing_data_source" xsi:type="string">Mageseller\LeadersystemsImport\Model\ResourceModel\LeadersystemsCategory\Grid\Collection</item>
+			</argument>
+		</arguments>
+	</type>
+	<type name="Magento\Catalog\Model\Category\DataProvider">
+		<plugin name="Mageplaza_HelloWorld_Plugin" type="Mageseller\LeadersystemsImport\Plugin\CategoryDropdownPlugin" sortOrder="10"   />
+	</type>
+	<type name="Magento\Framework\Console\CommandList">
+		<arguments>
+			<argument name="commands" xsi:type="array">
+				<item name="LeadersystemsCategoryImport" xsi:type="object">Mageseller\LeadersystemsImport\Console\Command\LeadersystemsCategoryImport</item>
+			</argument>
+		</arguments>
+	</type>
+</config>

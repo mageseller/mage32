@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+	<acl>
+		<resources>
+			<resource id="Magento_Backend::admin">
+				<resource id="Mageseller_DickerdataImport::DickerdataCategory" sortOrder="10" title="DickerdataCategory">
+					<resource id="Mageseller_DickerdataImport::DickerdataCategory_save" sortOrder="10" title="Save DickerdataCategory"/>
+					<resource id="Mageseller_DickerdataImport::DickerdataCategory_delete" sortOrder="20" title="Delete DickerdataCategory"/>
+					<resource id="Mageseller_DickerdataImport::DickerdataCategory_update" sortOrder="30" title="Update DickerdataCategory"/>
+					<resource id="Mageseller_DickerdataImport::DickerdataCategory_view" sortOrder="40" title="View DickerdataCategory"/>
+				</resource>
+				<resource id="Magento_Backend::stores">
+					<resource id="Magento_Backend::stores_settings">
+						<resource id="Magento_Config::config">
+							<resource id="Mageseller_XitImport::top_level" title="Supplier's">
+								<resource id="Mageseller_DickerdataImport::dickerdata" title="Dickerdata">
+									<resource id="Mageseller_DickerdataImport::category" title="Dickerdata Category"/>
+									<resource id="Mageseller_DickerdataImport::category_map" title="Dickerdata Category Mapping"/>
+									<resource id="Mageseller_DickerdataImport::dickerdata_config" title="Dickerdata Configuration"/>
+								</resource>
+							</resource>
+						</resource>
+					</resource>
+				</resource>
+			</resource>
+		</resources>
+	</acl>
+</config>

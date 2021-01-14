@@ -1,0 +1,26 @@
+{
+    "name": "mageseller/module-dickerdataimport",
+    "description": "",
+    "type": "magento2-module",
+    "license": "OSL-3.0",
+    "authors": [
+        {
+            "email": "info@mage2gen.com",
+            "name": "Mage2Gen"
+        },
+        {
+            "email": "kashak49437@gmail.com",
+            "name": "Mageseller "
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Mageseller\\DickerdataImport\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    }
+}

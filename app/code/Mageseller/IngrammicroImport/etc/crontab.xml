@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+	<group id="ingrammicro">
+		<job instance="Mageseller\IngrammicroImport\Cron\IngrammicroCategoryImport" method="execute" name="mageseller_ingrammicroimport_ingrammicrocategoryimport">
+			<schedule>*/5 * * * *</schedule>
+		</job>
+	</group>
+</config>
