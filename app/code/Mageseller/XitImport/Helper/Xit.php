@@ -364,7 +364,7 @@ class Xit extends AbstractHelper
         $process->output(__('Downloading file...'), true);
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
-        $xml = simplexml_load_file($filepath);
+        $xml = simplexml_load_file($filepath, null, LIBXML_NOCDATA);
         if ($xml instanceof SimpleXMLElement) {
             $items = $xml->xpath("/Catalogue/Items/Item");
             $this->xitProductHelper->processProducts($items, $process, $since, $sendReport);

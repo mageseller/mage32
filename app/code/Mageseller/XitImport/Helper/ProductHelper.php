@@ -325,6 +325,7 @@ class ProductHelper extends AbstractHelper
         $name = (string) $data->ItemDetail->Title;
         $price =  (string) $data->ItemDetail->UnitPrice;
         $price = floatval(preg_replace('/[^\d.]/', '', $price));
+        $description = (string) $data->ItemDetail->Description;
 
         $taxRate = (string) $data->ItemDetail->TaxRate;
         $updatedAt = (string) $data->UpdatedAt;
@@ -349,6 +350,7 @@ class ProductHelper extends AbstractHelper
         // global eav attributes
         $global = $product->global();
         $global->setName($name);
+        $global->setDescription($description);
         $global->setPrice($price);
         $global->setTaxClassName('Taxable Goods');
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
