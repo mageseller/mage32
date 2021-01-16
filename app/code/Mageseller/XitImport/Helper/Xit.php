@@ -12,16 +12,18 @@
 namespace Mageseller\XitImport\Helper;
 
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Store\Model\ScopeInterface;
-use SimpleXMLElement;
-use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Mageseller\Process\Model\Process;
+use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
+use SimpleXMLElement;
 
 class Xit extends AbstractHelper
 {
@@ -29,12 +31,16 @@ class Xit extends AbstractHelper
     const TMP_FILENAME = 'vendor-file-tmp.xml';
     const DOWNLOAD_FOLDER = 'supplier/xit';
     const XIT_IMPORTCONFIG_IS_ENABLE = 'xit/importconfig/is_enable';
+
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
     /**
+     * @var ProcessResourceFactory
+     */
+    protected $processResourceFactory;
 
     /**
      *
@@ -128,6 +134,7 @@ class Xit extends AbstractHelper
         ResourceConnection $resourceConnection,
         MagentoConfig $configuration,
         StoreManagerInterface $storeManager,
+        ProcessResourceFactory $processResourceFactory,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory
     ) {
         parent::__construct($context);
@@ -144,6 +151,7 @@ class Xit extends AbstractHelper
         $this->categoryFactory = $categoryFactory;
         $this->resourceConnection = $resourceConnection;
         $this->configuration = $configuration;
+        $this->processResourceFactory = $processResourceFactory;
         $this->storeManager = $storeManager;
     }
     /**
@@ -312,7 +320,6 @@ class Xit extends AbstractHelper
         $this->configuration->saveConfig($path, $value, $scope, $scopeId);
     }
 
-
     /**
      * @return mixed
      */
@@ -320,6 +327,8 @@ class Xit extends AbstractHelper
     {
         return $this->getConfig(self::XIT_IMPORTCONFIG_IS_ENABLE);
     }
+
+
 
     /**
      * @param $value
@@ -330,16 +339,35 @@ class Xit extends AbstractHelper
     {
         return $this->scopeConfig->getValue($value, $scope);
     }
-    public function importXitProducts()
+    public function importXitProducts(Process $process, $since, $sendReport = true)
     {
+        if (!$since && ($lastSyncDate = $this->getSyncDate('product'))) {
+            $since = $lastSyncDate;
+        }
+
+        // Save last synchronization date now if file download is too long
+        $this->setSyncDate('product');
+        if ($since) {
+            $process->output(__('Downloading products from Xitfeed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
+            $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];
+        } else {
+            $process->output(__('Downloading products from Xitfeed to Magento'), true);
+        }
+        if ($since) {
+            $process->output(__('No products to import since %1', $since->format('Y-m-d H:i:s')));
+        } else {
+            $process->output(__('No products to import'));
+        }
+
         ini_set("memory_limit", "-1");
         set_time_limit(0);
+        $process->output(__('Downloading file...'), true);
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
         $xml = simplexml_load_file($filepath);
         if ($xml instanceof SimpleXMLElement) {
             $items = $xml->xpath("/Catalogue/Items/Item");
-            $this->xitProductHelper->processProducts($items);
+            $this->xitProductHelper->processProducts($items, $process, $since, $sendReport);
         }
     }
     public function importXitCategory()
@@ -650,6 +678,4 @@ class Xit extends AbstractHelper
 
         return $childs[0] ?? [];
     }
-
-
 }
