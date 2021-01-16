@@ -11,27 +11,53 @@
 
 namespace Mageseller\XitImport\Console\Command;
 
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
+use Mageseller\XitImport\Helper\Xit;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Mageseller\Process\Console\Command\CommandTrait;
+use Mageseller\XitImport\Helper\Product\Import\Process as ImportProcess;
 
 class XitProductImport extends Command
 {
+    use CommandTrait;
+    const UPDATED_SINCE_OPTION = 'since';
     /**
-     * @var \Mageseller\XitImport\Helper\Xit
+     * @var State
+     */
+    private $appState;
+
+    /**
+     * @var Xit
      */
     private $xitHelper;
 
     /**
+     * @var ImportProcess
+     */
+    private $importProcess;
+
+    /**
      * XitCategoryImport constructor.
+     * @param State $state
+     * @param Xit $xitHelper
+     * @param ImportProcess $importProcess
      * @param string|null $name
      */
-    public function __construct(\Mageseller\XitImport\Helper\Xit $xitHelper, string $name = null)
-    {
-        $this->xitHelper = $xitHelper;
+    public function __construct(
+        State $state,
+        Xit $xitHelper,
+        ImportProcess $importProcess,
+        string $name = null
+    ) {
         parent::__construct($name);
+        $this->appState        = $state;
+        $this->xitHelper = $xitHelper;
+        $this->importProcess   = $importProcess;
     }
 
     const NAME_ARGUMENT = "name";
@@ -44,8 +70,17 @@ class XitProductImport extends Command
         InputInterface $input,
         OutputInterface $output
     ) {
-        $this->xitHelper->importXitProducts();
-        $output->writeln("All Xit Products successfully imported ");
+        $this->setAreaCode(Area::AREA_ADMINHTML);
+        $output->writeln('Importing Products ...');
+        $updatedSince = $input->getOption(self::UPDATED_SINCE_OPTION);
+
+        if (empty($updatedSince)) {
+            $updatedSince = $this->xitHelper->getSyncDate('product');
+        } else {
+            $updatedSince = new \DateTime($updatedSince);
+        }
+        $this->importProcess->runApi($updatedSince);
+        //$output->writeln("All Xit Products successfully imported ");
     }
 
     /**
@@ -53,12 +88,18 @@ class XitProductImport extends Command
      */
     protected function configure()
     {
+        $options = [
+            new InputOption(
+                self::UPDATED_SINCE_OPTION,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Product: Import starting date. Given date must respect ISO-8601 format and must be URL encoded',
+                null
+            ),
+        ];
         $this->setName("mageseller_xitimport:xitproductimport");
         $this->setDescription("Product Import Xit");
-        $this->setDefinition([
-            new InputArgument(self::NAME_ARGUMENT, InputArgument::OPTIONAL, "Name"),
-            new InputOption(self::NAME_OPTION, "-a", InputOption::VALUE_NONE, "Option functionality")
-        ]);
+        $this->setDefinition($options);
         parent::configure();
     }
 }

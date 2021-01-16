@@ -1,8 +1,8 @@
 <?php
-namespace Mirakl\Process\Model\Output;
+namespace Mageseller\Process\Model\Output;
 
-use Mirakl\Core\Helper\Data as CoreHelper;
-use Mirakl\Process\Model\Process;
+use Mageseller\Process\Helper\Data as CoreHelper;
+use Mageseller\Process\Model\Process;
 use Psr\Log\LoggerInterface;
 
 abstract class AbstractOutput implements OutputInterface

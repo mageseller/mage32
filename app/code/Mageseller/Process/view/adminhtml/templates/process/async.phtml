@@ -1,7 +1,7 @@
 <?php
 /** @var \Magento\Backend\Block\Template $block */
 ?>
-<?php if ($block->getAuthorization()->isAllowed('Mirakl_Process::process')): ?>
+<?php if ($block->getAuthorization()->isAllowed('Mageseller_Process::process')): ?>
 <script>
 require([
     'jquery'
@@ -19,7 +19,7 @@ require([
                     showLoader: false,
                     dataType: 'html',
                     success: function (data) {
-                        console.log('Mirakl: ' + data);
+                        console.log('Mageseller: ' + data);
                     },
                     complete: function () {
                         setTimeout(asyncProcess, 2 * 60 * 1000); // every 2 minutes

@@ -16,7 +16,7 @@ class Importcategory extends \Magento\Backend\App\Action
     protected $resultPageFactory;
     protected $jsonHelper;
     /**
-     * @var \Mageseller\Xit\Helper\Xit
+     * @var \Mageseller\XitImport\Helper\Xit
      */
     private $xitHelper;
     /**

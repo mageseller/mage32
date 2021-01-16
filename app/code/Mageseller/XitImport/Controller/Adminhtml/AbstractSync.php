@@ -1,10 +1,8 @@
 <?php
-namespace Mageseller\Connector\Controller\Adminhtml;
+namespace Mageseller\XitImport\Controller\Adminhtml;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Mageseller\Api\Helper\Config as ApiConfig;
-use Mageseller\Connector\Helper\Config as ConnectorConfig;
 use Mageseller\Process\Controller\Adminhtml\RawMessagesTrait;
 use Mageseller\Process\Controller\Adminhtml\RedirectRefererTrait;
 use Mageseller\Process\Model\ProcessFactory;
@@ -47,26 +45,20 @@ abstract class AbstractSync extends Action
     protected $logger;
 
     /**
-     * @param   Context                 $context
-     * @param   ApiConfig               $apiConfig
-     * @param   ProcessFactory          $processFactory
-     * @param   ProcessResourceFactory  $processResourceFactory
-     * @param   LoggerInterface         $logger
-     * @param   ConnectorConfig         $connectorConfig
+     * @param Context $context
+     * @param ProcessFactory $processFactory
+     * @param ProcessResourceFactory $processResourceFactory
+     * @param LoggerInterface $logger
      */
     public function __construct(
         Context $context,
-        ApiConfig $apiConfig,
         ProcessFactory $processFactory,
         ProcessResourceFactory $processResourceFactory,
-        LoggerInterface $logger,
-        ConnectorConfig $connectorConfig
+        LoggerInterface $logger
     ) {
         parent::__construct($context);
-        $this->apiConfig = $apiConfig;
         $this->processFactory = $processFactory;
         $this->processResourceFactory = $processResourceFactory;
-        $this->connectorConfig = $connectorConfig;
         $this->logger = $logger;
     }
 

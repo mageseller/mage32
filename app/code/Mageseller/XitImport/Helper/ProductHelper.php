@@ -127,10 +127,10 @@ class ProductHelper extends AbstractHelper
 
     public function processProducts($items)
     {
+        echo "<pre>";
+        $allCategories = [];
         foreach ($items as $item) {
-            echo "<pre>";
-            print_r($item);
-            die;
+
             $categories = $this->parseObject($item->ItemDetail->Classifications->Classification);
             unset($categories['@attributes']);
             $allCategories = array_unique(array_merge($allCategories, $categories));
@@ -140,5 +140,18 @@ class ProductHelper extends AbstractHelper
                 $lastCat = $category;
             }
         }
+        print_r($categoriesWithParents);
+        echo "</pre>";
+    }
+    public function parseObject($value)
+    {
+        return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
+            return !is_array($value) && $value !== '';
+        }) : $value : [];
+    }
+
+    public function parseValue($value)
+    {
+        return isset($value) ? trim($value) : "";
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Mirakl\Process\Model\Exception;
+namespace Mageseller\Process\Model\Exception;
 
 class AlreadyRunningException extends \RuntimeException
 {}

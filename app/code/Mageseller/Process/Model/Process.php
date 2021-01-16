@@ -9,7 +9,7 @@ use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Registry;
 use Magento\Framework\UrlInterface;
-use Mageseller\Api\Helper\SynchroResultInterface;
+use Mageseller\Process\Helper\SynchroResultInterface;
 use Mageseller\Process\Helper\Config as ProcessConfig;
 use Mageseller\Process\Helper\Data as ProcessHelper;
 use Mageseller\Process\Model\Exception\AlreadyRunningException;
@@ -139,7 +139,6 @@ class Process extends AbstractModel
      * @param   AbstractDbCollection|null   $resourceCollection
      * @param   ObjectManagerInterface      $objectManager
      * @param   UrlInterface                $urlBuilder
-     * @param   CoreHelper                  $processHelper
      * @param   ProcessHelper               $processHelper
      * @param   ProcessConfig               $processConfig
      * @param   ProcessResourceFactory      $processResourceFactory
@@ -151,7 +150,7 @@ class Process extends AbstractModel
         Registry $registry,
         ObjectManagerInterface $objectManager,
         UrlInterface $urlBuilder,
-        CoreHelper $processHelper,
+        ProcessHelper $processHelper,
         ProcessConfig $processConfig,
         ProcessResourceFactory $processResourceFactory,
         OutputFactory $outputFactory,

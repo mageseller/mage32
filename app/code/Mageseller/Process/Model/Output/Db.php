@@ -1,5 +1,5 @@
 <?php
-namespace Mirakl\Process\Model\Output;
+namespace Mageseller\Process\Model\Output;
 
 class Db extends AbstractOutput
 {

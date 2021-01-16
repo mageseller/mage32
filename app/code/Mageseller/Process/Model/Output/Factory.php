@@ -1,8 +1,8 @@
 <?php
-namespace Mirakl\Process\Model\Output;
+namespace Mageseller\Process\Model\Output;
 
 use Magento\Framework\ObjectManagerInterface;
-use Mirakl\Process\Model\Process;
+use Mageseller\Process\Model\Process;
 
 class Factory
 {
