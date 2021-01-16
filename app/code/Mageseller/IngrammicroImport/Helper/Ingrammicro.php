@@ -16,14 +16,14 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\Framework\Filesystem\File\ReadInterface;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Store\Model\ScopeInterface;
-use SimpleXMLElement;
 
 class Ingrammicro extends AbstractHelper
 {
-    const FILENAME = 'vendor-file.xml';
-    const TMP_FILENAME = 'vendor-file-tmp.xml';
+    const FILENAME = 'vendor-file.csv';
+    const TMP_FILENAME = 'vendor-file-tmp.csv';
     const DOWNLOAD_FOLDER = 'supplier/ingrammicro';
     const XIT_IMPORTCONFIG_IS_ENABLE = 'ingrammicro/importconfig/is_enable';
     /**
@@ -81,7 +81,13 @@ class Ingrammicro extends AbstractHelper
     private $resourceConnection;
 
     private $supplierCategories;
-
+    /**
+     * Filesystem instance
+     *
+     * @var \Magento\Framework\Filesystem
+     * @since 100.1.0
+     */
+    protected $filesystem;
     /**
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Framework\Filesystem $filesystem
@@ -116,6 +122,7 @@ class Ingrammicro extends AbstractHelper
         parent::__construct($context);
         $this->_dateTime = $dateTime;
         $this->fileFactory = $fileFactory;
+        $this->filesystem = $filesystem;
         $this->scopeConfig = $context->getScopeConfig();
         $this->_dirReader = $dirReader;
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
@@ -145,59 +152,128 @@ class Ingrammicro extends AbstractHelper
     {
         return $this->scopeConfig->getValue($value, $scope);
     }
+    /**
+     * @param string $filePath
+     * @return \Magento\Framework\Filesystem\File\ReadInterface
+     */
+    private function getCsvFile($filePath)
+    {
+        $pathInfo = pathinfo($filePath);
+        $dirName = isset($pathInfo['dirname']) ? $pathInfo['dirname'] : '';
+        $fileName = isset($pathInfo['basename']) ? $pathInfo['basename'] : '';
 
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($dirName);
+
+        return $directoryRead->openFile($fileName);
+    }
     public function importIngrammicroCategory()
     {
-        $apiUrl = $this->getApiUrl();
-        $filepath = $this->downloadFile($apiUrl);
+        if (empty($_FILES['groups']['tmp_name']['importconfig']['fields']['import_category_file']['value'])) {
+            return $this;
+        }
+        $filePath = $_FILES['groups']['tmp_name']['importconfig']['fields']['import_category_file']['value'];
+
+        /**
+         * @var ReadInterface $object
+         */
+        $file = $this->getCsvFile($filePath);
         $allCategories = [];
-        $categoriesWithParents = [];
-        $xml = simplexml_load_file($filepath);
-        if ($xml instanceof SimpleXMLElement) {
-            $items = $xml->xpath("/Catalogue/Items/Item");
+        $fileName = self::FILENAME;
+        $tmpFileName = self::TMP_FILENAME;
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        //$filepath = $downloadFolder . '/' . $fileName;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
 
-            foreach ($items as $item) {
-                $categories = $this->parseObject($item->ItemDetail->Classifications->Classification);
-                unset($categories['@attributes']);
-                $allCategories = array_unique(array_merge($allCategories, $categories));
-                $lastCat = "";
-                foreach ($categories as $category) {
-                    $key = $lastCat ? $lastCat : "Default";
-                    $categoriesWithParents[$category] = $lastCat;
-                    $lastCat = $category;
-                }
+        $file2 =  $directoryRead->openFile($fileName);
+        try {
+            /*Adding category names start*/
+            $headers = array_flip($file->readCsv(0, "\t"));
+            while (false !== ($row = $file->readCsv(0, "\t"))) {
+                $catId = (int) $row[$headers['ProductGroupCode']] ?? '';
+                $catName =  $row[$headers['Description']]  ?? '';
+
+                $allCategories[] = [
+                        'ingrammicrocategory_id' => ltrim($catId, "0"),
+                        'name' => $catName,
+                    ];
             }
-        }
-        /*Adding category names start*/
-        $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
-        $allCategories = array_map(function ($v) {
-            return ['name' => $v];
-        }, $allCategories);
-        $collection->insertOnDuplicate($allCategories);
-        /*Adding category names ends*/
+            $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
+            $collection->insertOnDuplicate($allCategories);
 
-        /*Adding parent id to child category starts*/
-        $select = (clone $collection->getSelect())
-                    ->reset(Select::COLUMNS)
-                    ->columns(['name' => 'name','id' => 'ingrammicrocategory_id']);
-        $connection = $this->resourceConnection->getConnection();
-        $allCategoryIds = $connection->fetchAssoc($select);
-        $parentMap = [];
-        foreach ($categoriesWithParents as $childCategory => $parentCategory) {
-            $parentMap[] = [
-                'name' => $childCategory,
-                'parent_id' => $allCategoryIds[$parentCategory]['id'] ?? 0
-            ];
+            //$collection = $this->ingrammicroCategoryFactory->create()->getCollection();
+            /*$select = (clone $collection->getSelect())
+                ->reset(Select::COLUMNS)
+                ->columns(['supplier_cat_id' => 'supplier_cat_id','id' => 'ingrammicrocategory_id']);
+            $connection = $this->resourceConnection->getConnection();
+            $allCategoryIds = $connection->fetchAssoc($select);*/
+
+            $categoriesWithParents = [];
+            $headers = array_flip($file2->readCsv(0, ","));
+            $i = 0;
+            $parentMap = [];
+            $array =  [];
+            $connection = $this->resourceConnection->getConnection();
+            while (false !== ($row = $file2->readCsv(0, ","))) {
+                $categoryLevel1 =  $row[$headers['Category ID']] ?? 0;
+                $categoryLevel2 =  $row[$headers['Sub-Category']]  ?? 0;
+                $categoriesWithParents[ltrim($categoryLevel1, "0")] = 'Default';
+                if ($categoryLevel2) {
+                    $categoriesWithParents[ltrim($categoryLevel2, "0")] = ltrim($categoryLevel1, "0");
+                    $connection->update(
+                        $collection->getMainTable(),
+                        [ 'parent_id' => ltrim($categoryLevel1)],
+                        ['ingrammicrocategory_id = ?' => ltrim($categoryLevel2)]
+                    );
+                }
+                $i++;
+            }
+
+
+
+            /*echo "<pre>";
+            print_r($parentMap);
+            die;*/
+            //$collection->insertOnDuplicate($parentMap);
+            /*Adding category names ends*/
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+            die;
+            $this->ingrammicroimportLogger->critical($e);
+            throw new \Magento\Framework\Exception\LocalizedException(
+                __('Something went wrong while importing .')
+            );
+        } finally {
+            $file->close();
+            $file2->close();
         }
-        $collection->insertOnDuplicate($parentMap);
-        /*Adding parent id to child category ends*/
-        return true;
+        return;
+//        return $this;
+//        $apiUrl = $this->getApiUrl();
+ //       $filepath = $this->downloadFile($apiUrl);
+//        $allCategories = [];
+//        $categoriesWithParents = [];
+//        /*Adding parent id to child category starts*/
+//        $select = (clone $collection->getSelect())
+//                    ->reset(Select::COLUMNS)
+//                    ->columns(['name' => 'name','id' => 'ingrammicrocategory_id']);
+//        $connection = $this->resourceConnection->getConnection();
+//        $allCategoryIds = $connection->fetchAssoc($select);
+//        $parentMap = [];
+//        foreach ($categoriesWithParents as $childCategory => $parentCategory) {
+//            $parentMap[] = [
+//                'name' => $childCategory,
+//                'parent_id' => $allCategoryIds[$parentCategory]['id'] ?? 0
+//            ];
+//        }
+//        $collection->insertOnDuplicate($parentMap);
+//        /*Adding parent id to child category ends*/
+//        return true;
     }
 
     public function getApiUrl()
     {
         if ($this->apiUrl == null) {
-            $this->apiUrl = $this->getUrl() . "?ObjectID=" . $this->getObjectId() . "&Token=" . $this->getToken();
+            $this->apiUrl = $this->getUrl();
         }
         return $this->apiUrl;
     }

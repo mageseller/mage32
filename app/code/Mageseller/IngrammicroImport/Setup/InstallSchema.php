@@ -44,10 +44,16 @@ class InstallSchema implements InstallSchemaInterface
             'name'
         )->addColumn(
             'magento_cat_id',
-            Table::TYPE_TEXT,
+            Table::TYPE_INTEGER,
             null,
             [],
             'Magento Category Id'
+        )->addColumn(
+            'supplier_cat_id',
+            Table::TYPE_TEXT,
+            null,
+            [],
+            'Supplier Category Id'
         )->addColumn(
             'created_at',
             Table::TYPE_TIMESTAMP,
@@ -68,7 +74,7 @@ class InstallSchema implements InstallSchemaInterface
             \Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_UNIQUE
         );
         $installer->getConnection()->createTable($table_mageseller_ingrammicroimport_ingrammicrocategory);
-        $installer->getConnection()->rawQuery("ALTER TABLE `{$setup->getTable('mageseller_ingrammicroimport_ingrammicrocategory')}` ADD UNIQUE `{$indexName}` (`name`(255))");
+        $installer->getConnection()->rawQuery("ALTER TABLE `{$setup->getTable('mageseller_ingrammicroimport_ingrammicrocategory')}` ADD UNIQUE `{$indexName}` (`supplier_cat_id`(255))");
     }
 
 }

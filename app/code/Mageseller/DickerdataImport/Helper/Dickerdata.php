@@ -178,14 +178,14 @@ class Dickerdata extends AbstractHelper
             ->columns(['name' => 'name', 'id' => 'dickerdatacategory_id']);
         $connection = $this->resourceConnection->getConnection();
         $allCategoryIds = $connection->fetchAssoc($select);
-        $parentMap = [];
         foreach ($categoriesWithParents as $childCategory => $parentCategory) {
-            $parentMap[] = [
-                'name' => $childCategory,
-                'parent_id' => $allCategoryIds[$parentCategory]['id'] ?? 0
-            ];
+            $parentId = $allCategoryIds[$parentCategory]['id'] ?? 0;
+            $connection->update(
+                $collection->getMainTable(),
+                ['parent_id' => $parentId],
+                ['name = ?' => $childCategory]
+            );
         }
-        $collection->insertOnDuplicate($parentMap);
         /*Adding parent id to child category ends*/
         return true;
     }

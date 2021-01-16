@@ -37,8 +37,9 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     public function insertMultiple($data)
     {
         try {
-            return $this->connection->insertMultiple($this->getMainTable(), $data);
+          return $this->getConnection()->insertMultiple($this->getMainTable(), $data);
         } catch (\Exception $e) {
+            echo $e->getMessage();die;
             if ($e->getCode() === self::ERROR_CODE_DUPLICATE_ENTRY
                 && preg_match('#SQLSTATE\[23000\]: [^:]+: 1062[^\d]#', $e->getMessage())
             ) {
@@ -63,6 +64,9 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
         try {
             return $this->getConnection()->insertOnDuplicate($this->getMainTable(), $data);
         } catch (\Exception $e) {
+            echo $e->getCode();
+            echo $e->getMessage();
+            die;
             if ($e->getCode() === self::ERROR_CODE_DUPLICATE_ENTRY
                 && preg_match('#SQLSTATE\[23000\]: [^:]+: 1062[^\d]#', $e->getMessage())
             ) {

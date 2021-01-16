@@ -50,13 +50,33 @@
 						<field id="ingrammicro/importconfig/is_enable">1</field>
 					</depends>
 				</field>
-				<field id="import_category" translate="label comment tooltip" type="button" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
+				<field id="import_category_file"
+					   	translate="label"
+					   	type="Mageseller\IngrammicroImport\Block\Adminhtml\Form\Field\ImportCategory"
+					   	sortOrder="60"
+						showInDefault="1"
+					   	showInWebsite="1"
+					   	showInStore="0">
+					<label>Import Category</label>
+					<backend_model>Mageseller\IngrammicroImport\Model\Config\Backend\ImportCategory</backend_model>
+				</field>
+				<!--<field id="import_category_file"
+					   translate="label"
+					   type="text"
+					   sortOrder="1"
+					   showInDefault="1"
+					   showInWebsite="1"
+					   showInStore="1">
+					<label>Import Ingrammicro Category</label>
+					<backend_model>Mageseller\IngrammicroImport\Model\Config\Backend\ImportCategory</backend_model>
+				</field>-->
+				<!--<field id="import_category" translate="label comment tooltip" type="button" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="0">
 					<label>Import Ingrammicro Category</label>
 					<frontend_model>Mageseller\IngrammicroImport\Block\System\Config\ImportIngrammicroCategory</frontend_model>
 					<depends>
 						<field id="ingrammicro/importconfig/is_enable">1</field>
 					</depends>
-				</field>
+				</field>-->
 			</group>
 		</section>
 	</system>

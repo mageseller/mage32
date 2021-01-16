@@ -84,6 +84,10 @@ class Leadersystems extends AbstractHelper
     private $resourceConnection;
 
     private $supplierCategories;
+    /**
+     * @var \Magento\Framework\Filesystem
+     */
+    private $filesystem;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -115,10 +119,12 @@ class Leadersystems extends AbstractHelper
         CollectionFactory $categoryCollectionFactory,
         ResourceConnection $resourceConnection,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory
-    ) {
+    )
+    {
         parent::__construct($context);
         $this->_dateTime = $dateTime;
         $this->fileFactory = $fileFactory;
+        $this->filesystem = $filesystem;
         $this->scopeConfig = $context->getScopeConfig();
         $this->_dirReader = $dirReader;
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
@@ -154,34 +160,21 @@ class Leadersystems extends AbstractHelper
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
         $categoriesWithParents = [];
-        $array = $fields = [];
-        $i = 0;
-        $handle = @fopen($filepath, "r");
-        if ($handle) {
-            while (($row = fgetcsv($handle, 1000000)) !== false) {
-                if (empty($fields)) {
-                    $fields = $row;
-                    continue;
-                }
-                foreach ($row as $k => $value) {
-                    $array[$i][$fields[$k]] = $value;
-                }
-                $categoryLevel1 = $array[$i]['CATEGORY NAME'] ?? "";
-                $categoryLevel2 = $array[$i]['SUBCATEGORY NAME'] ?? "";
-                if ($categoryLevel1) {
-                    $categoriesWithParents[$categoryLevel1] = 'Default';
-                }
-                if ($categoryLevel2) {
-                    $categoriesWithParents[$categoryLevel2] = $categoryLevel1;
-                }
-
-                $i++;
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $file = $directoryRead->openFile(self::CSV_FILENAME);
+        $headers = array_flip($file->readCsv());
+        while (false !== ($row = $file->readCsv())) {
+            $categoryLevel1 = $row[$headers['CATEGORY NAME']] ?? "";
+            $categoryLevel2 = $row[$headers['SUBCATEGORY NAME']] ?? "";
+            if ($categoryLevel1) {
+                $categoriesWithParents[$categoryLevel1] = 'Default';
             }
-            if (!feof($handle)) {
-                echo "Error: unexpected fgets() fail\n";
+            if ($categoryLevel2) {
+                $categoriesWithParents[$categoryLevel2] = $categoryLevel1;
             }
-            fclose($handle);
         }
+
         $allCategories = array_keys($categoriesWithParents);
         /*Adding category names start*/
         $collection = $this->leadersystemsCategoryFactory->create()->getCollection();
@@ -193,18 +186,18 @@ class Leadersystems extends AbstractHelper
 
         /*Adding parent id to child category starts*/
         $select = (clone $collection->getSelect())
-                    ->reset(Select::COLUMNS)
-                    ->columns(['name' => 'name','id' => 'leadersystemscategory_id']);
+            ->reset(Select::COLUMNS)
+            ->columns(['name' => 'name', 'id' => 'leadersystemscategory_id']);
         $connection = $this->resourceConnection->getConnection();
         $allCategoryIds = $connection->fetchAssoc($select);
-        $parentMap = [];
         foreach ($categoriesWithParents as $childCategory => $parentCategory) {
-            $parentMap[] = [
-                'name' => $childCategory,
-                'parent_id' => $allCategoryIds[$parentCategory]['id'] ?? 0
-            ];
+            $parentId = $allCategoryIds[$parentCategory]['id'] ?? 0;
+            $connection->update(
+                $collection->getMainTable(),
+                ['parent_id' => $parentId],
+                ['name = ?' => $childCategory]
+            );
         }
-        $collection->insertOnDuplicate($parentMap);
         /*Adding parent id to child category ends*/
         return true;
     }
@@ -223,14 +216,6 @@ class Leadersystems extends AbstractHelper
     public function getUrl()
     {
         return $this->getConfig('leadersystems/importconfig/url');
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getXmlUrl()
-    {
-        return $this->getConfig('leadersystems/importconfig/object_id');
     }
 
     public function downloadFile($source)
@@ -293,6 +278,14 @@ class Leadersystems extends AbstractHelper
         return $csvFilepath;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getXmlUrl()
+    {
+        return $this->getConfig('leadersystems/importconfig/object_id');
+    }
+
     public function parseObject($value)
     {
         return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
@@ -304,15 +297,7 @@ class Leadersystems extends AbstractHelper
     {
         return isset($value) ? trim($value) : "";
     }
-    public function getSupplierCatData()
-    {
-        if ($this->supplierCategories == null) {
-            $supplierCategory = $this->getSupplierCategory();
-            $select = $supplierCategory->getSelect()->reset(Select::COLUMNS)->columns(['leadersystemscategory_id','name']);
-            $this->supplierCategories = $this->resourceConnection->getConnection()->fetchAssoc($select);
-        }
-        return $this->supplierCategories;
-    }
+
     public function getCategories($catId = 1)
     {
         $supplierData = $this->getSupplierCatData();
@@ -352,6 +337,21 @@ class Leadersystems extends AbstractHelper
         return $html;
     }
 
+    public function getSupplierCatData()
+    {
+        if ($this->supplierCategories == null) {
+            $supplierCategory = $this->getSupplierCategory();
+            $select = $supplierCategory->getSelect()->reset(Select::COLUMNS)->columns(['leadersystemscategory_id', 'name']);
+            $this->supplierCategories = $this->resourceConnection->getConnection()->fetchAssoc($select);
+        }
+        return $this->supplierCategories;
+    }
+
+    public function getSupplierCategory()
+    {
+        return $this->leadersystemsCategoryFactory->create()->getCollection();
+    }
+
     public function getCategoryById($categoryId)
     {
         $category = $this->categoryFactory->create();
@@ -378,6 +378,69 @@ class Leadersystems extends AbstractHelper
         $html .= "</ul>";*/
         return $html;
     }
+
+    public function getMappedCategory()
+    {
+        $categoryMapArray = [];
+        $categories = $this->getMagentoCategory()->getData();
+        foreach ($categories as $category) {
+            $leadersystemsMappedCategories = explode(",", $category['leadersystems_category_ids']);
+            foreach ($leadersystemsMappedCategories as $leadersystemsCategoryId) {
+                if (isset($categoryMapArray[$leadersystemsCategoryId])) {
+                    $categoryMapArray[$leadersystemsCategoryId] .= "<div class='shop-category-name'>  ===> " .
+                        $category['name'] .
+                        "</div>";
+                } else {
+                    $categoryMapArray[$leadersystemsCategoryId] = "<div class='shop-category-name'>  ===> " .
+                        $category['name'] .
+                        "</div>";
+                }
+            }
+        }
+        return $categoryMapArray;
+    }
+
+    public function getMagentoCategory()
+    {
+        return $this->categoryCollectionFactory->create()
+            ->addAttributeToSelect('name', 'left')
+            ->addAttributeToSelect('leadersystems_category_ids', 'left');
+    }
+
+    public function getSupplierTreeCategory()
+    {
+        $collection = $this->leadersystemsCategoryFactory->create()->getCollection();
+        $select = $collection->getSelect()->reset(Select::COLUMNS)
+            ->columns([
+                'id' => 'leadersystemscategory_id',
+                'name' => 'name',
+                'parent_id' => 'parent_id'
+            ]);
+        $connection = $this->resourceConnection->getConnection();
+        $categoryWithParents = $connection->fetchAll($select);
+        $tree = $this->buildTreeFromArray($categoryWithParents);
+        return $tree;
+    }
+
+    public function buildTreeFromArray($items)
+    {
+        $childs = [];
+
+        foreach ($items as &$item) {
+            $childs[$item['parent_id'] ?? 0][] = &$item;
+        }
+
+        unset($item);
+
+        foreach ($items as &$item) {
+            if (isset($childs[$item['id']])) {
+                $item['childs'] = $childs[$item['id']];
+            }
+        }
+
+        return $childs[0] ?? [];
+    }
+
     public function getSupplierCategoryTree($supplierTreeCategories, $categoryMapArray)
     {
         $html = "<ul>";
@@ -396,71 +459,6 @@ class Leadersystems extends AbstractHelper
         }
         $html .= "</ul>";
         return $html;
-    }
-
-    public function getMappedCategory()
-    {
-        $categoryMapArray = [];
-        $categories = $this->getMagentoCategory()->getData();
-        foreach ($categories as $category) {
-            $leadersystemsMappedCategories = explode(",", $category['leadersystems_category_ids']);
-            foreach ($leadersystemsMappedCategories as $leadersystemsCategoryId) {
-                if (isset($categoryMapArray[$leadersystemsCategoryId])) {
-                    $categoryMapArray[$leadersystemsCategoryId] .=  "<div class='shop-category-name'>  ===> " .
-                                                                $category['name'] .
-                                                            "</div>";
-                } else {
-                    $categoryMapArray[$leadersystemsCategoryId] =  "<div class='shop-category-name'>  ===> " .
-                                                            $category['name'] .
-                                                        "</div>";
-                }
-            }
-        }
-        return $categoryMapArray;
-    }
-
-    public function getMagentoCategory()
-    {
-        return $this->categoryCollectionFactory->create()
-            ->addAttributeToSelect('name', 'left')
-            ->addAttributeToSelect('leadersystems_category_ids', 'left');
-    }
-
-    public function getSupplierCategory()
-    {
-        return $this->leadersystemsCategoryFactory->create()->getCollection();
-    }
-    public function getSupplierTreeCategory()
-    {
-        $collection = $this->leadersystemsCategoryFactory->create()->getCollection();
-        $select = $collection->getSelect()->reset(Select::COLUMNS)
-                    ->columns([
-                        'id' => 'leadersystemscategory_id',
-                        'name' => 'name',
-                        'parent_id' => 'parent_id'
-                    ]);
-        $connection = $this->resourceConnection->getConnection();
-        $categoryWithParents = $connection->fetchAll($select);
-        $tree = $this->buildTreeFromArray($categoryWithParents);
-        return $tree;
-    }
-    public function buildTreeFromArray($items)
-    {
-        $childs = [];
-
-        foreach ($items as &$item) {
-            $childs[$item['parent_id'] ?? 0][] = &$item;
-        }
-
-        unset($item);
-
-        foreach ($items as &$item) {
-            if (isset($childs[$item['id']])) {
-                $item['childs'] = $childs[$item['id']];
-            }
-        }
-
-        return $childs[0] ?? [];
     }
 
     public function buildTreeFromObjects($items)
