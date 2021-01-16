@@ -44,6 +44,27 @@
 					</depends>
 				</field>
 			</group>
+			<group id="images" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="180" translate="label comment">
+				<label>Catalog Images Import</label>
+				<comment>Will download and import pending products images into Magento.</comment>
+				<field id="last_sync_images" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label comment" type="text">
+					<label>Last Synchronization Date</label>
+					<comment><![CDATA[Last synchronization date of operator images.]]></comment>
+				</field>
+				<field id="button_images" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="button_label">
+					<frontend_model>Mageseller\XitImport\Block\Adminhtml\System\Config\Button\Sync\Images</frontend_model>
+				</field>
+			</group>
+			<group id="product" showInDefault="1" showInStore="0" showInWebsite="0" sortOrder="10" translate="label">
+				<label>Products Import</label>
+				<field id="last_sync_product" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label comment" type="text">
+					<label>Last Synchronization Date</label>
+					<comment><![CDATA[Last synchronization date of operator products.]]></comment>
+				</field>
+				<field id="button_products" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="button_label">
+					<frontend_model>Mageseller\XitImport\Block\Adminhtml\System\Config\Button\Sync\Products</frontend_model>
+				</field>
+			</group>
 		</section>
 	</system>
 </config>

@@ -19,6 +19,9 @@ use Magento\Framework\DB\Select;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use SimpleXMLElement;
+use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Xit extends AbstractHelper
 {
@@ -32,9 +35,7 @@ class Xit extends AbstractHelper
      */
     protected $_mediaDirectory;
     /**
-     * @var \Magento\Store\Model\StoreManager
-     */
-    protected $_storeManager;
+
     /**
      *
      * @var unknown
@@ -81,6 +82,19 @@ class Xit extends AbstractHelper
     private $resourceConnection;
 
     private $supplierCategories;
+    /**
+     * @var ProductHelper
+     */
+    private $xitProductHelper;
+    /**
+     * @var MagentoConfig
+     */
+    protected $configuration;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -93,6 +107,7 @@ class Xit extends AbstractHelper
      * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
      * @param \Mageseller\XitImport\Logger\XitImport $xitimportLogger
      * @param \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory
+     * @param ProductHelper $xitProductHelper
      * @param CollectionFactory $categoryCollectionFactory
      * @param ResourceConnection $resourceConnection
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
@@ -101,7 +116,6 @@ class Xit extends AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\Filesystem $filesystem,
-        \Magento\Store\Model\StoreManager $storeManager,
         \Magento\Framework\Filesystem\DirectoryList $dirReader,
         \Magento\Framework\Filesystem\Io\File $fileFactory,
         \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
@@ -109,8 +123,11 @@ class Xit extends AbstractHelper
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
         \Mageseller\XitImport\Logger\XitImport $xitimportLogger,
         \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory,
+        \Mageseller\XitImport\Helper\ProductHelper $xitProductHelper,
         CollectionFactory $categoryCollectionFactory,
         ResourceConnection $resourceConnection,
+        MagentoConfig $configuration,
+        StoreManagerInterface $storeManager,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory
     ) {
         parent::__construct($context);
@@ -119,14 +136,182 @@ class Xit extends AbstractHelper
         $this->scopeConfig = $context->getScopeConfig();
         $this->_dirReader = $dirReader;
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
-        $this->_storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->xitimportLogger = $xitimportLogger;
         $this->xitCategoryFactory = $xitCategoryFactory;
+        $this->xitProductHelper = $xitProductHelper;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryFactory = $categoryFactory;
         $this->resourceConnection = $resourceConnection;
+        $this->configuration = $configuration;
+        $this->storeManager = $storeManager;
     }
+    /**
+     * @return  int
+     */
+    public function getCurrentStoreId()
+    {
+        return $this->storeManager->getStore()->getId();
+    }
+
+    /**
+     * @return  int
+     */
+    public function getCurrentWebsiteId()
+    {
+        return $this->storeManager->getStore()->getWebsiteId();
+    }
+
+    /**
+     * Returns a config flag
+     *
+     * @param   string  $path
+     * @param   mixed   $store
+     * @return  bool
+     */
+    public function getFlag($path, $store = null)
+    {
+        return $this->scopeConfig->isSetFlag($path, ScopeInterface::SCOPE_STORE, $store);
+    }
+
+    /**
+     * Returns store locale
+     *
+     * @param   mixed   $store
+     * @return  string
+     */
+    public function getLocale($store = null)
+    {
+        return $this->getValue('general/locale/code', $store);
+    }
+
+    /**
+     * Get tax class id specified for shipping tax estimation
+     *
+     * @param   mixed   $store
+     * @return  int
+     */
+    public function getShippingTaxClass($store = null)
+    {
+        return $this->getValue(\Magento\Tax\Model\Config::CONFIG_XML_PATH_SHIPPING_TAX_CLASS, $store);
+    }
+
+    /**
+     * Reads the configuration directly from the database
+     *
+     * @param   string  $path
+     * @param   string  $scope
+     * @param   int     $scopeId
+     * @return  string|false
+     */
+    public function getRawValue($path, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0)
+    {
+        $connection = $this->configuration->getConnection();
+
+        $select = $connection->select()
+            ->from($this->configuration->getMainTable(), 'value')
+            ->where('path = ?', $path)
+            ->where('scope = ?', $scope)
+            ->where('scope_id = ?', $scopeId);
+
+        return $connection->fetchOne($select);
+    }
+
+    /**
+     * Returns a config value
+     *
+     * @param   string  $path
+     * @param   mixed   $store
+     * @return  mixed
+     */
+    public function getValue($path, $store = null)
+    {
+        return $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $store);
+    }
+
+    /**
+     * Returns store name if defined
+     *
+     * @param   mixed   $store
+     * @return  string
+     */
+    public function getStoreName($store = null)
+    {
+        return $this->getValue(\Magento\Store\Model\Information::XML_PATH_STORE_INFO_NAME, $store);
+    }
+
+    /**
+     * @return  bool
+     */
+    public function isSingleStoreMode()
+    {
+        return $this->storeManager->hasSingleStore();
+    }
+    /**
+     * @param   string  $entity
+     * @param   mixed   $store
+     * @return  \DateTime|null
+     */
+    public function getSyncDate($entity, $store = null)
+    {
+        $path = "xit/$entity/last_sync_$entity";
+
+        if (null === $store) {
+            $date = $this->getRawValue($path);
+        } else {
+            $scopeId = $this->storeManager->getStore($store)->getId();
+            $date = $this->getRawValue($path, ScopeInterface::SCOPE_STORES, $scopeId);
+        }
+
+        return !empty($date) ? new \DateTime($date) : null;
+    }
+
+    /**
+     * @return  $this
+     */
+    protected function resetConfig()
+    {
+        $this->storeManager->getStore()->resetConfig();
+
+        return $this;
+    }
+
+    /**
+     * @param   string  $entity
+     * @return  $this
+     */
+    public function resetSyncDate($entity)
+    {
+        $this->setValue("xit/$entity/last_sync_$entity", null);
+
+        return $this->resetConfig();
+    }
+
+    /**
+     * @param   string  $entity
+     * @param   string  $time
+     * @return  $this
+     */
+    public function setSyncDate($entity, $time = 'now')
+    {
+        $datetime = new \DateTime($time);
+        $this->setValue("xit/$entity/last_sync_$entity", $datetime->format(\DateTime::ISO8601));
+
+        return $this->resetConfig();
+    }
+    /**
+     * Set a config value
+     *
+     * @param   string  $path
+     * @param   string  $value
+     * @param   string  $scope
+     * @param   int     $scopeId
+     */
+    public function setValue($path, $value, $scope = 'default', $scopeId = 0)
+    {
+        $this->configuration->saveConfig($path, $value, $scope, $scopeId);
+    }
+
 
     /**
      * @return mixed
@@ -145,7 +330,18 @@ class Xit extends AbstractHelper
     {
         return $this->scopeConfig->getValue($value, $scope);
     }
-
+    public function importXitProducts()
+    {
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
+        $apiUrl = $this->getApiUrl();
+        $filepath = $this->downloadFile($apiUrl);
+        $xml = simplexml_load_file($filepath);
+        if ($xml instanceof SimpleXMLElement) {
+            $items = $xml->xpath("/Catalogue/Items/Item");
+            $this->xitProductHelper->processProducts($items);
+        }
+    }
     public function importXitCategory()
     {
         ini_set("memory_limit", "-1");
@@ -236,7 +432,7 @@ class Xit extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
-
+        return $filepath;
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);
@@ -454,4 +650,6 @@ class Xit extends AbstractHelper
 
         return $childs[0] ?? [];
     }
+
+
 }

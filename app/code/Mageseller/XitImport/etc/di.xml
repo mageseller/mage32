@@ -26,4 +26,11 @@
 			</argument>
 		</arguments>
 	</type>
+	<type name="Magento\Framework\Console\CommandList">
+		<arguments>
+			<argument name="commands" xsi:type="array">
+				<item name="XitProductImport" xsi:type="object">Mageseller\XitImport\Console\Command\XitProductImport</item>
+			</argument>
+		</arguments>
+	</type>
 </config>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add
+                id="Mageseller_Process::process_group"
+                module="Mageseller_Process"
+                resource="Mageseller_Process::process_group"
+                parent="Mageseller_XitImport::top_level"
+                sortOrder="0"
+                title="Supplier Processes"
+        />
+        <add id="Mageseller_Process::process" title="Processes" module="Mageseller_Process" sortOrder="110" parent="Mageseller_Process::process_group" action="magesupplier/process" resource="Mageseller_Process::process"/>
+        <add id="Mageseller_Process::configuration" title="Processes Configuration" module="Mageseller_Process" sortOrder="50" parent="Mageseller_Process::process_group" resource="Mageseller_Config::process" action="adminhtml/system_config/edit/section/mageseller_process/"/>
+    </menu>
+</config>
