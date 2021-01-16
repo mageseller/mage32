@@ -29,6 +29,8 @@ class Leadersystems extends AbstractHelper
     const XML_TMP_FILENAME = 'vendor-file-tmp.xml';
     const DOWNLOAD_FOLDER = 'supplier/leadersystems';
     const XIT_IMPORTCONFIG_IS_ENABLE = 'leadersystems/importconfig/is_enable';
+    const CATEGORY_NAME = 'CATEGORY NAME';
+    const SUBCATEGORY_NAME = 'SUBCATEGORY NAME';
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -157,6 +159,8 @@ class Leadersystems extends AbstractHelper
 
     public function importLeadersystemsCategory()
     {
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
         $categoriesWithParents = [];
@@ -165,10 +169,10 @@ class Leadersystems extends AbstractHelper
         $file = $directoryRead->openFile(self::CSV_FILENAME);
         $headers = array_flip($file->readCsv());
         while (false !== ($row = $file->readCsv())) {
-            $categoryLevel1 = $row[$headers['CATEGORY NAME']] ?? "";
-            $categoryLevel2 = $row[$headers['SUBCATEGORY NAME']] ?? "";
+            $categoryLevel1 = $row[$headers[self::CATEGORY_NAME]] ?? "";
+            $categoryLevel2 = $row[$headers[self::SUBCATEGORY_NAME]] ?? "";
             if ($categoryLevel1) {
-                $categoriesWithParents[$categoryLevel1] = 'Default';
+                $categoriesWithParents[$categoryLevel1] = null;
             }
             if ($categoryLevel2) {
                 $categoriesWithParents[$categoryLevel2] = $categoryLevel1;

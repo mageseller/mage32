@@ -148,6 +148,8 @@ class Xit extends AbstractHelper
 
     public function importXitCategory()
     {
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
         $allCategories = [];

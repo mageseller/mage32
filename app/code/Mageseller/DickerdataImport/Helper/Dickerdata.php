@@ -25,6 +25,9 @@ class Dickerdata extends AbstractHelper
     const TMP_FILENAME = 'vendor-file-tmp.json';
     const DOWNLOAD_FOLDER = 'supplier/dickerdata';
     const DICKERDATA_IMPORTCONFIG_IS_ENABLE = 'dickerdata/importconfig/is_enable';
+    const PRIMARY_CATEGORY = 'PrimaryCategory';
+    const SECONDARY_CATEGORY = 'SecondaryCategory';
+    const TERTIARY_CATEGORY = 'TertiaryCategory';
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -155,10 +158,10 @@ class Dickerdata extends AbstractHelper
         $items = json_decode($stream, true);
         $categoriesWithParents = [];
         foreach ($items as $jsonItem) {
-            $primaryCategory = $jsonItem['PrimaryCategory'] ?? "";
-            $secondaryCategory = $jsonItem['SecondaryCategory'] ?? "";
-            $tertiaryCategory = $jsonItem['TertiaryCategory'] ?? "";
-            $categoriesWithParents[$primaryCategory] = 'Default';
+            $primaryCategory = $jsonItem[self::PRIMARY_CATEGORY] ?? "";
+            $secondaryCategory = $jsonItem[self::SECONDARY_CATEGORY] ?? "";
+            $tertiaryCategory = $jsonItem[self::TERTIARY_CATEGORY] ?? "";
+            $categoriesWithParents[$primaryCategory] = 0;
             $categoriesWithParents[$secondaryCategory] = $primaryCategory;
             $categoriesWithParents[$tertiaryCategory] = $secondaryCategory;
         }

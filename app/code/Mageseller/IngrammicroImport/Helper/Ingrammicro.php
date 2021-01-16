@@ -26,6 +26,10 @@ class Ingrammicro extends AbstractHelper
     const TMP_FILENAME = 'vendor-file-tmp.csv';
     const DOWNLOAD_FOLDER = 'supplier/ingrammicro';
     const XIT_IMPORTCONFIG_IS_ENABLE = 'ingrammicro/importconfig/is_enable';
+    const CATEGORY_ID = 'Category ID';
+    const SUB_CATEGORY = 'Sub-Category';
+    const PRODUCT_GROUP_CODE = 'ProductGroupCode';
+    const DESCRIPTION = 'Description';
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -168,6 +172,8 @@ class Ingrammicro extends AbstractHelper
     }
     public function importIngrammicroCategory()
     {
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
         if (empty($_FILES['groups']['tmp_name']['importconfig']['fields']['import_category_file']['value'])) {
             return $this;
         }
@@ -189,8 +195,8 @@ class Ingrammicro extends AbstractHelper
             /*Adding category names start*/
             $headers = array_flip($file->readCsv(0, "\t"));
             while (false !== ($row = $file->readCsv(0, "\t"))) {
-                $catId = (int) $row[$headers['ProductGroupCode']] ?? '';
-                $catName =  $row[$headers['Description']]  ?? '';
+                $catId = (int) $row[$headers[self::PRODUCT_GROUP_CODE]] ?? '';
+                $catName =  $row[$headers[self::DESCRIPTION]]  ?? '';
 
                 $allCategories[] = [
                         'ingrammicrocategory_id' => ltrim($catId, "0"),
@@ -210,13 +216,11 @@ class Ingrammicro extends AbstractHelper
             $categoriesWithParents = [];
             $headers = array_flip($file2->readCsv(0, ","));
             $i = 0;
-            $parentMap = [];
-            $array =  [];
             $connection = $this->resourceConnection->getConnection();
             while (false !== ($row = $file2->readCsv(0, ","))) {
-                $categoryLevel1 =  $row[$headers['Category ID']] ?? 0;
-                $categoryLevel2 =  $row[$headers['Sub-Category']]  ?? 0;
-                $categoriesWithParents[ltrim($categoryLevel1, "0")] = 'Default';
+                $categoryLevel1 =  $row[$headers[self::CATEGORY_ID]] ?? 0;
+                $categoryLevel2 =  $row[$headers[self::SUB_CATEGORY]]  ?? 0;
+                $categoriesWithParents[ltrim($categoryLevel1, "0")] = null;
                 if ($categoryLevel2) {
                     $categoriesWithParents[ltrim($categoryLevel2, "0")] = ltrim($categoryLevel1, "0");
                     $connection->update(
@@ -227,13 +231,7 @@ class Ingrammicro extends AbstractHelper
                 }
                 $i++;
             }
-
-
-
-            /*echo "<pre>";
-            print_r($parentMap);
-            die;*/
-            //$collection->insertOnDuplicate($parentMap);
+             //$collection->insertOnDuplicate($parentMap);
             /*Adding category names ends*/
         } catch (\Exception $e) {
             echo $e->getMessage();
@@ -284,22 +282,6 @@ class Ingrammicro extends AbstractHelper
     public function getUrl()
     {
         return $this->getConfig('ingrammicro/importconfig/url');
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getObjectId()
-    {
-        return $this->getConfig('ingrammicro/importconfig/object_id');
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getToken()
-    {
-        return $this->getConfig('ingrammicro/importconfig/token');
     }
 
     public function downloadFile($source)
