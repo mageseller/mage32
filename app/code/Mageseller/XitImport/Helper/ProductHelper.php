@@ -28,6 +28,9 @@ use Mageseller\Process\Helper\Product\Import\Url;
 use Mageseller\Process\Model\Process;
 use Mageseller\Process\Model\Product\Import\Indexer\Indexer;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
+use Mageseller\ProductImport\Api\Data\ProductStoreView;
+use Mageseller\ProductImport\Api\Data\SimpleProduct;
+use Mageseller\ProductImport\Api\ImportConfig;
 use Mageseller\XitImport\Helper\Product\Import\Inventory as InventoryHelper;
 
 class ProductHelper extends AbstractHelper
@@ -142,6 +145,29 @@ class ProductHelper extends AbstractHelper
     protected $xitCategoryIdsWithName;
     private $websiteIds;
     private $urlHelper;
+    /**
+     * @var \Mageseller\ProductImport\Api\ImporterFactory
+     */
+    private $importerFactory;
+    /**
+     * @var \Magento\Framework\Indexer\IndexerRegistry
+     */
+    protected $indexerRegistry;
+    /**
+     * @var \Magento\CatalogInventory\Model\Indexer\Stock\Processor
+     */
+    protected $stockIndexerProcessor;
+
+    /**
+     * @var \Magento\Catalog\Model\Indexer\Product\Price\Processor
+     */
+    protected $priceIndexer;
+    /**
+     * @var \Magento\Catalog\Model\Indexer\Product\Eav\Processor
+     */
+    protected $_productEavIndexerProcessor;
+    protected $globalProductObject;
+    protected $lastAddedProductObject;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -162,7 +188,13 @@ class ProductHelper extends AbstractHelper
      * @param ProductFactory $productFactory
      * @param ProductResourceFactory $productResourceFactory
      * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param InventoryHelper $inventory
+     * @param InventoryHelper $inventoryHelper
+     * @param Url $urlHelper
+     * @param \Mageseller\ProductImport\Api\ImporterFactory $importerFactory
+     * @param \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
+     * @param \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
+     * @param \Magento\Catalog\Model\Indexer\Product\Price\Processor $priceIndexer
+     * @param \Magento\Catalog\Model\Indexer\Product\Eav\Processor $productEavIndexerProcessor
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
      * @throws \Magento\Framework\Exception\FileSystemException
      */
@@ -187,6 +219,11 @@ class ProductHelper extends AbstractHelper
         ProductCollectionFactory $productCollectionFactory,
         InventoryHelper $inventoryHelper,
         \Mageseller\Process\Helper\Product\Import\Url $urlHelper,
+        \Mageseller\ProductImport\Api\ImporterFactory $importerFactory,
+        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
+        \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor,
+        \Magento\Catalog\Model\Indexer\Product\Price\Processor $priceIndexer,
+        \Magento\Catalog\Model\Indexer\Product\Eav\Processor $productEavIndexerProcessor,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory
     ) {
         parent::__construct($context);
@@ -212,6 +249,11 @@ class ProductHelper extends AbstractHelper
         $this->productCollectionFactory = $productCollectionFactory;
         $this->inventoryHelper = $inventoryHelper;
         $this->urlHelper = $urlHelper;
+        $this->importerFactory = $importerFactory;
+        $this->indexerRegistry = $indexerRegistry;
+        $this->stockIndexerProcessor = $stockIndexerProcessor;
+        $this->priceIndexer = $priceIndexer;
+        $this->_productEavIndexerProcessor = $productEavIndexerProcessor;
     }
 
     public function processProducts($items, Process $process, $since, $sendReport = true)
@@ -219,20 +261,37 @@ class ProductHelper extends AbstractHelper
         try {
             // Disable or not the indexing when UpdateOnSave mode
             $this->indexer->initIndexers();
+            $config = new ImportConfig();
+            $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SERIAL;
+            $productIdsToReindex = [];
+            // a callback function to postprocess imported products
+            $config->resultCallback = function (\Mageseller\ProductImport\Api\Data\Product $product) use (&$process,&$time,&$productIdsToReindex,&$importer) {
+                if ($product->isOk()) {
+                    $productIdsToReindex[] = $product->id;
+                    $message = sprintf("%s: success! sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
+                } else {
+                    $message = sprintf("%s: failed! sku = %s error = %s ( $time s)\n", $product->lineNumber, $product->getSku(), implode('; ', $productError));
+                }
+                if (isset($message)) {
+                    $process->output($message);
+                }
+            };
+            $importer = $this->importerFactory->createImporter($config);
+
             $processResource = $this->processResourceFactory->create();
             $processResource->save($process);
             $i = 0; // Line number
+            $j = 0; // Line number
             foreach ($items as $item) {
                 $sku =  (string) $item->ItemDetail->ManufacturerPartID;
                 try {
                     ++$i;
                     $start = microtime(true);
 
-                    $this->import($item);
+                    $this->import2($item, $j, $importer);
 
                     $time = round(microtime(true) - $start, 2);
-                    $message = __("[OK] Product has been saved for sku %1 ( $time s)", $sku);
-                    $process->output($message);
+
                     if ($i % 5 === 0) {
                         $processResource->save($process);
                     }
@@ -251,14 +310,67 @@ class ProductHelper extends AbstractHelper
             $process->fail($e->getMessage());
             throw $e;
         } finally {
+            $importer->flush();
             // Reindex
             $process->output(__('Reindexing...'), true);
-            $this->indexer->reindex();
+            $this->reindexProducts($productIdsToReindex);
+            //$this->indexer->reindex();
         }
 
         $process->output(__('Done!'));
     }
+    private function import2(&$data, &$j, &$importer)
+    {
+        $sku =  (string) $data->ItemDetail->ManufacturerPartID;
+        $name = (string) $data->ItemDetail->Title;
+        $price =  (string) $data->ItemDetail->UnitPrice;
+        $price = floatval(preg_replace('/[^\d.]/', '', $price));
 
+        $taxRate = (string) $data->ItemDetail->TaxRate;
+        $updatedAt = (string) $data->UpdatedAt;
+        $taxClassId = 2;
+        $attributeSetId = 4;
+        $product = new SimpleProduct($sku);
+        $product->lineNumber = $j + 1;
+        $product->setAttributeSetByName("Default");
+        $product->addCategoryIds([1, 2, 20,38,23]);
+        $product->setWebsitesByCode(['base']);
+        $product->sourceItem("default")->setQuantity(100);
+        $product->sourceItem("default")->setStatus(1);
+        if (isset($data->Images->Image->URL)) {
+            $imageUrl = "{$data->Images->Image->URL}";
+            if ($imageUrl) {
+                /*$image = $product->addImage($imageUrl);
+                //$product->global()->setImageGalleryInformation($image, "First duck", 1, true);
+                $product->global()->setImageRole($image, ProductStoreView::BASE_IMAGE);*/
+            }
+        }
+
+        // global eav attributes
+        $global = $product->global();
+        $global->setName($name);
+        $global->setPrice($price);
+        $global->setTaxClassName('Taxable Goods');
+        $global->setStatus(ProductStoreView::STATUS_ENABLED);
+        $global->setWeight("1");
+        $global->setVisibility(ProductStoreView::VISIBILITY_BOTH);
+        $global->generateUrlKey();
+
+        $stock = $product->defaultStockItem();
+        $stock->setQty(100);
+        $stock->setIsInStock(true);
+        $stock->setMaximumSaleQuantity(10000.0000);
+        $stock->setNotifyStockQuantity(1);
+        $stock->setManageStock(true);
+        $stock->setQuantityIncrements(1);
+
+        /*// German eav attributes
+        $german = $product->storeView('de_store');
+        $german->setName($line[3]);
+        $german->setPrice($line[4]);*/
+        $j++;
+        $importer->importSimpleProduct($product);
+    }
     public function parseObject($value)
     {
         return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
@@ -326,6 +438,7 @@ class ProductHelper extends AbstractHelper
         $this->inventoryHelper->createSourceItems($product);
         return $product;
     }
+
     /**
      * Creates and initializes a product according to arguments
      *
@@ -340,6 +453,7 @@ class ProductHelper extends AbstractHelper
         $sku =  (string) $data->ItemDetail->ManufacturerPartID;
         $name = (string) $data->ItemDetail->Title;
         $price =  (string) $data->ItemDetail->UnitPrice;
+        $price = floatval(preg_replace('/[^\d.]/', '', $price));
         $taxRate = (string) $data->ItemDetail->TaxRate;
         $updatedAt = (string) $data->UpdatedAt;
         $taxClassId = 2;
@@ -455,5 +569,30 @@ class ProductHelper extends AbstractHelper
         }
 
         return $urlKey;
+    }
+    public function cleanData($a)
+    {
+        if (is_numeric($a)) {
+            $a = preg_replace('/[^0-9,]/s', '', $a);
+        }
+
+        return $a;
+    }
+
+    /**
+     * Initiate product reindex by product ids
+     *
+     * @param array $productIdsToReindex
+     * @return void
+     */
+    private function reindexProducts($productIdsToReindex = [])
+    {
+        $indexer = $this->indexerRegistry->get(\Magento\Catalog\Model\Indexer\Product\Category::INDEXER_ID);
+        if (is_array($productIdsToReindex) && count($productIdsToReindex) > 0 && !$indexer->isScheduled()) {
+            $indexer->reindexList($productIdsToReindex);
+            //$this->_productEavIndexerProcessor->reindexList($productIdsToReindex);
+            $this->stockIndexerProcessor->reindexList($productIdsToReindex);
+            $this->priceIndexer->reindexList($productIdsToReindex);
+        }
     }
 }

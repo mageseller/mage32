@@ -235,6 +235,7 @@ return [
         'Mageseller_IngrammicroImport' => 1,
         'Mageseller_LeadersystemsImport' => 1,
         'Mageseller_Process' => 1,
+        'Mageseller_ProductImport' => 1,
         'Mageseller_XitImport' => 1,
         'Temando_Shipping' => 1,
         'Vertex_Tax' => 1

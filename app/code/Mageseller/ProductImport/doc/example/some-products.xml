@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<import>
+	<simple sku="skinny-jeans-811">
+		<attribute_set_name>Default</attribute_set_name>
+		<global>
+			<name>Skinny Jeans 811</name>
+			<price>19.95</price>
+			<status>1</status>
+			<gift_message_available>1</gift_message_available>
+			<visibility>4</visibility>
+			<tax_class_name>Taxable Goods</tax_class_name>
+			<generate_url_key>1</generate_url_key>
+			<description>A lovely pair of jeans</description>
+			<short_description>A lovely pair of jeans</short_description>
+			<meta_title>Skinny Jeans 811</meta_title>
+			<meta_description>Cheap Skinny Jeans</meta_description>
+			<meta_keywords>Skinny, Jeans, Cheap</meta_keywords>
+			<cost>11.35</cost>
+			<msrp>23.95</msrp>
+			<msrp_display_actual_price_type>0</msrp_display_actual_price_type>
+			<weight>0.5</weight>
+			<special_price>12.45</special_price>
+			<special_from_date>2018-06-03</special_from_date>
+			<special_to_date>2018-06-30</special_to_date>
+			<news_from_date>2018-06-03</news_from_date>
+			<news_to_date>2018-06-30</news_to_date>
+			<manufacturer>Jeans &amp; Co</manufacturer>
+			<country_of_manufacture>Hungaria</country_of_manufacture>
+			<color>Blue</color>
+		</global>
+		<store_view code="default">
+			<price>19.75</price>
+		</store_view>
+		<category_global_names>
+			<item>Default Category/Trousers</item>
+			<item>Default Category/Trendy</item>
+		</category_global_names>
+		<website_codes>
+			<item>base</item>
+		</website_codes>
+		<stock>
+			<qty>12</qty>
+			<is_in_stock>1</is_in_stock>
+			<min_qty>5.0</min_qty>
+			<notify_stock_qty>10.0</notify_stock_qty>
+			<min_sale_qty>5.0</min_sale_qty>
+			<max_sale_qty>500.0</max_sale_qty>
+			<qty_increments>5.0</qty_increments>
+			<low_stock_date>2018-06-08</low_stock_date>
+			<use_config_min_qty>0</use_config_min_qty>
+			<is_qty_decimal>1</is_qty_decimal>
+			<backorders>1</backorders>
+			<use_config_backorders>0</use_config_backorders>
+			<use_config_min_sale_qty>1</use_config_min_sale_qty>
+			<use_config_max_sale_qty>0</use_config_max_sale_qty>
+			<use_config_notify_stock_qty>0</use_config_notify_stock_qty>
+			<manage_stock>1</manage_stock>
+			<use_config_manage_stock>0</use_config_manage_stock>
+			<stock_status_changed_auto>1</stock_status_changed_auto>
+			<use_config_qty_increments>1</use_config_qty_increments>
+			<use_config_enable_qty_inc>1</use_config_enable_qty_inc>
+			<enable_qty_increments>0</enable_qty_increments>
+			<is_decimal_divided>1</is_decimal_divided>
+		</stock>
+	</simple>
+	<virtual sku="services-6546">
+		<attribute_set_name>Default</attribute_set_name>
+		<global>
+			<name>Filling in tax form</name>
+			<price>79.95</price>
+			<url_key>filling-in-tax-form-2</url_key>
+			<delete code="msrp" />
+			<delete code="manufacturer" />
+			<select code="color">Blue</select>
+			<multi_select code="color_group">
+				<item>Red</item>
+				<item>Blue</item>
+			</multi_select>
+		</global>
+		<category_ids>
+			<item>2</item>
+		</category_ids>
+		<website_ids>
+			<item>1</item>
+		</website_ids>
+		<cross_sell_product_skus>
+			<item>services-104-b1</item>
+			<item>services-104-b2</item>
+		</cross_sell_product_skus>
+		<up_sell_product_skus>
+			<item>services-104-c1</item>
+			<item>services-104-c2</item>
+		</up_sell_product_skus>
+		<related_product_skus>
+			<item>services-104-e1</item>
+			<item>services-104-e2</item>
+		</related_product_skus>
+		<custom_options>
+			<custom_option_textfield sku="inscription" required="0" max_characters="40">
+				<global>
+					<custom_option_title>Inscription</custom_option_title>
+					<custom_option_price price="0.50" price_type="fixed" />
+				</global>
+				<store_view code="default">
+					<custom_option_title>Inscriptie</custom_option_title>
+				</store_view>
+			</custom_option_textfield>
+			<custom_option_textarea sku="note" required="0" max_characters="250" />
+			<custom_option_file sku="id-card" required="1" file_extensions="jpg jpeg" max_width="5000" max_height="7000" />
+			<custom_option_date sku="date" required="0"/>
+			<custom_option_datetime sku="datetime" required="0" />
+			<custom_option_time sku="time" required="0" />
+			<custom_option_dropdown required="1">
+				<sku_values>
+					<item>red</item>
+					<item>green</item>
+				</sku_values>
+				<global>
+					<custom_option_title>Color</custom_option_title>
+					<custom_option_values>
+						<custom_option_value price="1.00" price_type="fixed" title="Red" />
+						<custom_option_value price="1.20" price_type="fixed" title="Green" />
+					</custom_option_values>
+				</global>
+				<store_view code="default">
+					<custom_option_title>Kleur</custom_option_title>
+					<custom_option_values>
+						<custom_option_value price="1.00" price_type="fixed" title="Rood" />
+						<custom_option_value price="1.20" price_type="fixed" title="Groen" />
+					</custom_option_values>
+				</store_view>
+			</custom_option_dropdown>
+			<custom_option_radio_buttons required="0">
+				<sku_values>
+					<item>red</item>
+					<item>green</item>
+				</sku_values>
+				<global>
+					<custom_option_title>Color</custom_option_title>
+					<custom_option_values>
+						<custom_option_value price="1.00" price_type="fixed" title="Red" />
+						<custom_option_value price="1.20" price_type="fixed" title="Green" />
+					</custom_option_values>
+				</global>
+				<store_view code="default">
+					<custom_option_title>Kleur</custom_option_title>
+					<custom_option_values>
+						<custom_option_value price="1.00" price_type="fixed" title="Rood" />
+						<custom_option_value price="1.20" price_type="fixed" title="Groen" />
+					</custom_option_values>
+				</store_view>
+			</custom_option_radio_buttons>
+			<custom_option_checkbox_group required="0">
+				<sku_values>
+					<item>red</item>
+					<item>green</item>
+				</sku_values>
+				<global>
+					<custom_option_title>Color</custom_option_title>
+					<custom_option_values>
+						<custom_option_value price="1.00" price_type="fixed" title="Red" />
+						<custom_option_value price="1.20" price_type="fixed" title="Green" />
+					</custom_option_values>
+				</global>
+				<store_view code="default">
+					<custom_option_title>Kleur</custom_option_title>
+					<custom_option_values>
+						<custom_option_value price="1.00" price_type="fixed" title="Rood" />
+						<custom_option_value price="1.20" price_type="fixed" title="Groen" />
+					</custom_option_values>
+				</store_view>
+			</custom_option_checkbox_group>
+			<custom_option_multiple_select required="0">
+				<sku_values>
+					<item>red</item>
+					<item>green</item>
+				</sku_values>
+				<global>
+					<custom_option_title>Color</custom_option_title>
+					<custom_option_values>
+						<custom_option_value price="1.00" price_type="fixed" title="Red" />
+						<custom_option_value price="1.20" price_type="fixed" title="Green" />
+					</custom_option_values>
+				</global>
+				<store_view code="default">
+					<custom_option_title>Kleur</custom_option_title>
+					<custom_option_values>
+						<custom_option_value price="1.00" price_type="fixed" title="Rood" />
+						<custom_option_value price="1.20" price_type="fixed" title="Groen" />
+					</custom_option_values>
+				</store_view>
+			</custom_option_multiple_select>
+		</custom_options>
+	</virtual>
+	<simple sku="macdonald-of-the-isles">
+		<attribute_set_name>Default</attribute_set_name>
+		<global>
+			<name>MacDonald of the Isles</name>
+			<price>19.95</price>
+		</global>
+		<images>
+			<image file_or_url="images/MacDonald_of_the_Isles_(MacIan).jpg">
+				<global>
+					<role>image</role>
+					<role>small_image</role>
+					<gallery_information label="Mac Donald of the Isles" position="1" enabled="1" />
+				</global>
+				<store_view code="default">
+					<gallery_information label="Mac Donald des Isles" position="2" enabled="0" />
+				</store_view>
+			</image>
+			<image file_or_url="images/MacDonald_of_the_Isles_(MacIan) - small.jpg">
+				<global>
+					<role>thumbnail</role>
+					<role>swatch_image</role>
+					<gallery_information label="Mac Donald of the Isles (small" position="2" enabled="1" />
+				</global>
+				<store_view code="default">
+					<gallery_information label="Mac Donald des Isles (petit)" position="1" enabled="0" />
+				</store_view>
+			</image>
+		</images>
+		<tier_prices>
+			<tier_price qty="10" value="12.25" customer_group_name="General" website_code="base" />
+			<tier_price qty="20" value="12.10" />
+			<!-- Magento 2.2 and up: percentage_value -->
+			<tier_price qty="10" value="12.25" percentage_value="20" customer_group_name="General" website_code="base" />
+		</tier_prices>
+	</simple>
+	<configurable sku="scottish-table">
+		<attribute_set_name>Default</attribute_set_name>
+		<global>
+			<name>Scotting Table</name>
+			<price>1190</price>
+		</global>
+		<super_attribute_codes>
+			<item>color</item>
+		</super_attribute_codes>
+		<variant_skus>
+			<item>scottish-table-red-2st</item>
+			<item>scottish-table-brown-2st</item>
+			<item>scottish-table-brown-3st</item>
+		</variant_skus>
+	</configurable>
+	<grouped sku="bucky-cutlery">
+		<attribute_set_name>Default</attribute_set_name>
+		<global>
+			<name>Bucky Cutlery</name>
+			<price>120</price>
+		</global>
+		<members>
+			<member sku="bucky-knife" default_quantity="5" />
+			<member sku="bucky-spoon" default_quantity="5" />
+			<member sku="bucky-fork" default_quantity="5" />
+		</members>
+	</grouped>
+	<bundle sku="ibm-pc">
+		<attribute_set_name>Default</attribute_set_name>
+		<global>
+			<name>IBM PC</name>
+			<price>780</price>
+			<price_type>0</price_type>
+			<sku_type>0</sku_type>
+			<weight_type>0</weight_type>
+			<price_view>1</price_view>
+			<shipment_type>1</shipment_type>
+		</global>
+		<options>
+			<option input_type="select" required="1" >
+				<product_selections>
+					<product_selection sku="flat_screen_monitor" is_default="1" price_type="1" price_value="300.00" quantity="1" can_change_quantity="0" />
+					<product_selection sku="crt_monitor" is_default="1" price_type="1" price_value="200.00" quantity="1" can_change_quantity="1" />
+				</product_selections>
+				<global>
+					<option_title>Monitor</option_title>
+				</global>
+			</option>
+			<option input_type="multi" required="0" >
+				<product_selections>
+					<product_selection sku="fast_delivery" is_default="0" price_type="0" price_value="10.00" quantity="1" can_change_quantity="1" />
+					<product_selection sku="three_year_quarantee" is_default="0" price_type="0" price_value="20.00" quantity="2" can_change_quantity="1" />
+				</product_selections>
+				<global>
+					<option_title>Services</option_title>
+				</global>
+				<store_view code="default">
+					<option_title>Diensten</option_title>
+				</store_view>
+			</option>
+		</options>
+	</bundle>
+	<downloadable sku="morlord-the-game">
+		<attribute_set_name>Default</attribute_set_name>
+		<global>
+			<name>Morlord the game</name>
+			<price>24.95</price>
+			<links_purchased_separately>1</links_purchased_separately>
+			<links_title>Links</links_title>
+			<samples_title>Samples</samples_title>
+		</global>
+		<store_view code="default">
+			<samples_title>Beispielen</samples_title>
+		</store_view>
+		<download_links>
+			<download_link file_or_url="http://download-resources.net/morlord-setup.exe" number_of_downloads="0" is_shareable="1" sample_file_or_url="images/MacDonald_of_the_Isles_(MacIan).jpg" >
+				<global>
+					<download_link_information title="Morlord The Game" price="12.95" />
+				</global>
+				<store_view code="default">
+					<download_link_information title="Morlord das Spiel" price="12.45" />
+				</store_view>
+			</download_link>
+		</download_links>
+		<download_samples>
+			<download_sample file_or_url="images/MacDonald_of_the_Isles_(MacIan).jpg" >
+				<global>
+					<download_sample_information title="Morlord The Game - sample" />
+				</global>
+				<store_view code="default">
+					<download_sample_information title="Morlord das Spiel - Beispiel" />
+				</store_view>
+			</download_sample>
+			<download_sample file_or_url="images/MacDonald_of_the_Isles_(MacIan).jpg" >
+				<global>
+					<download_sample_information title="Morlord The Game - sample" />
+				</global>
+				<store_view code="default">
+					<download_sample_information title="Morlord das Spiel - Beispiel" />
+				</store_view>
+			</download_sample>
+		</download_samples>
+	</downloadable>
+</import>

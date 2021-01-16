@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+	<type name="Magento\Framework\Console\CommandList">
+		<arguments>
+			<argument name="commands" xsi:type="array">
+				<item name="mageseller_product_import" xsi:type="object">Mageseller\ProductImport\Console\Command\ProductImportCommand</item>
+				<item name="mageseller_product_urlrewrite" xsi:type="object">Mageseller\ProductImport\Console\Command\ProductUrlRewriteCommand</item>
+			</argument>
+		</arguments>
+	</type>
+	<preference for="Mageseller\ProductImport\Api\ProductImportWebApiInterface" type="Mageseller\ProductImport\Api\ProductImportWebApi" />
+</config>

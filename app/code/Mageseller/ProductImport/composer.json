@@ -1,0 +1,20 @@
+{
+    "name": "mageseller/product-import",
+    "description": "Fast product import library for Magento 2",
+    "type": "magento2-module",
+    "require": {
+      "php": "~7.0"
+    },
+    "license": [
+        "MIT"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Mageseller\\ProductImport\\": ""
+        }
+    }
+}
+
