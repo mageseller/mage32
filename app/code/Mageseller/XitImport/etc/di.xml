@@ -23,13 +23,8 @@
 		<arguments>
 			<argument name="commands" xsi:type="array">
 				<item name="XitCategoryImport" xsi:type="object">Mageseller\XitImport\Console\Command\XitCategoryImport</item>
-			</argument>
-		</arguments>
-	</type>
-	<type name="Magento\Framework\Console\CommandList">
-		<arguments>
-			<argument name="commands" xsi:type="array">
 				<item name="XitProductImport" xsi:type="object">Mageseller\XitImport\Console\Command\XitProductImport</item>
+				<item name="XitProductImageImport" xsi:type="object">Mageseller\XitImport\Console\Command\XitProductImageImport</item>
 			</argument>
 		</arguments>
 	</type>

@@ -2,6 +2,7 @@
 
 namespace Mageseller\ProductImport\Model\Resource;
 
+use Exception;
 use Mageseller\ProductImport\Api\Data\Product;
 use Mageseller\ProductImport\Api\Data\ProductStoreView;
 use Mageseller\ProductImport\Helper\Decimal;
@@ -11,7 +12,6 @@ use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
 use Mageseller\ProductImport\Model\Resource\Serialize\JsonValueSerializer;
 use Mageseller\ProductImport\Model\Resource\Serialize\SerializeValueSerializer;
 use Mageseller\ProductImport\Model\Resource\Serialize\ValueSerializer;
-use Exception;
 
 /**
  * Pre-loads all meta data needed for the core processes once.
@@ -414,11 +414,12 @@ class MetaData
         // But is takes 0.2 seconds to execute, this is too long
         // See also https://magento.stackexchange.com/questions/96858/how-to-get-magento-version-in-magento2-equivalent-of-magegetversion
 
-        if (preg_match('/"version": "([^\"]+)"/',
-            file_get_contents(BP . '/vendor/magento/magento2-base/composer.json'), $matches)) {
-
+        if (preg_match(
+            '/"version": "([^\"]+)"/',
+            file_get_contents(BP . '/vendor/magento/magento2-base/composer.json'),
+            $matches
+        )) {
             $magentoVersion = $matches[1];
-
         } else {
             throw new Exception("Magento version could not be detected.");
         }
@@ -488,9 +489,11 @@ class MetaData
     {
         return $this->db->fetchMap(
             "SELECT `attribute_set_name`, `attribute_set_id` FROM {$this->attributeSetTable} WHERE `entity_type_id` = ?
-        ", [
+        ",
+            [
             $this->productEntityTypeId
-        ]);
+        ]
+        );
     }
 
     /**
@@ -592,9 +595,11 @@ class MetaData
     {
         return $this->db->fetchMap(
             "SELECT `attribute_code`, `attribute_id` FROM {$this->attributeTable} WHERE `entity_type_id` = ?
-        ", [
+        ",
+            [
             $this->categoryEntityTypeId
-        ]);
+        ]
+        );
     }
 
     /**
@@ -613,7 +618,6 @@ class MetaData
 
         $info = [];
         foreach ($rows as $row) {
-
             $info[$row['attribute_code']] = new EavAttributeInfo(
                 $row['attribute_code'],
                 (int)$row['attribute_id'],
@@ -621,7 +625,8 @@ class MetaData
                 $row['backend_type'],
                 $this->productEntityTable . '_' . $row['backend_type'],
                 $row['frontend_input'],
-                $row['is_global']);
+                $row['is_global']
+            );
         }
 
         return $info;
@@ -663,7 +668,6 @@ class MetaData
         ", [
             $this->productEntityTypeId
         ]);
-
     }
 
     protected function getProductUrlSuffixes()

@@ -101,11 +101,14 @@ class Xit extends AbstractHelper
      * @var StoreManagerInterface
      */
     protected $storeManager;
+    /**
+     * @var StoreManagerInterface
+     */
+    private $xitImageHelper;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Store\Model\StoreManager $storeManager
      * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
      * @param \Magento\Framework\Filesystem\Io\File $fileFactory
      * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
@@ -113,9 +116,13 @@ class Xit extends AbstractHelper
      * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
      * @param \Mageseller\XitImport\Logger\XitImport $xitimportLogger
      * @param \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory
-     * @param ProductHelper $xitProductHelper
+     * @param \Mageseller\XitImport\Helper\ProductHelper $xitProductHelper
+     * @param \Mageseller\XitImport\Helper\ImageHelper $xitImageHelper
      * @param CollectionFactory $categoryCollectionFactory
      * @param ResourceConnection $resourceConnection
+     * @param MagentoConfig $configuration
+     * @param StoreManagerInterface $storeManager
+     * @param ProcessResourceFactory $processResourceFactory
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
      * @throws \Magento\Framework\Exception\FileSystemException
      */
@@ -130,6 +137,7 @@ class Xit extends AbstractHelper
         \Mageseller\XitImport\Logger\XitImport $xitimportLogger,
         \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory,
         \Mageseller\XitImport\Helper\ProductHelper $xitProductHelper,
+        \Mageseller\XitImport\Helper\ImageHelper $xitImageHelper,
         CollectionFactory $categoryCollectionFactory,
         ResourceConnection $resourceConnection,
         MagentoConfig $configuration,
@@ -147,6 +155,7 @@ class Xit extends AbstractHelper
         $this->xitimportLogger = $xitimportLogger;
         $this->xitCategoryFactory = $xitCategoryFactory;
         $this->xitProductHelper = $xitProductHelper;
+        $this->xitImageHelper = $xitImageHelper;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryFactory = $categoryFactory;
         $this->resourceConnection = $resourceConnection;
@@ -351,12 +360,7 @@ class Xit extends AbstractHelper
             $process->output(__('Downloading products from Xitfeed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
             $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];
         } else {
-            $process->output(__('Downloading products from Xitfeed to Magento'), true);
-        }
-        if ($since) {
-            $process->output(__('No products to import since %1', $since->format('Y-m-d H:i:s')));
-        } else {
-            $process->output(__('No products to import'));
+            $process->output(__('Downloading products from Xit feed to Magento'), true);
         }
 
         ini_set("memory_limit", "-1");
@@ -368,6 +372,33 @@ class Xit extends AbstractHelper
         if ($xml instanceof SimpleXMLElement) {
             $items = $xml->xpath("/Catalogue/Items/Item");
             $this->xitProductHelper->processProducts($items, $process, $since, $sendReport);
+        }
+    }
+    public function importXitImages(Process $process, $since, $sendReport = true)
+    {
+        if (!$since && ($lastSyncDate = $this->getSyncDate('images'))) {
+            $since = $lastSyncDate;
+        }
+
+        // Save last synchronization date now if file download is too long
+        $this->setSyncDate('images');
+        if ($since) {
+            $process->output(__('Downloading images from Xit feed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
+            $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];
+        } else {
+            $process->output(__('Downloading images from Xit feed to Magento'), true);
+        }
+
+
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
+        $process->output(__('Downloading file...'), true);
+        $apiUrl = $this->getApiUrl();
+        $filepath = $this->downloadFile($apiUrl);
+        $xml = simplexml_load_file($filepath, null, LIBXML_NOCDATA);
+        if ($xml instanceof SimpleXMLElement) {
+            $items = $xml->xpath("/Catalogue/Items/Item");
+            $this->xitImageHelper->processProductImages($items, $process, $since, $sendReport);
         }
     }
     public function importXitCategory()

@@ -2,14 +2,15 @@
 
 namespace Mageseller\ProductImport\Model\Resource;
 
+use Exception;
 use Mageseller\ProductImport\Api\Data\BundleProduct;
 use Mageseller\ProductImport\Api\Data\ConfigurableProduct;
 use Mageseller\ProductImport\Api\Data\DownloadableProduct;
 use Mageseller\ProductImport\Api\Data\GroupedProduct;
 use Mageseller\ProductImport\Api\Data\Product;
 use Mageseller\ProductImport\Api\Data\SimpleProduct;
-use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
 use Mageseller\ProductImport\Api\ImportConfig;
+use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
 use Mageseller\ProductImport\Model\Resource\Resolver\ReferenceResolver;
 use Mageseller\ProductImport\Model\Resource\Resolver\UrlKeyGenerator;
 use Mageseller\ProductImport\Model\Resource\Storage\BundleStorage;
@@ -26,7 +27,6 @@ use Mageseller\ProductImport\Model\Resource\Storage\TierPriceStorage;
 use Mageseller\ProductImport\Model\Resource\Storage\UrlRewriteStorage;
 use Mageseller\ProductImport\Model\Resource\Storage\WeeeStorage;
 use Mageseller\ProductImport\Model\Resource\Validation\Validator;
-use Exception;
 
 /**
  * @author Patrick van Bergen
@@ -109,8 +109,8 @@ class ProductStorage
         ConfigurableStorage $configurableStorage,
         BundleStorage $bundleStorage,
         GroupedStorage $groupedStorage,
-        ProductTypeChanger $productTypeChanger)
-    {
+        ProductTypeChanger $productTypeChanger
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
         $this->validator = $validator;
@@ -231,7 +231,6 @@ class ProductStorage
         $validProducts = [];
 
         if (version_compare($this->metaData->magentoVersion, "2.3.0") < 0) {
-
             foreach ($products as $product) {
                 if (!empty($product->getSourceItems())) {
                     $product->addError("source items are supported only in Magento 2.3");
@@ -258,10 +257,9 @@ class ProductStorage
         // separate new products from existing products
         $insertProducts = $updateProducts = [];
         foreach ($products as $product) {
-
             if ($product->id) {
                 $updateProducts[] = $product;
-            } else if (array_key_exists($product->getSku(), $sku2id)) {
+            } elseif (array_key_exists($product->getSku(), $sku2id)) {
                 $product->id = $sku2id[$product->getSku()];
                 $updateProducts[] = $product;
             } else {
@@ -329,14 +327,18 @@ class ProductStorage
         $this->productEntityStorage->insertWebsiteIds($validProducts);
         $this->stockItemStorage->storeStockItems($validProducts);
         $this->linkedProductStorage->updateLinkedProducts($validProducts);
-        $this->imageStorage->storeProductImages($validProducts,
-            $config->imageStrategy === ImportConfig::IMAGE_STRATEGY_SET);
+        $this->imageStorage->storeProductImages(
+            $validProducts,
+            $config->imageStrategy === ImportConfig::IMAGE_STRATEGY_SET
+        );
         $this->tierPriceStorage->updateTierPrices($validProducts);
 
         // url_rewrite (must be done after url_key and category_id)
-        $this->urlRewriteStorage->updateRewrites($validProducts,
+        $this->urlRewriteStorage->updateRewrites(
+            $validProducts,
             $config->handleRedirects === ImportConfig::KEEP_REDIRECTS,
-            $config->handleCategoryRewrites === ImportConfig::KEEP_CATEGORY_REWRITES);
+            $config->handleCategoryRewrites === ImportConfig::KEEP_CATEGORY_REWRITES
+        );
 
         $this->downloadableStorage->performTypeSpecificStorage($productsByType[DownloadableProduct::TYPE_DOWNLOADABLE]);
         $this->groupedStorage->performTypeSpecificStorage($productsByType[GroupedProduct::TYPE_GROUPED]);
@@ -363,11 +365,9 @@ class ProductStorage
         foreach ($products as $product) {
             foreach ($product->getStoreViews() as $storeView) {
                 foreach ($storeView->getAttributes() as $key => $value) {
-
                     if ($value === null) {
                         $deleteAttributes[$key][] = $storeView;
                     } elseif ($value === "") {
-
                         if ($attributeInfo[$key]->isTextual()) {
                             if ($config->emptyTextValueStrategy === ImportConfig::EMPTY_TEXTUAL_VALUE_STRATEGY_REMOVE) {
                                 $deleteAttributes[$key][] = $storeView;
@@ -383,7 +383,6 @@ class ProductStorage
                                 continue;
                             }
                         }
-
                     } else {
                         // a non-empty value
                         $upsertAttributes[$key][] = $storeView;
@@ -391,6 +390,6 @@ class ProductStorage
                 }
             }
         }
-        return array($upsertAttributes, $deleteAttributes);
+        return [$upsertAttributes, $deleteAttributes];
     }
 }
