@@ -60,6 +60,7 @@ atlassian*
 /pub/static/*
 !/pub/static/.htaccess
 
+/pub/media/devicesPdf
 /var/*
 !/var/.htaccess
 /vendor/*

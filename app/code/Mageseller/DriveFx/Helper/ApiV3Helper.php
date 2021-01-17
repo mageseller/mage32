@@ -550,11 +550,17 @@ class ApiV3Helper extends ApiHelper
                 "designation" => $product['name'],
                 "unitPrice" => floatval($product['unitPrice']),
                 "quantity" => intval($product['qty']),
-                'warehouse' => 1
+                'warehouse' => 1,
             ];
             $request['products'][] = $productArray;
             $productArray["unitCode"] = "M";
-            $requestWarehouse['products'][] = $productArray;
+            $requestWarehouse['products'][] = array_merge($productArray, [
+                "discount1" => $product['discount'],
+                'tax' => 'tax',
+                'taxIncluded' => 'tax',
+                'taxPercentage' => $product['taxPercentage'],
+                'taxRegion' => 'PT',
+            ]);
         }
         $order = $orderRequest['orderObject'];
         if (!$order->getData('bodata_reposnse')) {
