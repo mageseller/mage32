@@ -591,23 +591,5 @@ class ProductHelper extends AbstractHelper
 
         return $this->stores;
     }
-    public function downloadPdfFile($source, $fileName)
-    {
-        $downloadFolderPdf = $this->_dirReader->getPath('pub') . '/media/' . self::PDF_FOLDER;
-        //check if directory exists
-        if (!is_dir($downloadFolderPdf)) {
-            $this->fileFactory->mkdir($downloadFolderPdf, 0775);
-        }
-        $filepath = $downloadFolderPdf . '/' . $fileName;
-        //@todo check if file is changed or not
-        if (!$this->fileFactory->fileExists($filepath)) {
-            $ch = curl_init($source);
-            $fp = fopen($filepath, 'wb');
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_exec($ch);
-            curl_close($ch);
-            fclose($fp);
-        }
-    }
+
 }

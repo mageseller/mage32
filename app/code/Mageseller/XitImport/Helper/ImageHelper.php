@@ -310,7 +310,6 @@ class ImageHelper extends AbstractHelper
                                     $product->global()->setImageRole($image, ProductStoreView::THUMBNAIL_IMAGE);
                                     $product->global()->setImageRole($image, ProductStoreView::SMALL_IMAGE);
                                     $flag = true;
-
                                 }
                             }
                         }
@@ -321,10 +320,12 @@ class ImageHelper extends AbstractHelper
                         $path_parts = pathinfo($brochureSourceUrl);
                         if ($brochureSourceUrl) {
                             $brochureUrl = $this->mediaUrl . self::PDF_FOLDER . '/' . $path_parts['basename'];
-                            $this->downloadPdfFile($brochureSourceUrl, $path_parts['basename']);
-                            $product->global()->setCustomAttribute('brochure_url', $brochureUrl);
+                            $isDownloaded = $this->downloadPdfFile($brochureSourceUrl, $path_parts['basename']);
+                            if ($isDownloaded) {
+                                $product->global()->setCustomAttribute('brochure_url', $brochureUrl);
+                                $flag = true;
+                            }
                         }
-                        $flag = true;
                     }
                     if ($flag) {
                         $product->lineNumber = $j + 1;
@@ -368,6 +369,27 @@ class ImageHelper extends AbstractHelper
         }
 
         $process->output(__('Done!'));
+    }
+    public function downloadPdfFile($source, $fileName)
+    {
+        $downloadFolderPdf = $this->_dirReader->getPath('pub') . '/media/' . self::PDF_FOLDER;
+        //check if directory exists
+        if (!is_dir($downloadFolderPdf)) {
+            $this->fileFactory->mkdir($downloadFolderPdf, 0775);
+        }
+        $filepath = $downloadFolderPdf . '/' . $fileName;
+        //@todo check if file is changed or not
+        if (!$this->fileFactory->fileExists($filepath)) {
+            $ch = curl_init($source);
+            $fp = fopen($filepath, 'wb');
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_exec($ch);
+            curl_close($ch);
+            fclose($fp);
+            return true;
+        }
+        return false;
     }
     private function importImages(&$data, &$j, &$importer)
     {

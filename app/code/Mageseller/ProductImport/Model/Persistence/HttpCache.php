@@ -42,10 +42,8 @@ class HttpCache
 
                 // stored headers must exist
                 if (file_exists($headerFile)) {
-
                     $fileContent = file_get_contents($headerFile);
                     if (!empty($fileContent)) {
-
                         $headers = json_decode($fileContent, true);
                         $now = time();
                         $useCache = $this->useCache($headers, $now);
@@ -97,10 +95,9 @@ class HttpCache
 
             // cache should not be used; the image should not have been downloaded in the first place (but we do it because it is easier to treat all images alike)
             return false;
-
-        } else if (preg_match(self::MUST_REVALIDATE, $cacheControl)) {
+        } elseif (preg_match(self::MUST_REVALIDATE, $cacheControl)) {
             // cache is stale right away
-        } else if (preg_match(self::NO_CACHE, $cacheControl)) {
+        } elseif (preg_match(self::NO_CACHE, $cacheControl)) {
             // cache is stale right away
         } else {
 
@@ -158,10 +155,10 @@ class HttpCache
         $ch = curl_init($url);
 
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 500);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curlResource, $header) use (&$responseHeaders) {
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($curlResource, $header) use (&$responseHeaders) {
             if (preg_match('/^([^:]+):(.*)/', $header, $matches)) {
                 $key = trim(strtolower($matches[1]));
                 $value = trim($matches[2]);
