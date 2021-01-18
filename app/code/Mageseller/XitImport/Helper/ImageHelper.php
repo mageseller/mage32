@@ -38,6 +38,7 @@ class ImageHelper extends AbstractHelper
     const DOWNLOAD_FOLDER = 'supplier/xit';
     const XIT_IMPORTCONFIG_IS_ENABLE = 'xit/importconfig/is_enable';
     const ATTRIBUTE_PRODUCT_SKU = 'sku';
+    const PDF_FOLDER = 'devicesPdf';
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -298,24 +299,24 @@ class ImageHelper extends AbstractHelper
                     $sku =  (string) $item->ItemDetail->ManufacturerPartID;
                     $flag = false;
                     $product = new SimpleProduct($sku);
-                    if (isset($item->Images->Image->URL)) {
-                        foreach ($item->Images as $node) {
-                            $updatedAt = (string)$node->Image->UpdatedAt;
-                            $currentUpdateAT = date_parse($updatedAt);
-                            if ($oldUpdateAt <= $currentUpdateAT) {
-                                $imageUrl = (string) $node->Image->URL;
-                                if ($imageUrl) {
-                                    $image = $product->addImage($imageUrl);
-                                    $product->global()->setImageRole($image, ProductStoreView::BASE_IMAGE);
-                                    $product->global()->setImageRole($image, ProductStoreView::THUMBNAIL_IMAGE);
-                                    $product->global()->setImageRole($image, ProductStoreView::SMALL_IMAGE);
-                                    $flag = true;
-                                }
-                            }
-                        }
-                    }
-                    if (isset($data->Brochures->Brochure->URL)) {
-                        $brochureSourceUrl = (string)$data->Brochures->Brochure->URL;
+                    /* if (isset($item->Images->Image->URL)) {
+                         foreach ($item->Images as $node) {
+                             $updatedAt = (string)$node->Image->UpdatedAt;
+                             $currentUpdateAT = date_parse($updatedAt);
+                             if ($oldUpdateAt <= $currentUpdateAT) {
+                                 $imageUrl = (string) $node->Image->URL;
+                                 if ($imageUrl) {
+                                     $image = $product->addImage($imageUrl);
+                                     $product->global()->setImageRole($image, ProductStoreView::BASE_IMAGE);
+                                     $product->global()->setImageRole($image, ProductStoreView::THUMBNAIL_IMAGE);
+                                     $product->global()->setImageRole($image, ProductStoreView::SMALL_IMAGE);
+                                     $flag = true;
+                                 }
+                             }
+                         }
+                     }*/
+                    if (isset($item->Brochures->Brochure->URL)) {
+                        $brochureSourceUrl = (string)$item->Brochures->Brochure->URL;
                         $process->output(__("Downloading Brochure : $brochureSourceUrl"));
                         $path_parts = pathinfo($brochureSourceUrl);
                         if ($brochureSourceUrl) {
