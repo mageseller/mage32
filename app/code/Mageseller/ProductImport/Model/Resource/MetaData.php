@@ -694,7 +694,7 @@ class MetaData
                 IF(cs.scope = 'stores', cs.value,
                     IF(cw.scope = 'websites', cw.value,
                         IF(cd.scope = 'default', cd.value, ?))) AS suffix
-            FROM `store` s
+            FROM `{$this->storeTable}` s
             LEFT JOIN `{$this->configDataTable}` cd ON cd.path = 'catalog/seo/product_url_suffix' AND cd.scope = 'default'
             LEFT JOIN `{$this->configDataTable}` cw ON cw.path = 'catalog/seo/product_url_suffix' AND cw.scope = 'websites' AND cw.scope_id = s.website_id
             LEFT JOIN `{$this->configDataTable}` cs ON cs.path = 'catalog/seo/product_url_suffix' AND cs.scope = 'stores' AND cs.scope_id = s.store_id
@@ -727,7 +727,7 @@ class MetaData
                 IF(cs.scope = 'stores', cs.value,
                     IF(cw.scope = 'websites', cw.value,
                         IF(cd.scope = 'default', cd.value, ?))) AS suffix
-            FROM `store` s
+            FROM `{$this->storeTable}` s
             LEFT JOIN `{$this->configDataTable}` cd ON cd.path = 'catalog/seo/category_url_suffix' AND cd.scope = 'default'
             LEFT JOIN `{$this->configDataTable}` cw ON cw.path = 'catalog/seo/category_url_suffix' AND cw.scope = 'websites' AND cw.scope_id = s.website_id
             LEFT JOIN `{$this->configDataTable}` cs ON cs.path = 'catalog/seo/category_url_suffix' AND cs.scope = 'stores' AND cs.scope_id = s.store_id
