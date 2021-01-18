@@ -259,8 +259,9 @@ class ImageHelper extends AbstractHelper
 
     public function processProductImages($items, Process $process, $since, $sendReport = true)
     {
+        $isFlush = false;
         try {
-            $oldUpdateAt = date_parse($since->format('Y-m-d H:i:s'));
+            $oldUpdateAt = $since ? date_parse($since->format('Y-m-d H:i:s')) : 0;
             // Disable or not the indexing when UpdateOnSave mode
             $this->indexer->initIndexers();
             $config = new ImportConfig();
@@ -283,7 +284,7 @@ class ImageHelper extends AbstractHelper
                 $this->start = microtime(true);
             };
             $importer = $this->importerFactory->createImporter($config);
-            $isFlush = false;
+
             $processResource = $this->processResourceFactory->create();
             $processResource->save($process);
             $i = 0; // Line number
