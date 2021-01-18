@@ -437,18 +437,7 @@ class ProductHelper extends AbstractHelper
         $global->setVisibility(ProductStoreView::VISIBILITY_BOTH);
         $global->generateUrlKey();
 
-        if (isset($data->Brochures->Brochure->URL)) {
-            $brochureSourceUrl = (string)$data->Brochures->Brochure->URL;
-            $process->output(__("Downloading Brochure : $brochureSourceUrl"));
-            $path_parts = pathinfo($brochureSourceUrl);
-            if ($brochureSourceUrl) {
-                $brochureUrl = $this->mediaUrl . self::PDF_FOLDER . '/' . $path_parts['basename'];
 
-                $this->downloadPdfFile($brochureSourceUrl, $path_parts['basename']);
-
-                $global->setCustomAttribute('brochure_url', $brochureUrl);
-            }
-        }
 
         if (isset($data->ItemDetail->ShippingWeight)) {
             $weight = (string)$data->ItemDetail->ShippingWeight;

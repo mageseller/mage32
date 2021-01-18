@@ -164,8 +164,10 @@ class ImageHelper extends AbstractHelper
      * @var \Magento\Catalog\Model\Indexer\Product\Eav\Processor
      */
     protected $_productEavIndexerProcessor;
-    protected $globalProductObject;
-    protected $lastAddedProductObject;
+    /**
+     * @var
+     */
+    private $mediaUrl;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -252,6 +254,7 @@ class ImageHelper extends AbstractHelper
         $this->stockIndexerProcessor = $stockIndexerProcessor;
         $this->priceIndexer = $priceIndexer;
         $this->_productEavIndexerProcessor = $productEavIndexerProcessor;
+        $this->mediaUrl = $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
     }
 
     public function processProductImages($items, Process $process, $since, $sendReport = true)
@@ -292,11 +295,9 @@ class ImageHelper extends AbstractHelper
 
                     //$this->importImages($item, $j, $importer);
                     $sku =  (string) $item->ItemDetail->ManufacturerPartID;
-
+                    $flag = false;
+                    $product = new SimpleProduct($sku);
                     if (isset($item->Images->Image->URL)) {
-                        $product = new SimpleProduct($sku);
-                        $product->lineNumber = $j + 1;
-                        $flag = false;
                         foreach ($item->Images as $node) {
                             $updatedAt = (string)$node->Image->UpdatedAt;
                             $currentUpdateAT = date_parse($updatedAt);
@@ -308,15 +309,27 @@ class ImageHelper extends AbstractHelper
                                     $product->global()->setImageRole($image, ProductStoreView::THUMBNAIL_IMAGE);
                                     $product->global()->setImageRole($image, ProductStoreView::SMALL_IMAGE);
                                     $flag = true;
-                                    $j++;
+
                                 }
                             }
                         }
-                        if ($flag) {
-                            $importer->importSimpleProduct($product);
-                        }
                     }
-
+                    if (isset($data->Brochures->Brochure->URL)) {
+                        $brochureSourceUrl = (string)$data->Brochures->Brochure->URL;
+                        $process->output(__("Downloading Brochure : $brochureSourceUrl"));
+                        $path_parts = pathinfo($brochureSourceUrl);
+                        if ($brochureSourceUrl) {
+                            $brochureUrl = $this->mediaUrl . self::PDF_FOLDER . '/' . $path_parts['basename'];
+                            $this->downloadPdfFile($brochureSourceUrl, $path_parts['basename']);
+                            $product->global()->setCustomAttribute('brochure_url', $brochureUrl);
+                        }
+                        $flag = true;
+                    }
+                    if ($flag) {
+                        $product->lineNumber = $j + 1;
+                        $j++;
+                        $importer->importSimpleProduct($product);
+                    }
                     $time = round(microtime(true) - $this->start, 2);
                     $isFlush = false;
                     if ($i % 5 === 0) {
