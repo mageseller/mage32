@@ -464,7 +464,15 @@ class ApiV3Helper extends ApiHelper
         $supplierId = $supplier['no'] ?? "";
         $requestWarehouse = [];
         $taxPayerNUmber = $customerObject['taxNumber'] ?? "";
-        if (!$this->hasValidRule($taxPayerNUmber)) {
+        if ($this->hasValidRule($taxPayerNUmber)) {
+            if (!$this->hasValidLength($taxPayerNUmber)) {
+                $taxPayerNUmber = "";
+            }
+
+            if (!$this->hasValidPattern($taxPayerNUmber)) {
+                $taxPayerNUmber = "";
+            }
+        }else{
             $taxPayerNUmber = "";
         }
         $request =  [
@@ -518,10 +526,10 @@ class ApiV3Helper extends ApiHelper
             "documentObservations" =>"This is an observation"
         ];
         if ($customerId) {
-            $request['internalDocument']['customerNumber'] = (int) $customerId;
+            $requestWarehouse['internalDocument']['customerNumber'] = (int) $customerId;
         }
         if ($supplierId) {
-            $request['internalDocument']['supplierNumber'] = (int) $supplierId;
+            $requestWarehouse['internalDocument']['supplierNumber'] = (int) $supplierId;
         }
         $orderId = $this->getLastV3OrderId();
         if ($orderId) {
@@ -626,5 +634,23 @@ class ApiV3Helper extends ApiHelper
     protected function digitAt(string $str, int $index): int
     {
         return (int) ($str[$index] ?? 0);
+    }
+    protected function hasValidLength(string $tin): bool
+    {
+        return $this->matchLength($tin, 9);
+    }
+
+    protected function hasValidPattern(string $tin): bool
+    {
+        return $this->matchPattern($tin, '\\d{9}');
+    }
+    protected function matchLength(string $tin, int $length): bool
+    {
+        return mb_strlen($tin) === $length;
+    }
+
+    protected function matchPattern(string $subject, string $pattern): bool
+    {
+        return 1 === preg_match(sprintf('/%s/', $pattern), $subject);
     }
 }
