@@ -349,6 +349,33 @@ class ApiV3Helper extends ApiHelper
             ]);*/
         }
         $order = $orderRequest['orderObject'];
+
+        $shippingAmount = $order->getShippingAmount();
+        $shippingObject = [
+            'stock_qty' => 1000,
+            'sku' => 'shipping_amount',
+            'name' => 'Shipping Amount',
+        ];
+        $shippingStock = $this->getProductStock($shippingObject);
+        $shippingQty = 1;
+        $currentQty = $shippingStock['qtt'] ?? 0;
+        $stock = $shippingStock['stock'] ?? 0;
+        $sastock = $shippingStock['sastock'] ?? 0;
+        if ($currentQty < intval($shippingQty) + 1 || $stock < intval($shippingQty) + 1 || $sastock < intval($shippingQty) + 1) {
+            $shippingStock['qtt'] = intval(1000) + 1;
+            $shippingStock['stock'] = intval(1000) + 1;
+            $shippingStock['sastock'] = intval(1000) + 1;
+            $response = $this->updateV3Instance($this->entity[parent::PRODUCTSTOCK], $shippingStock, 1);
+        }
+        $productArray =  [
+            'reference' => 'shipping_amount',
+            'designation' => 'Shipping Amount',
+            'unitPrice' => floatval($shippingAmount),
+            'quantity' => intval(1),
+            'taxIncluded' => true
+        ];
+        $request['products'][] = $productArray;
+        $requestWarehouse['products'][] = $productArray;
         if (!$order->getData('bodata_reposnse')) {
             $url = "$this->baseUrl/createInternalDocument";
             $response = $this->driveFxV3Request($url, $requestWarehouse);
