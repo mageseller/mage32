@@ -7,7 +7,7 @@ class CreateOrderInDriveFx extends \Magento\Sales\Block\Adminhtml\Order\View
     public function beforeSetLayout(\Magento\Sales\Block\Adminhtml\Order\View $view)
     {
         $order = $view->getOrder();
-        if (($order->getData('bodata_reposnse') && $order->getData('invoice_response'))) {
+        if (!($order->getData('bodata_reposnse') && $order->getData('invoice_response'))) {
             $message ='Are you sure you want to do this?';
             $buttonUrl = $view->getUrl(
                 'drivefx/index/send',

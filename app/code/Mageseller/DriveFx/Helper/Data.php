@@ -83,7 +83,7 @@ class Data extends AbstractHelper
     public function addNewOrder(Order $order)
     {
         if ($order->getData('bodata_reposnse') && $order->getData('invoice_response')) {
-            //return $this;
+            return $this;
         }
         $orderRequest = [];
 
