@@ -62,6 +62,7 @@ atlassian*
 /pub/media/import
 /pub/media/devicesPdf
 
+/pub/media/devicesPdf
 /var/*
 !/var/.htaccess
 /vendor/*

@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!--
+  ~ A Magento 2 module named Mageseller/DriveFx
+  ~ Copyright (C) 2020
+  ~
+  ~  @author      satish29g@hotmail.com
+  ~  @site        https://www.mageseller.com/
+  ~
+  ~ This file included in Mageseller/DriveFx is licensed under OSL 3.0
+  ~
+  ~ http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+  ~ Please see LICENSE.txt for the full text of the OSL 3.0 license
+  ~
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Catalog:etc/catalog_attributes.xsd">
+    <group name="quote_item">
+        <attribute name="drivefx_ref_id"/>
+    </group>
+</config>
