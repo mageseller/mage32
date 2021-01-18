@@ -83,7 +83,7 @@ class Data extends AbstractHelper
     public function addNewOrder(Order $order)
     {
         if ($order->getData('bodata_reposnse') && $order->getData('invoice_response')) {
-            return $this;
+            //return $this;
         }
         $orderRequest = [];
 
@@ -128,12 +128,15 @@ class Data extends AbstractHelper
         $visibleItem = $order->getAllVisibleItems();
         foreach ($visibleItem as $item) {
             $product = $item->getProduct();
+            /**
+             * @var \Magento\Sales\Model\Order\Item $item
+            */
 
             $orderRequest['products'][] = [
                 'sku' => $item->getSku(),
                 'name' => $product->getName(),
                 'description' => $item->getDescription(),
-                'unitPrice' => floatval($item->getPrice()),
+                'unitPrice' => floatval($item->getPriceInclTax()),
                 'taxAmount' => floatval($item->getTaxAmount()),
                 'taxPercentage' => $item->getTaxPercent(),
                 'discount' => $item->getDiscountAmount(),

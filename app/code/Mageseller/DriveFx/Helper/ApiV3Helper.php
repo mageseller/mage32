@@ -472,7 +472,7 @@ class ApiV3Helper extends ApiHelper
             if (!$this->hasValidPattern($taxPayerNUmber)) {
                 $taxPayerNUmber = "";
             }
-        }else{
+        } else {
             $taxPayerNUmber = "";
         }
         $request =  [
@@ -566,44 +566,50 @@ class ApiV3Helper extends ApiHelper
             $response = $this->updateV3Instance($this->entity[parent::PRODUCT], $productRef, 1);
             $this->writeToLog($response, "UpdateProduct");*/
             $productArray = [
-                "reference" => $product['sku'],
-                "designation" => $product['name'],
-                "unitPrice" => floatval($product['unitPrice']),
-                "quantity" => intval($product['qty']),
+                'reference' => $product['sku'],
+                'designation' => $product['name'],
+                'unitPrice' => floatval($product['unitPrice']),
+                'quantity' => intval($product['qty']),
                 'warehouse' => 1,
+                'taxIncluded' => true,
+                'taxPercentage' => intval($product['taxPercentage']),
+                'taxRegion' => 'PT',
             ];
+            if ($product['discount']) {
+                $productArray['discount1'] = floatval($product['discount']);
+            }
             $request['products'][] = $productArray;
-            $productArray["unitCode"] = "M";
+            $productArray['tax'] = 'tax';
+            $productArray['unitCode'] = 'M';
             $requestWarehouse['products'][] = $productArray;
             /*$requestWarehouse['products'][] = array_merge($productArray, [
-                "discount1" => $product['discount'],
                 'tax' => 'tax',
-                'taxIncluded' => 'tax',
+                'taxIncluded' => true,
                 'taxPercentage' => $product['taxPercentage'],
                 'taxRegion' => 'PT',
             ]);*/
         }
         $order = $orderRequest['orderObject'];
-        if (!$order->getData('bodata_reposnse')) {
-            $url = "$this->baseUrl/createInternalDocument";
-            $response = $this->driveFxV3Request($url, $requestWarehouse);
-            $code  = $response['code'] ?? 1;
-            if ($code == 0) {
-                $obrano  = $response['requestedFields']['obrano'] ?? "";
-                $order->setData('bodata_reposnse', $obrano);
-            }
-            $order->addStatusToHistory(false, json_encode($response));
+        //if (!$order->getData('bodata_reposnse')) {
+        $url = "$this->baseUrl/createInternalDocument";
+        $response = $this->driveFxV3Request($url, $requestWarehouse);
+        $code  = $response['code'] ?? 1;
+        if ($code == 0) {
+            $obrano  = $response['requestedFields']['obrano'] ?? '';
+            $order->setData('bodata_reposnse', $obrano);
         }
-        if (!$order->getData('invoice_response')) {
-            $url = "$this->baseUrl/createDocument";
-            $response = $this->driveFxV3Request($url, $request);
-            $code  = $response['code'] ?? 1;
-            if ($code == 0) {
-                $fno  = $response['requestedFields']['fno'] ?? "";
-                $order->setData('invoice_response', $fno);
-            }
-            $order->addStatusToHistory(false, json_encode($response));
+        $order->addStatusToHistory(false, json_encode($response));
+        // }
+        //if (!$order->getData('invoice_response')) {
+        $url = "$this->baseUrl/createDocument";
+        $response = $this->driveFxV3Request($url, $request);
+        $code  = $response['code'] ?? 1;
+        if ($code == 0) {
+            $fno  = $response['requestedFields']['fno'] ?? '';
+            $order->setData('invoice_response', $fno);
         }
+        $order->addStatusToHistory(false, json_encode($response));
+        // }
         $order->save();
     }
     protected function hasValidRule(string $tin): bool
