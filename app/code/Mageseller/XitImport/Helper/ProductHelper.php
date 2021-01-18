@@ -325,18 +325,18 @@ class ProductHelper extends AbstractHelper
                     ++$i;
                     $this->start = microtime(true);
 
-                    $this->processImport($item, $j, $importer, $since,$process);
+                    $this->processImport($item, $j, $importer, $since, $process);
 
                     $time = round(microtime(true) - $this->start, 2);
                     $isFlush = false;
                     if ($i % 5 === 0) {
                         $processResource->save($process);
-                        if (!$isFlush) {
+                        /*if (!$isFlush) {
                             $this->start = microtime(true);
                             $importer->flush();
                             $importer = $this->importerFactory->createImporter($config);
                             $isFlush = true;
-                        }
+                        }*/
                     }
                 } catch (WarningException $e) {
                     $message = __("Warning on sku %1: {$e->getMessage()}", $sku);
@@ -351,10 +351,10 @@ class ProductHelper extends AbstractHelper
             $process->fail($e->getMessage());
             throw $e;
         } finally {
-            if (!$isFlush) {
-                $this->start = microtime(true);
-                $importer->flush();
-            }
+            //if (!$isFlush) {
+            $this->start = microtime(true);
+            $importer->flush();
+            //}
             // Reindex
             $process->output(__('Reindexing...'), true);
             $this->reindexProducts($productIdsToReindex);
