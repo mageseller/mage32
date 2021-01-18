@@ -43,6 +43,12 @@ class InstallSchema implements InstallSchemaInterface
             [],
             'name'
         )->addColumn(
+            'parent_name',
+            Table::TYPE_TEXT,
+            null,
+            [],
+            'Parent Name'
+        )->addColumn(
             'magento_cat_id',
             Table::TYPE_TEXT,
             null,
@@ -64,11 +70,11 @@ class InstallSchema implements InstallSchemaInterface
 
         $indexName = $setup->getIdxName(
             $setup->getTable('mageseller_xitimport_xitcategory'),
-            [ 'name'],
+            [ 'name','parent_name'],
             \Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_UNIQUE
         );
         $installer->getConnection()->createTable($table_mageseller_xitimport_xitcategory);
-        $installer->getConnection()->rawQuery("ALTER TABLE `{$setup->getTable('mageseller_xitimport_xitcategory')}` ADD UNIQUE `{$indexName}` (`name`(255))");
+        $installer->getConnection()->rawQuery("ALTER TABLE `{$setup->getTable('mageseller_xitimport_xitcategory')}` ADD UNIQUE `{$indexName}` (`name`(255),`parent_name`(255))");
     }
 
 }

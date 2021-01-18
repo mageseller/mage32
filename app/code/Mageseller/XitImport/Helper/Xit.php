@@ -31,6 +31,7 @@ class Xit extends AbstractHelper
     const TMP_FILENAME = 'vendor-file-tmp.xml';
     const DOWNLOAD_FOLDER = 'supplier/xit';
     const XIT_IMPORTCONFIG_IS_ENABLE = 'xit/importconfig/is_enable';
+    const SEPERATOR = " ---|--- ";
 
     /**
      * /**
@@ -337,8 +338,6 @@ class Xit extends AbstractHelper
         return $this->getConfig(self::XIT_IMPORTCONFIG_IS_ENABLE);
     }
 
-
-
     /**
      * @param $value
      * @param string $scope
@@ -389,7 +388,6 @@ class Xit extends AbstractHelper
             $process->output(__('Downloading images from Xit feed to Magento'), true);
         }
 
-
         ini_set("memory_limit", "-1");
         set_time_limit(0);
         $process->output(__('Downloading file...'), true);
@@ -416,34 +414,48 @@ class Xit extends AbstractHelper
             foreach ($items as $item) {
                 $categories = $this->parseObject($item->ItemDetail->Classifications->Classification);
                 unset($categories['@attributes']);
-                $allCategories = array_unique(array_merge($allCategories, $categories));
+                $categories = array_values($categories);
                 $lastCat = "";
+
                 foreach ($categories as $category) {
-                    $categoriesWithParents[$category] = $lastCat;
+                    $categoriesWithParents[$category . self::SEPERATOR . $lastCat] = implode(self::SEPERATOR, $categories);
                     $lastCat = $category;
                 }
             }
         }
         /*Adding category names start*/
-        $collection = $this->xitCategoryFactory->create()->getCollection();
         $allCategories = array_map(function ($v) {
-            return ['name' => $v];
-        }, $allCategories);
+            $names = explode(self::SEPERATOR, $v);
+            return [
+                'name' => $names[0],
+                'parent_name' => $names[1]
+            ];
+        }, array_keys($categoriesWithParents));
+        $collection = $this->xitCategoryFactory->create()->getCollection();
         $collection->insertOnDuplicate($allCategories);
         /*Adding category names ends*/
 
         /*Adding parent id to child category starts*/
         $select = (clone $collection->getSelect())
                     ->reset(Select::COLUMNS)
-                    ->columns(['name' => 'name','id' => 'xitcategory_id']);
+                    ->columns([ 'name' => 'concat(name,"' . self::SEPERATOR . '",parent_name)','parent_name','id' => 'xitcategory_id']);
         $connection = $this->resourceConnection->getConnection();
         $allCategoryIds = $connection->fetchAssoc($select);
-        foreach ($categoriesWithParents as $childCategory => $parentCategory) {
-            $parentId = $allCategoryIds[$parentCategory]['id'] ?? 0;
+        foreach ($categoriesWithParents as $categoryKeys => $categoryValues) {
+            $names = explode(self::SEPERATOR, $categoryKeys);
+            $childCategory = $names[0];
+            $parentCategory = $names[1];
+            $categoryValues = explode(self::SEPERATOR, $categoryValues);
+            $key = array_search($parentCategory, $categoryValues);
+            $parentParentCategory = "";
+            if ($key > 0) {
+                $parentParentCategory = $categoryValues[$key-1];
+            }
+            $parentId = $allCategoryIds[$parentCategory . self::SEPERATOR . $parentParentCategory]['id'] ?? 0;
             $connection->update(
                 $collection->getMainTable(),
                 ['parent_id' => $parentId],
-                ['name = ?' => $childCategory]
+                ['name = ?' => $childCategory,'parent_name = ?' => $parentCategory]
             );
         }
         /*Adding parent id to child category ends*/
