@@ -463,18 +463,24 @@ class ApiV3Helper extends ApiHelper
         $supplier = $this->getSupplier();
         $supplierId = $supplier['no'] ?? "";
         $requestWarehouse = [];
+        $taxPayerNUmber = $customerObject['taxNumber'] ?? "";
+        if (!$this->hasValidRule($taxPayerNUmber)) {
+            $taxPayerNUmber = "";
+        }
         $request =  [
             "customer" => [
-                "number" => (int) $customerId,
                 "name" => $customerObject['name'] ?? "Generaric Client",
                 "address" => $customerObject['street'] ?? "Generaric Street",
                 "postalCode" => $customerObject['postcode'] ?? "",
                 "city" => $customerObject['city'] ?? "",
                 "email" => $customerObject['email'] ?? "",
                 "country" => "PT",
-                "taxNumber" => $customerObject['taxNumber'] ?? "",
+                "taxNumber" => $taxPayerNUmber,
             ]
         ];
+        if ($customerId) {
+            $request['customer']['number'] = (int) $customerId;
+        }
         $requestWarehouse['customer'] = $request['customer'];
         $request['requestOptions'] =  [
             "option" => 0,
@@ -490,7 +496,6 @@ class ApiV3Helper extends ApiHelper
         //$requestWarehouse['requestOptions']['reportName']  = "Minimal Customer Order";
         $request['document'] = [
             "docType" => 1,
-            "customerNumber" => (int) $customerId,
             "customerName" => $customerObject['name'] ?? "Generaric Client",
             "salesmanName" => $this->getSupplierName(),
             "invoicingAddress1" => $customerObject['shipping_street'] ?? $customerObject['street'] ?? "",
@@ -498,11 +503,12 @@ class ApiV3Helper extends ApiHelper
             "invoicingLocality" => $customerObject['shipping_city'] ?? $customerObject['city'] ?? "",
             "documentObservations" => "Invoice Document"
         ];
+        if ($customerId) {
+            $request['document']['customerNumber'] = (int) $customerId;
+        }
 
         $requestWarehouse['internalDocument'] = [
             "docType" => 1,
-            "customerNumber" => (int) $customerId,
-            "supplierNumber" => (int) $supplierId,
             "customerName" => $customerObject['name'] ?? "Generaric Client",
             "salesmanName" => $this->getSupplierName(),
             "description" => "Order",
@@ -511,6 +517,12 @@ class ApiV3Helper extends ApiHelper
             "issuingLocality" => "Issue locality",
             "documentObservations" =>"This is an observation"
         ];
+        if ($customerId) {
+            $request['internalDocument']['customerNumber'] = (int) $customerId;
+        }
+        if ($supplierId) {
+            $request['internalDocument']['supplierNumber'] = (int) $supplierId;
+        }
         $orderId = $this->getLastV3OrderId();
         if ($orderId) {
             $requestWarehouse['internalDocument']['number'] = $orderId + 1;
@@ -554,13 +566,14 @@ class ApiV3Helper extends ApiHelper
             ];
             $request['products'][] = $productArray;
             $productArray["unitCode"] = "M";
-            $requestWarehouse['products'][] = array_merge($productArray, [
+            $requestWarehouse['products'][] = $productArray;
+            /*$requestWarehouse['products'][] = array_merge($productArray, [
                 "discount1" => $product['discount'],
                 'tax' => 'tax',
                 'taxIncluded' => 'tax',
                 'taxPercentage' => $product['taxPercentage'],
                 'taxRegion' => 'PT',
-            ]);
+            ]);*/
         }
         $order = $orderRequest['orderObject'];
         if (!$order->getData('bodata_reposnse')) {
@@ -584,5 +597,34 @@ class ApiV3Helper extends ApiHelper
             $order->addStatusToHistory(false, json_encode($response));
         }
         $order->save();
+    }
+    protected function hasValidRule(string $tin): bool
+    {
+        $c1 = $this->digitAt($tin, 0);
+        $c2 = $this->digitAt($tin, 1);
+        $c3 = $this->digitAt($tin, 2);
+        $c4 = $this->digitAt($tin, 3);
+        $c5 = $this->digitAt($tin, 4);
+        $c6 = $this->digitAt($tin, 5);
+        $c7 = $this->digitAt($tin, 6);
+        $c8 = $this->digitAt($tin, 7);
+        $c9 = $this->digitAt($tin, 8);
+        $sum = $c1 * 9 + $c2 * 8 + $c3 * 7 + $c4 * 6 + $c5 * 5 + $c6 * 4 + $c7 * 3 + $c8 * 2;
+        $remainderBy11 = $sum % 11;
+        $checkDigit = 11 - $remainderBy11;
+
+        if (9 >= $checkDigit) {
+            return $checkDigit === $c9;
+        }
+
+        if (10 === $checkDigit) {
+            return 0 === $c9;
+        }
+
+        return 0 === $c9;
+    }
+    protected function digitAt(string $str, int $index): int
+    {
+        return (int) ($str[$index] ?? 0);
     }
 }
