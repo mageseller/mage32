@@ -438,7 +438,7 @@ class Xit extends AbstractHelper
         /*Adding parent id to child category starts*/
         $select = (clone $collection->getSelect())
                     ->reset(Select::COLUMNS)
-                    ->columns([ 'name' => 'concat(name,"' . self::SEPERATOR . '",parent_name)','parent_name','id' => 'xitcategory_id']);
+                    ->columns([ 'name' => 'LOWER(CONCAT(name,"' . self::SEPERATOR . '",parent_name))','parent_name','id' => 'xitcategory_id']);
         $connection = $this->resourceConnection->getConnection();
         $allCategoryIds = $connection->fetchAssoc($select);
         foreach ($categoriesWithParents as $categoryKeys => $categoryValues) {
@@ -451,7 +451,7 @@ class Xit extends AbstractHelper
             if ($key > 0) {
                 $parentParentCategory = $categoryValues[$key-1];
             }
-            $parentId = $allCategoryIds[$parentCategory . self::SEPERATOR . $parentParentCategory]['id'] ?? 0;
+            $parentId = $allCategoryIds[strtolower($parentCategory) . self::SEPERATOR . strtolower($parentParentCategory)]['id'] ?? 0;
             $connection->update(
                 $collection->getMainTable(),
                 ['parent_id' => $parentId],
