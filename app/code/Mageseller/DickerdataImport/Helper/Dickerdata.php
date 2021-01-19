@@ -28,6 +28,7 @@ class Dickerdata extends AbstractHelper
     const PRIMARY_CATEGORY = 'PrimaryCategory';
     const SECONDARY_CATEGORY = 'SecondaryCategory';
     const TERTIARY_CATEGORY = 'TertiaryCategory';
+    const SEPERATOR = " ---|--- ";
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -161,32 +162,56 @@ class Dickerdata extends AbstractHelper
             $primaryCategory = $jsonItem[self::PRIMARY_CATEGORY] ?? "";
             $secondaryCategory = $jsonItem[self::SECONDARY_CATEGORY] ?? "";
             $tertiaryCategory = $jsonItem[self::TERTIARY_CATEGORY] ?? "";
-            $categoriesWithParents[$primaryCategory] = 0;
-            $categoriesWithParents[$secondaryCategory] = $primaryCategory;
-            $categoriesWithParents[$tertiaryCategory] = $secondaryCategory;
-        }
-        $allCategories = array_keys($categoriesWithParents);
 
+            $level = implode(self::SEPERATOR, [$primaryCategory,$secondaryCategory,$tertiaryCategory]);
+            if ($primaryCategory) {
+                $categoriesWithParents[$primaryCategory . self::SEPERATOR . ''] = $level;
+                if ($secondaryCategory) {
+                    $categoriesWithParents[$secondaryCategory . self::SEPERATOR . $primaryCategory] = $level;
+                    if ($tertiaryCategory) {
+                        $categoriesWithParents[$tertiaryCategory . self::SEPERATOR . $secondaryCategory] = $level;
+                    }
+                }
+            }
+        }
         /*Adding category names start*/
-        $collection = $this->dickerdataCategoryFactory->create()->getCollection();
+
         $allCategories = array_map(function ($v) {
-            return ['name' => $v];
-        }, $allCategories);
+            $names = explode(self::SEPERATOR, $v);
+            return $names[0] ? [
+                'name' => $names[0],
+                'parent_name' => $names[1]
+            ] : [];
+        }, array_keys($categoriesWithParents));
+        $allCategories = array_filter($allCategories);
+        $collection = $this->dickerdataCategoryFactory->create()->getCollection();
         $collection->insertOnDuplicate($allCategories);
         /*Adding category names ends*/
 
         /*Adding parent id to child category starts*/
         $select = (clone $collection->getSelect())
             ->reset(Select::COLUMNS)
-            ->columns(['name' => 'name', 'id' => 'dickerdatacategory_id']);
+            ->columns([ 'name' => 'LOWER(CONCAT(name,"' . self::SEPERATOR . '",parent_name))','parent_name','id' => 'dickerdatacategory_id']);
+
         $connection = $this->resourceConnection->getConnection();
         $allCategoryIds = $connection->fetchAssoc($select);
-        foreach ($categoriesWithParents as $childCategory => $parentCategory) {
-            $parentId = $allCategoryIds[$parentCategory]['id'] ?? 0;
+        foreach ($categoriesWithParents as $categoryKeys => $categoryValues) {
+            $names = explode(self::SEPERATOR, $categoryKeys);
+            $childCategory = $names[0];
+            $parentCategory = $names[1];
+            $categoryValues = explode(self::SEPERATOR, $categoryValues);
+            $key = array_search($parentCategory, $categoryValues);
+            $parentParentCategory = "";
+            if ($key > 0) {
+                $parentParentCategory = $categoryValues[$key-1];
+            }
+
+            $parentId = $allCategoryIds[strtolower($parentCategory) . self::SEPERATOR . strtolower($parentParentCategory)]['id'] ?? null;
+
             $connection->update(
                 $collection->getMainTable(),
                 ['parent_id' => $parentId],
-                ['name = ?' => $childCategory]
+                ['name = ?' => $childCategory,'parent_name = ?' => $parentCategory]
             );
         }
         /*Adding parent id to child category ends*/
