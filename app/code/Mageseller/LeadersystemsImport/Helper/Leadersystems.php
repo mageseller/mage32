@@ -31,6 +31,7 @@ class Leadersystems extends AbstractHelper
     const XIT_IMPORTCONFIG_IS_ENABLE = 'leadersystems/importconfig/is_enable';
     const CATEGORY_NAME = 'CATEGORY NAME';
     const SUBCATEGORY_NAME = 'SUBCATEGORY NAME';
+    const SEPERATOR = " ---|--- ";
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -171,35 +172,51 @@ class Leadersystems extends AbstractHelper
         while (false !== ($row = $file->readCsv())) {
             $categoryLevel1 = $row[$headers[self::CATEGORY_NAME]] ?? "";
             $categoryLevel2 = $row[$headers[self::SUBCATEGORY_NAME]] ?? "";
+            $level = implode(self::SEPERATOR, [$categoryLevel1,$categoryLevel2]);
             if ($categoryLevel1) {
-                $categoriesWithParents[$categoryLevel1] = null;
+                $categoriesWithParents[$categoryLevel1 . self::SEPERATOR . ''] = $level;
             }
             if ($categoryLevel2) {
-                $categoriesWithParents[$categoryLevel2] = $categoryLevel1;
+                $categoriesWithParents[$categoryLevel2 . self::SEPERATOR . $categoryLevel1] = $level;
             }
         }
 
-        $allCategories = array_keys($categoriesWithParents);
         /*Adding category names start*/
-        $collection = $this->leadersystemsCategoryFactory->create()->getCollection();
         $allCategories = array_map(function ($v) {
-            return ['name' => $v];
-        }, $allCategories);
+            $names = explode(self::SEPERATOR, $v);
+            return $names[0] ? [
+                'name' => $names[0],
+                'parent_name' => $names[1]
+            ] : [];
+        }, array_keys($categoriesWithParents));
+        $allCategories = array_filter($allCategories);
+        $collection = $this->leadersystemsCategoryFactory->create()->getCollection();
         $collection->insertOnDuplicate($allCategories);
         /*Adding category names ends*/
 
         /*Adding parent id to child category starts*/
         $select = (clone $collection->getSelect())
             ->reset(Select::COLUMNS)
-            ->columns(['name' => 'name', 'id' => 'leadersystemscategory_id']);
+            ->columns(['name' => 'LOWER(CONCAT(name,"' . self::SEPERATOR . '",parent_name))','parent_name', 'id' => 'leadersystemscategory_id']);
         $connection = $this->resourceConnection->getConnection();
         $allCategoryIds = $connection->fetchAssoc($select);
-        foreach ($categoriesWithParents as $childCategory => $parentCategory) {
-            $parentId = $allCategoryIds[$parentCategory]['id'] ?? 0;
+
+        foreach ($categoriesWithParents as $categoryKeys => $categoryValues) {
+            $names = explode(self::SEPERATOR, $categoryKeys);
+            $childCategory = $names[0];
+            $parentCategory = $names[1];
+            $categoryValues = explode(self::SEPERATOR, $categoryValues);
+            $key = array_search($parentCategory, $categoryValues);
+            $parentParentCategory = "";
+            if ($key > 0) {
+                $parentParentCategory = $categoryValues[$key-1];
+            }
+
+            $parentId = $allCategoryIds[strtolower($parentCategory) . self::SEPERATOR . strtolower($parentParentCategory)]['id'] ?? null;
             $connection->update(
                 $collection->getMainTable(),
                 ['parent_id' => $parentId],
-                ['name = ?' => $childCategory]
+                ['name = ?' => $childCategory,'parent_name = ?' => $parentCategory]
             );
         }
         /*Adding parent id to child category ends*/
@@ -231,6 +248,7 @@ class Leadersystems extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
+        return $filepath;
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);
