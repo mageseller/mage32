@@ -416,10 +416,14 @@ class Xit extends AbstractHelper
                 unset($categories['@attributes']);
                 $categories = array_values($categories);
                 $lastCat = "";
-
+                $i = 0;
                 foreach ($categories as $category) {
                     $categoriesWithParents[$category . self::SEPERATOR . $lastCat] = implode(self::SEPERATOR, $categories);
                     $lastCat = $category;
+                    $i++;
+                    if ($i > 2) {
+                        break;
+                    }
                 }
             }
         }
@@ -503,7 +507,7 @@ class Xit extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
-        return $filepath;
+
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);
