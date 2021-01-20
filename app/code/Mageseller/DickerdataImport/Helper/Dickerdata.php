@@ -21,8 +21,8 @@ use Magento\Store\Model\ScopeInterface;
 
 class Dickerdata extends AbstractHelper
 {
-    const FILENAME = 'vendor-file.json';
-    const TMP_FILENAME = 'vendor-file-tmp.json';
+    const FILENAME = 'vendor-file.csv';
+    const TMP_FILENAME = 'vendor-file-tmp.csv';
     const DOWNLOAD_FOLDER = 'supplier/dickerdata';
     const DICKERDATA_IMPORTCONFIG_IS_ENABLE = 'dickerdata/importconfig/is_enable';
     const PRIMARY_CATEGORY = 'PrimaryCategory';
@@ -84,6 +84,10 @@ class Dickerdata extends AbstractHelper
     private $resourceConnection;
 
     private $supplierCategories;
+    /**
+     * @var \Magento\Framework\Filesystem
+     */
+    private $filesystem;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -129,6 +133,7 @@ class Dickerdata extends AbstractHelper
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryFactory = $categoryFactory;
         $this->resourceConnection = $resourceConnection;
+        $this->filesystem = $filesystem;
     }
 
     /**
@@ -155,25 +160,24 @@ class Dickerdata extends AbstractHelper
         set_time_limit(0);
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
-        $stream = file_get_contents($filepath);
-        $items = json_decode($stream, true);
         $categoriesWithParents = [];
-        foreach ($items as $jsonItem) {
-            $primaryCategory = $jsonItem[self::PRIMARY_CATEGORY] ?? "";
-            $secondaryCategory = $jsonItem[self::SECONDARY_CATEGORY] ?? "";
-            $tertiaryCategory = $jsonItem[self::TERTIARY_CATEGORY] ?? "";
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $file = $directoryRead->openFile(self::FILENAME);
+        $headers = array_flip($file->readCsv());
 
-            $level = implode(self::SEPERATOR, [$primaryCategory,$secondaryCategory,$tertiaryCategory]);
-            if ($primaryCategory) {
-                $categoriesWithParents[$primaryCategory . self::SEPERATOR . ''] = $level;
-                if ($secondaryCategory) {
-                    $categoriesWithParents[$secondaryCategory . self::SEPERATOR . $primaryCategory] = $level;
-                    if ($tertiaryCategory) {
-                        $categoriesWithParents[$tertiaryCategory . self::SEPERATOR . $secondaryCategory] = $level;
-                    }
-                }
+        while (false !== ($row = $file->readCsv())) {
+            $categoryLevel1 = $row[$headers[self::PRIMARY_CATEGORY]] ?? "";
+            $categoryLevel2 = $row[$headers[self::SECONDARY_CATEGORY]] ?? "";
+            $level = implode(self::SEPERATOR, [$categoryLevel1,$categoryLevel2]);
+            if ($categoryLevel1) {
+                $categoriesWithParents[$categoryLevel1 . self::SEPERATOR . ''] = $level;
+            }
+            if ($categoryLevel2) {
+                $categoriesWithParents[$categoryLevel2 . self::SEPERATOR . $categoryLevel1] = $level;
             }
         }
+
         /*Adding category names start*/
 
         $allCategories = array_map(function ($v) {
@@ -243,7 +247,7 @@ class Dickerdata extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
-        return $filepath;
+
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);

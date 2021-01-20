@@ -232,12 +232,13 @@ return [
         'Magento_PaypalReCaptcha' => 1,
         'MSP_TwoFactorAuth' => 1,
         'Mageseller_DickerdataImport' => 1,
+        'Mageseller_DriveFx' => 1,
         'Mageseller_IngrammicroImport' => 1,
+        'Mageseller_InvoiceCustomization' => 1,
         'Mageseller_LeadersystemsImport' => 1,
         'Mageseller_Process' => 1,
         'Mageseller_ProductImport' => 1,
         'Mageseller_XitImport' => 1,
-        'Mageseller_DriveFx' => 1,
         'Temando_Shipping' => 1,
         'Vertex_Tax' => 1
     ]

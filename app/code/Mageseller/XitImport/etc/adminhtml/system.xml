@@ -22,21 +22,28 @@
 						<field id="xit/importconfig/is_enable">1</field>
 					</depends>
 				</field>
-				<field id="object_id" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="text">
-					<label>Object Id</label>
+				<field id="object_id" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="text">
+					<label>Xml Object Id</label>
 					<comment/>
 					<depends>
 						<field id="xit/importconfig/is_enable">1</field>
 					</depends>
 				</field>
-				<field id="token" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label" type="text">
+				<field id="csv_object_id" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="label" type="text">
+					<label>Csv Object Id</label>
+					<comment/>
+					<depends>
+						<field id="xit/importconfig/is_enable">1</field>
+					</depends>
+				</field>
+				<field id="token" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label" type="text">
 					<label>Token</label>
 					<comment/>
 					<depends>
 						<field id="xit/importconfig/is_enable">1</field>
 					</depends>
 				</field>
-				<field id="import_category" translate="label comment tooltip" type="button" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+				<field id="import_category" translate="label comment tooltip" type="button" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="0">
 					<label>Import Xit Category</label>
 					<frontend_model>Mageseller\XitImport\Block\System\Config\ImportXitCategory</frontend_model>
 					<depends>

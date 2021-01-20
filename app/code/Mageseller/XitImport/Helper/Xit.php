@@ -21,6 +21,7 @@ use Magento\Framework\DB\Select;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+
 use Mageseller\Process\Model\Process;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
 use SimpleXMLElement;
@@ -29,6 +30,8 @@ class Xit extends AbstractHelper
 {
     const FILENAME = 'vendor-file.xml';
     const TMP_FILENAME = 'vendor-file-tmp.xml';
+    const FILENAME_TSV = 'vendor-file.tsv';
+    const TMP_FILENAME_TSV = 'vendor-file-tmp.tsv';
     const DOWNLOAD_FOLDER = 'supplier/xit';
     const XIT_IMPORTCONFIG_IS_ENABLE = 'xit/importconfig/is_enable';
     const SEPERATOR = " ---|--- ";
@@ -106,6 +109,10 @@ class Xit extends AbstractHelper
      * @var StoreManagerInterface
      */
     private $xitImageHelper;
+    /**
+     * @var \Magento\Framework\Filesystem
+     */
+    private $filesystem;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -149,6 +156,7 @@ class Xit extends AbstractHelper
         parent::__construct($context);
         $this->_dateTime = $dateTime;
         $this->fileFactory = $fileFactory;
+        $this->filesystem = $filesystem;
         $this->scopeConfig = $context->getScopeConfig();
         $this->_dirReader = $dirReader;
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
@@ -399,13 +407,37 @@ class Xit extends AbstractHelper
             $this->xitImageHelper->processProductImages($items, $process, $since, $sendReport);
         }
     }
+    public function secureRip(string $str): string
+    {
+        return mb_convert_encoding($str, "UTF-8", "UTF-16LE");
+    }
     public function importXitCategory()
     {
         ini_set("memory_limit", "-1");
         set_time_limit(0);
-        $apiUrl = $this->getApiUrl();
-        $filepath = $this->downloadFile($apiUrl);
-        $allCategories = [];
+        $apiUrl = $this->getCsvApiUrl();
+        //$filepath = $this->downloadFile($apiUrl, true);
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $file = $directoryRead->openFile(self::FILENAME_TSV);
+        $headers = array_flip($file->readCsv(0, "\t"));
+        $categoriesWithParents = [];
+        while (false !== ($row = $file->readCsv(0, "\t", "'"))) {
+            $categoryLevel1 = trim(trim($row[$headers['Classification1']] ?? ""), '"');
+            $categoryLevel2 = trim(trim($row[$headers['Classification2']] ?? ""), '"');
+            $categoryLevel3 = trim(trim($row[$headers['Classification3']] ?? ""), '"');
+            $level = implode(self::SEPERATOR, [$categoryLevel1,$categoryLevel2,$categoryLevel3]);
+            if ($categoryLevel1) {
+                $categoriesWithParents[$categoryLevel1 . self::SEPERATOR . ''] = $level;
+                if ($categoryLevel2) {
+                    $categoriesWithParents[$categoryLevel2 . self::SEPERATOR . $categoryLevel1] = $level;
+                    if ($categoryLevel3) {
+                        $categoriesWithParents[$categoryLevel3 . self::SEPERATOR . $categoryLevel2] = $level;
+                    }
+                }
+            }
+        }
+        /*$allCategories = [];
         $categoriesWithParents = [];
         $xml = simplexml_load_file($filepath);
         if ($xml instanceof SimpleXMLElement) {
@@ -426,15 +458,17 @@ class Xit extends AbstractHelper
                     }
                 }
             }
-        }
+        }*/
         /*Adding category names start*/
         $allCategories = array_map(function ($v) {
             $names = explode(self::SEPERATOR, $v);
-            return [
+
+            return $names[0] ? [
                 'name' => $names[0],
                 'parent_name' => $names[1]
-            ];
+            ] : [];
         }, array_keys($categoriesWithParents));
+        $allCategories = array_filter($allCategories);
         $collection = $this->xitCategoryFactory->create()->getCollection();
         $collection->insertOnDuplicate($allCategories);
         /*Adding category names ends*/
@@ -473,6 +507,13 @@ class Xit extends AbstractHelper
         }
         return $this->apiUrl;
     }
+    public function getCsvApiUrl()
+    {
+        if ($this->apiUrl == null) {
+            $this->apiUrl = $this->getUrl() . "?ObjectID=" . $this->getCsvObjectId() . "&Token=" . $this->getToken();
+        }
+        return $this->apiUrl;
+    }
 
     /**
      * @return mixed
@@ -481,7 +522,13 @@ class Xit extends AbstractHelper
     {
         return $this->getConfig('xit/importconfig/url');
     }
-
+    /**
+     * @return mixed
+     */
+    public function getCsvObjectId()
+    {
+        return $this->getConfig('xit/importconfig/csv_object_id');
+    }
     /**
      * @return mixed
      */
@@ -498,13 +545,13 @@ class Xit extends AbstractHelper
         return $this->getConfig('xit/importconfig/token');
     }
 
-    public function downloadFile($source)
+    public function downloadFile($source, $tsv = false)
     {
         //download file to var/dropship/ folder from url provided in config
         $this->xitimportLogger->debug('Cron Download File : ' . $source);
 
-        $fileName = self::FILENAME;
-        $tmpFileName = self::TMP_FILENAME;
+        $fileName = $tsv ? self::FILENAME_TSV : self::FILENAME;
+        $tmpFileName = $tsv ? self::TMP_FILENAME_TSV : self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
 
@@ -522,6 +569,9 @@ class Xit extends AbstractHelper
             curl_exec($ch);
             curl_close($ch);
             fclose($fp);
+            if ($tsv) {
+                file_put_contents($filepath, $this->secureRip(file_get_contents($filepath)));
+            }
         } else {
             $this->xitimportLogger->info('Import File Already Exists: ' . $filepath);
             $this->xitimportLogger->debug('Importing file to tmp file: ' . $source);
@@ -535,6 +585,9 @@ class Xit extends AbstractHelper
             fclose($fp);
             $this->fileFactory->open(['path' => $downloadFolder]);
             $this->fileFactory->mv($tmpFileName, $fileName);
+            if ($tsv) {
+                file_put_contents($filepath, $this->secureRip(file_get_contents($filepath)));
+            }
         }
         return $filepath;
     }
