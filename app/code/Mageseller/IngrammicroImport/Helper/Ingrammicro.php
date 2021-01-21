@@ -188,9 +188,9 @@ class Ingrammicro extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         //$filepath = $downloadFolder . '/' . $fileName;
-        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        //$directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
 
-        $file2 =  $directoryRead->openFile($fileName);
+        //$file2 =  $directoryRead->openFile($fileName);
         try {
             /*Adding category names start*/
             $headers = array_flip($file->readCsv(0, "\t"));
@@ -213,7 +213,7 @@ class Ingrammicro extends AbstractHelper
             $connection = $this->resourceConnection->getConnection();
             $allCategoryIds = $connection->fetchAssoc($select);*/
 
-            $categoriesWithParents = [];
+            /*$categoriesWithParents = [];
             $headers = array_flip($file2->readCsv(0, ","));
             $i = 0;
             $connection = $this->resourceConnection->getConnection();
@@ -230,7 +230,7 @@ class Ingrammicro extends AbstractHelper
                     );
                 }
                 $i++;
-            }
+            }*/
              //$collection->insertOnDuplicate($parentMap);
             /*Adding category names ends*/
         } catch (\Exception $e) {
@@ -242,7 +242,7 @@ class Ingrammicro extends AbstractHelper
             );
         } finally {
             $file->close();
-            $file2->close();
+            //$file2->close();
         }
         return;
 //        return $this;

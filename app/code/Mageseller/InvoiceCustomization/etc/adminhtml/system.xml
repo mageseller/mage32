@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="sales" translate="label" sortOrder="400">
+            <label>Sales</label>
+        </tab>
+        <section id="sales" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1"
+                 showInStore="1">
+            <class>separator-top</class>
+            <label>Sales</label>
+            <tab>sales</tab>
+            <resource>Magento_Sales::config_sales</resource>
+            <group id="identity" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Invoice and Packing Slip Design</label>
+
+                <field id="logo_watermark" translate="label comment" type="image" sortOrder="160" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Watermark for HTML Print View</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
+                    <upload_dir config="system/filesystem/media" scope_info="1">sales/store/logo_watermark</upload_dir>
+                    <base_url type="media" scope_info="1">sales/store/logo_watermark</base_url>
+                    <comment>
+                        <![CDATA[Logo for HTML documents only. If empty, default will be used.<br />(jpeg, gif, png)]]>
+                    </comment>
+                </field>
+                <field id="logo_stamp" translate="label comment" type="image" sortOrder="170" showInDefault="1"
+                       showInWebsite="1" showInStore="1">
+                    <label>Stamp for HTML Print View</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Image</backend_model>
+                    <upload_dir config="system/filesystem/media" scope_info="1">sales/store/logo_stamp</upload_dir>
+                    <base_url type="media" scope_info="1">sales/store/logo_stamp</base_url>
+                    <comment>
+                        <![CDATA[Logo for HTML documents only. If empty, default will be used.<br />(jpeg, gif, png)]]>
+                    </comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

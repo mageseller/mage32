@@ -20,6 +20,10 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     protected $_localeResolver;
 
     /**
+     * @var array $pageSettings
+     */
+    private $pageSettings;
+    /**
      * @param \Magento\Payment\Helper\Data $paymentData
      * @param \Magento\Framework\Stdlib\StringUtils $string
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -50,8 +54,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\Locale\ResolverInterface $localeResolver,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct(
             $paymentData,
             $string,
@@ -84,7 +87,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         $this->_setPdf($pdf);
         $style = new \Zend_Pdf_Style();
         $this->_setFontBold($style, 10);
-
+        $flag = false;
         foreach ($invoices as $invoice) {
             if ($invoice->getStoreId()) {
                 $this->_localeResolver->emulate($invoice->getStoreId());
@@ -92,7 +95,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             }
             $page = $this->newPage();
             $order = $invoice->getOrder();
-            //$this->insertWatermark($page, $invoice->getStore());
+            $this->insertWatermark($page, $invoice->getStore());
 
             /* Add image */
             $this->insertLogo($page, $invoice->getStore());
@@ -130,7 +133,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             $page->drawLine(220, $top, 220, $this->y);
             $page->drawLine(320, $top, 320, $this->y);
             $page->drawLine(380, $top, 380, $this->y);
-            $page->drawLine(440, $top, 440, $this->y);
+            $page->drawLine(450, $top, 450, $this->y);
             $page->drawLine(500, $top, 500, $this->y);
             $page->drawLine(570, $top, 570, $this->y);
 
@@ -139,25 +142,34 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
                 if ($item->getOrderItem()->getParentItem()) {
                     continue;
                 }
+                $size = 15;
                 $top = $this->y + 20;
+                if ($this->y > 720) {
+                    $top = $this->y + 75;
+                    $this->insertWatermark($page, $invoice->getStore());
+                }
                 /* Draw item */
                 $this->_drawItem($item, $page, $order);
                 $page = end($pdf->pages);
 
                 $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.6));
                 $page->setLineWidth(0.5);
-                $page->drawLine(25, $top, 25, $this->y);
-                $page->drawLine(220, $top, 220, $this->y);
-                $page->drawLine(320, $top, 320, $this->y);
-                $page->drawLine(380, $top, 380, $this->y);
-                $page->drawLine(440, $top, 440, $this->y);
-                $page->drawLine(500, $top, 500, $this->y);
-                $page->drawLine(570, $top, 570, $this->y);
-                $page->drawLine(25, $this->y, 570, $this->y);
+                $page->drawLine(25, $top, 25, $this->y + $size);
+                if (($top - ($this->y + $size)) >=  0) {
+                    $page->drawLine(220, $top, 220, $this->y + $size);
+                    $page->drawLine(320, $top, 320, $this->y + $size);
+                    $page->drawLine(380, $top, 380, $this->y + $size);
+                    $page->drawLine(450, $top, 450, $this->y + $size);
+                    $page->drawLine(500, $top, 500, $this->y + $size);
+                }
+                $page->drawLine(570, $top, 570, $this->y + $size);
+                $page->drawLine(25, $this->y + 15, 570, $this->y + 15);
             }
             $top = $this->y + 20;
             /* Add totals */
             $this->insertTotals($page, $invoice);
+            $this->insertStamp($page, $invoice->getStore());
+
             $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.6));
             $page->setLineWidth(0.5);
             $page->drawLine(25, $top, 25, $this->y);
@@ -176,13 +188,62 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             $page->drawLine(570, $top, 570, $this->y);
             $page->drawLine(25, $top, 570, $this->y - 40);
 
+            $this->_setFontBoldItalic($page, 7);
+            $note1 = "*NOTE: Payment must be paid according to the Invoice currency. All disputed Invoice must be notified in writing and no later than three days after customer's receipt of Invoice.";
+            $note2 = "This is system generated Invoice does not require any seal and signature.";
+
+            $page->drawText($note1, 25, $this->y - 50, 'UTF-8');
+            $page->drawText($note2, 25, $this->y - 60, 'UTF-8');
             if ($invoice->getStoreId()) {
                 $this->_localeResolver->revert();
             }
         }
-        $this->_drawFooter($page);
+        //$this->_drawFooter($page);
         $this->_afterGetPdf();
         return $pdf;
+    }
+
+    /**
+     * Insert totals to pdf page
+     *
+     * @param  \Zend_Pdf_Page $page
+     * @param  \Magento\Sales\Model\AbstractModel $source
+     * @return \Zend_Pdf_Page
+     */
+    protected function insertTotals($page, $source)
+    {
+        $order = $source->getOrder();
+        $totals = $this->_getTotalsList();
+        $lineBlock = ['lines' => [], 'height' => 15];
+        foreach ($totals as $total) {
+            $total->setOrder($order)->setSource($source);
+
+            if ($total->canDisplay()) {
+                $total->setFontSize(10);
+                foreach ($total->getTotalsForDisplay() as $totalData) {
+                    $lineBlock['lines'][] = [
+                        [
+                            'text' => $totalData['label'],
+                            'feed' => 475,
+                            'align' => 'right',
+                            'font_size' => $totalData['font_size'],
+                            'font' => 'bold',
+                        ],
+                        [
+                            'text' => $totalData['amount'],
+                            'feed' => 555,
+                            'align' => 'right',
+                            'font_size' => $totalData['font_size'],
+                            'font' => 'bold'
+                        ],
+                    ];
+                }
+            }
+        }
+
+        $this->y -= 20;
+        $page = $this->drawLineBlocks($page, [$lineBlock]);
+        return $page;
     }
 
     /**
@@ -229,25 +290,25 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     {
         /* Add table head */
         $this->_setFontRegular($page, 10);
-        $page->setFillColor(new \Zend_Pdf_Color_RGB(246, 245, 245));
+        $page->setFillColor(new \Zend_Pdf_Color_Rgb(246, 245, 245));
         $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.5));
         $page->setLineWidth(0.5);
         $page->drawRectangle(25, $this->y, 570, $this->y - 15);
         $this->y -= 10;
-        $page->setFillColor(new \Zend_Pdf_Color_RGB(0, 0, 0));
+        $page->setFillColor(new \Zend_Pdf_Color_Rgb(0, 0, 0));
 
         //columns headers
-        $lines[0][] = ['text' => __('Products'), 'feed' => 35];
+        $lines[0][] = ['text' => __('Products'), 'font' => 'bold', 'feed' => 35];
 
-        $lines[0][] = ['text' => __('Description'), 'feed' => 300, 'align' => 'right'];
+        $lines[0][] = ['text' => __('Description'), 'font' => 'bold', 'feed' => 280, 'align' => 'right'];
 
-        $lines[0][] = ['text' => __('Qty'), 'feed' => 360, 'align' => 'right'];
+        $lines[0][] = ['text' => __('Qty'), 'font' => 'bold', 'feed' => 355, 'align' => 'right'];
 
-        $lines[0][] = ['text' => __('$ Price / Unit'), 'feed' => 435, 'align' => 'right'];
+        $lines[0][] = ['text' => __('$ Price / Unit'), 'font' => 'bold', 'feed' => 440, 'align' => 'right'];
 
-        $lines[0][] = ['text' => __('$ Tax'), 'feed' => 495, 'align' => 'right'];
+        $lines[0][] = ['text' => __('$ Tax'), 'font' => 'bold', 'feed' => 485, 'align' => 'right'];
 
-        $lines[0][] = ['text' => __('$ Amount'), 'feed' => 565, 'align' => 'right'];
+        $lines[0][] = ['text' => __('$ Amount'), 'font' => 'bold', 'feed' => 555, 'align' => 'right'];
 
         $lineBlock = ['lines' => $lines, 'height' => 5];
 
@@ -390,9 +451,15 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             'UTF-8'
         );
         $top -= 10;
-        $page->setFillColor(new \Zend_Pdf_Color_Rgb(0.93, 0.92, 0.92));
+        $page->setFillColor(new \Zend_Pdf_Color_Rgb(246, 245, 245));
+        //$page->setFillColor(new \Zend_Pdf_Color_Rgb(0.93, 0.92, 0.92));
         $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.5));
         $page->setLineWidth(0.5);
+        /*$page->drawLine(25, $top, 25, $top );
+        $page->drawLine(275, $top, 275, $top - 25);
+        $page->drawLine(570, $top - 25, 570, $top - 25);
+        $page->drawLine(25, $top - 25, 570, $top  -25);*/
+
         $page->drawRectangle(25, $top, 275, $top - 25);
         $page->drawRectangle(275, $top, 570, $top - 25);
 
@@ -438,7 +505,9 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         }
 
         $page->setFillColor(new \Zend_Pdf_Color_GrayScale(1));
-        $page->drawRectangle(25, $top - 25, 570, $top - 33 - $addressesHeight);
+        if (!$order->getIsVirtual()) {
+            $page->drawRectangle(25, $top - 25, 570, $top - 33 - $addressesHeight);
+        }
         $page->setFillColor(new \Zend_Pdf_Color_GrayScale(0));
         $this->_setFontRegular($page, 10);
         $this->y = $top - 40;
@@ -517,6 +586,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             // replacement of Shipments-Payments rectangle block
             $yPayments = min($addressesEndY, $yPayments);
             $page->drawLine(25, $top - 25, 25, $yPayments);
+            $page->drawLine(275, $top - 25, 275, $yPayments);
             $page->drawLine(570, $top - 25, 570, $yPayments);
             $page->drawLine(25, $yPayments, 570, $yPayments);
 
@@ -613,8 +683,8 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         $count_length = strlen((string)$num);
 
         $x = 0;
-        $string = array();
-        $change_words = array(0 => '', 1 => 'One', 2 => 'Two',
+        $string = [];
+        $change_words = [0 => '', 1 => 'One', 2 => 'Two',
             3 => 'Three', 4 => 'Four', 5 => 'Five', 6 => 'Six',
             7 => 'Seven', 8 => 'Eight', 9 => 'Nine',
             10 => 'Ten', 11 => 'Eleven', 12 => 'Twelve',
@@ -622,8 +692,8 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             16 => 'Sixteen', 17 => 'Seventeen', 18 => 'Eighteen',
             19 => 'Nineteen', 20 => 'Twenty', 30 => 'Thirty',
             40 => 'Forty', 50 => 'Fifty', 60 => 'Sixty',
-            70 => 'Seventy', 80 => 'Eighty', 90 => 'Ninety');
-        $here_digits = array('', 'Hundred', 'Thousand', 'Lakh', 'Crore');
+            70 => 'Seventy', 80 => 'Eighty', 90 => 'Ninety'];
+        $here_digits = ['', ' Hundred ', ' Thousand', ' Lakh ', ' Crore '];
         while ($x < $count_length) {
             $get_divider = ($x == 2) ? 10 : 100;
             $amount = floor($num % $get_divider);
@@ -633,22 +703,24 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
                 $add_plural = (($counter = count($string)) && $amount > 9) ? 's' : null;
                 $amt_hundred = ($counter == 1 && $string[0]) ? ' & ' : null;
                 $string [] = ($amount < 21) ? $change_words[$amount] . ' ' . $here_digits[$counter] . $add_plural . '' . $amt_hundred : $change_words[floor($amount / 10) * 10] . ' ' . $change_words[$amount % 10] . '' . $here_digits[$counter] . $add_plural . ' ' . $amt_hundred;
-            } else $string[] = null;
+            } else {
+                $string[] = null;
+            }
         }
         $implode_to_Rupees = implode('', array_reverse($string));
         $get_paise = ($amount_after_decimal > 0) ? "& " . ($change_words[$amount_after_decimal / 10] . " " . $change_words[$amount_after_decimal % 10]) . ' Cent Only' : '& Zero Cent Only';
-        return ($implode_to_Rupees ? $implode_to_Rupees . 'Dollar ' : '') . $get_paise;
+        return ($implode_to_Rupees ? $implode_to_Rupees . ' Dollar ' : '') . $get_paise;
     }
 
     protected function _drawFooter(\Zend_Pdf_Page $page)
     {
         $this->y = 40;
-        $page->setFillColor(new \Zend_Pdf_Color_RGB(1, 1, 1));
+        $page->setFillColor(new \Zend_Pdf_Color_Rgb(1, 1, 1));
         $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.5));
         $page->setLineWidth(0.5);
         $page->drawRectangle(60, $this->y, 510, $this->y - 30);
 
-        $page->setFillColor(new \Zend_Pdf_Color_RGB(0.1, 0.1, 0.1));
+        $page->setFillColor(new \Zend_Pdf_Color_Rgb(0.1, 0.1, 0.1));
         $font = \Zend_Pdf_Font::fontWithPath(
             $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/CalibreMedium.ttf')
         );
@@ -722,7 +794,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         $object->setFont($font, $size);
         return $font;
     }
-    
+
     /**
      * Set font as bold italic
      *
@@ -742,19 +814,19 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     protected function insertWatermark(&$page, $store = null)
     {
         $image = $this->_scopeConfig->getValue(
-            'sales/identity/logo',
+            'sales/identity/logo_watermark',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
         );
         if ($image) {
-            $imagePath = '/sales/store/logo/' . $image;
+            $imagePath = '/sales/store/logo_watermark/' . $image;
             if ($this->_mediaDirectory->isFile($imagePath)) {
                 $image = \Zend_Pdf_Image::imageWithPath($this->_mediaDirectory->getAbsolutePath($imagePath));
                 $top = 830;
                 //top border of the page
-                $widthLimit = 150;
+                $widthLimit = 535;
                 //half of the page width
-                $heightLimit = 39;
+                $heightLimit = 550;
                 //assuming the image is not a "skyscraper"
                 $width = $image->getPixelWidth();
                 $height = $image->getPixelHeight();
@@ -772,20 +844,222 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
                     $width = $widthLimit;
                 }
 
-                //coordinates after transformation are rounded by Zend
                 $y1 = $top - $height;
                 $y2 = $top;
                 $x1 = 35;
                 $x2 = $x1 + $width;
-                $rotation = 135;
-
-
+                //echo "y1 : $y1  y2 : $y2 x1 : $x1 x2 : $x2";die;
                 //coordinates after transformation are rounded by Zend
-                $page->drawImage($image, $x1 + ($x2 - $x1) / 2 - $a / 2
-                    , $y1 + ($y2 - $y1) / 2 - $b / 2
-                    , $x1 + ($x2 - $x1) / 2 + $a / 2
-                    , $y1 + ($y2 - $y1) / 2 + $b / 2);
+                //y1 : 696.28014842301 y2 : 830 x1 : 35 x2 : 185
+                //$page->drawImage($image, 35, 696, 185, 830);
+                $page->drawImage($image, 35, 200, 570, 750);
             }
         }
+    }
+    protected function insertStamp(&$page, $store = null)
+    {
+        $image = $this->_scopeConfig->getValue(
+            'sales/identity/logo_stamp',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+        if ($image) {
+            $imagePath = '/sales/store/logo_stamp/' . $image;
+            if ($this->_mediaDirectory->isFile($imagePath)) {
+                $image = \Zend_Pdf_Image::imageWithPath($this->_mediaDirectory->getAbsolutePath($imagePath));
+                $top = $this->y - 10;
+                //top border of the page
+                $widthLimit = 70;
+                //half of the page width
+                $heightLimit = 70;
+                //assuming the image is not a "skyscraper"
+                $width = $image->getPixelWidth();
+                $height = $image->getPixelHeight();
+
+                //preserving aspect ratio (proportions)
+                $ratio = $width / $height;
+                if ($ratio > 1 && $width > $widthLimit) {
+                    $width = $widthLimit;
+                    $height = $width / $ratio;
+                } elseif ($ratio < 1 && $height > $heightLimit) {
+                    $height = $heightLimit;
+                    $width = $height * $ratio;
+                } elseif ($ratio == 1 && $height > $heightLimit) {
+                    $height = $heightLimit;
+                    $width = $widthLimit;
+                }
+
+                $y1 = $top - $height;
+                $y2 = $top;
+                $x1 = 470;
+                $x2 = $x1 + $width;
+
+                //coordinates after transformation are rounded by Zend
+                $page->drawImage($image, $x1, $y1, $x2, $y2);
+            }
+        }
+    }
+    /**
+     * Draw lines
+     *
+     * Draw items array format:
+     * lines        array;array of line blocks (required)
+     * shift        int; full line height (optional)
+     * height       int;line spacing (default 10)
+     *
+     * line block has line columns array
+     *
+     * column array format
+     * text         string|array; draw text (required)
+     * feed         int; x position (required)
+     * font         string; font style, optional: bold, italic, regular
+     * font_file    string; path to font file (optional for use your custom font)
+     * font_size    int; font size (default 7)
+     * align        string; text align (also see feed parameter), optional left, right
+     * height       int;line spacing (default 10)
+     *
+     * @param  \Zend_Pdf_Page $page
+     * @param  array $draw
+     * @param  array $pageSettings
+     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return \Zend_Pdf_Page
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
+     */
+    public function drawLineBlocks(\Zend_Pdf_Page $page, array $draw, array $pageSettings = [])
+    {
+        $this->pageSettings = $pageSettings;
+        foreach ($draw as $itemsProp) {
+            if (!isset($itemsProp['lines']) || !is_array($itemsProp['lines'])) {
+                throw new \Magento\Framework\Exception\LocalizedException(
+                    __('We don\'t recognize the draw line data. Please define the "lines" array.')
+                );
+            }
+            $lines = $itemsProp['lines'];
+            $height = isset($itemsProp['height']) ? $itemsProp['height'] : 10;
+            if (empty($itemsProp['shift'])) {
+                $shift = 0;
+                foreach ($lines as $line) {
+                    $maxHeight = 0;
+                    foreach ($line as $column) {
+                        $lineSpacing = !empty($column['height']) ? $column['height'] : $height;
+                        if (!is_array($column['text'])) {
+                            $column['text'] = [$column['text']];
+                        }
+                        $top = 0;
+                        //
+                        foreach ($column['text'] as $part) {
+                            $top += $lineSpacing;
+                        }
+
+                        $maxHeight = $top > $maxHeight ? $top : $maxHeight;
+                    }
+                    $shift += $maxHeight;
+                }
+                $itemsProp['shift'] = $shift;
+            }
+
+            if ($this->y - $itemsProp['shift'] < 15) {
+                $page = $this->newPage($pageSettings);
+            }
+            $this->correctLines($lines, $page, $height);
+        }
+
+        return $page;
+    }
+
+    /**
+     * Correct lines.
+     *
+     * @param array $lines
+     * @param \Zend_Pdf_Page $page
+     * @param int $height
+     * @throws \Zend_Pdf_Exception
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    private function correctLines($lines, $page, $height) :void
+    {
+        foreach ($lines as $line) {
+            $maxHeight = 0;
+            foreach ($line as $column) {
+                $fontSize = empty($column['font_size']) ? 10 : $column['font_size'];
+                if (!empty($column['font_file'])) {
+                    $font = \Zend_Pdf_Font::fontWithPath($column['font_file']);
+                    $page->setFont($font, $fontSize);
+                } else {
+                    $fontStyle = empty($column['font']) ? 'regular' : $column['font'];
+                    switch ($fontStyle) {
+                        case 'bold':
+                            $font = $this->_setFontBold($page, $fontSize);
+                            break;
+                        case 'italic':
+                            $font = $this->_setFontItalic($page, $fontSize);
+                            break;
+                        case 'italic bold':
+                            $font = $this->_setFontBoldItalic($page, $fontSize);
+                            break;
+                        default:
+                            $font = $this->_setFontRegular($page, $fontSize);
+                            break;
+                    }
+                }
+
+                if (!is_array($column['text'])) {
+                    $column['text'] = [$column['text']];
+                }
+                $top = $this->correctText($column, $height, $font, $page);
+
+                $maxHeight = $top > $maxHeight ? $top : $maxHeight;
+            }
+            $this->y -= $maxHeight;
+        }
+    }
+
+    /**
+     * Correct text.
+     *
+     * @param array $column
+     * @param int $height
+     * @param \Zend_Pdf_Resource_Font $font
+     * @param \Zend_Pdf_Page $page
+     * @throws \Zend_Pdf_Exception
+     * @return int
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    private function correctText($column, $height, $font, $page) :int
+    {
+        $top = 0;
+        $lineSpacing = !empty($column['height']) ? $column['height'] : $height;
+        $fontSize = empty($column['font_size']) ? 10 : $column['font_size'];
+        foreach ($column['text'] as $part) {
+            if ($this->y - $lineSpacing < 15) {
+                $page = $this->newPage($this->pageSettings);
+            }
+
+            $feed = $column['feed'];
+            $textAlign = empty($column['align']) ? 'left' : $column['align'];
+            $width = empty($column['width']) ? 0 : $column['width'];
+            switch ($textAlign) {
+                case 'right':
+                    if ($width) {
+                        $feed = $this->getAlignRight($part, $feed, $width, $font, $fontSize);
+                    } else {
+                        $feed = $feed - $this->widthForStringUsingFontSize($part, $font, $fontSize);
+                    }
+                    break;
+                case 'center':
+                    if ($width) {
+                        $feed = $this->getAlignCenter($part, $feed, $width, $font, $fontSize);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            $page->drawText($part, $feed, $this->y - $top, 'UTF-8');
+            $top += $lineSpacing;
+        }
+        return $top;
     }
 }

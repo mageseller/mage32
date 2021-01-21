@@ -41,13 +41,13 @@ class Invoice extends \Magento\Downloadable\Model\Sales\Order\Pdf\Items\Invoice
         ];
 
         // draw QTY
-        $lines[0][] = ['text' => $item->getQty() * 1, 'feed' => 340, 'align' => 'right'];
+        $lines[0][] = ['text' => $item->getQty() * 1, 'feed' => 350, 'align' => 'right'];
 
         // draw item Prices
         $i = 0;
         $prices = $this->getItemPricesForDisplay();
         $feedPrice = 435;
-        $feedSubtotal = $feedPrice + 130;
+        $feedSubtotal = $feedPrice + 120;
         foreach ($prices as $priceData) {
             if (isset($priceData['label'])) {
                 // draw Price label
@@ -76,7 +76,7 @@ class Invoice extends \Magento\Downloadable\Model\Sales\Order\Pdf\Items\Invoice
         // draw Tax
         $lines[0][] = [
             'text' => $order->formatPriceTxt($item->getTaxAmount()),
-            'feed' => 495,
+            'feed' => 486,
             'font' => 'bold',
             'align' => 'right',
         ];
@@ -88,7 +88,7 @@ class Invoice extends \Magento\Downloadable\Model\Sales\Order\Pdf\Items\Invoice
                 // draw options label
                 $lines[][] = [
                     'text' => $this->string->split($this->filterManager->stripTags($option['label']), 40, true, true),
-                    'font' => 'italic',
+                    'font' => 'italic bold',
                     'feed' => 35,
                 ];
 
