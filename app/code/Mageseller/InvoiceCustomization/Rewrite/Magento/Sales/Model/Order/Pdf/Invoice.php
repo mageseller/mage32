@@ -166,9 +166,12 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             $page->drawLine(25, $this->y, 570, $this->y);
 
             $top = $this->y - 40;
-            $num = floatval($invoice->getGtrandTotal());
-            $amountInWords = $this->numberTowords(21);
-            $page->drawText("In Words: $amountInWords", 35, $this->y - 23, 'UTF-8');
+            $num = floatval($invoice->getGrandTotal());
+            $amountInWords = $this->numberTowords($num);
+            $this->_setFontBold($page, 10);
+            $page->drawText("In Words: ", 35, $this->y - 23, 'UTF-8');
+            $this->_setFontBoldItalic($page, 10);
+            $page->drawText("$amountInWords", 80, $this->y - 23, 'UTF-8');
             $page->drawLine(25, $top, 25, $this->y);
             $page->drawLine(570, $top, 570, $this->y);
             $page->drawLine(25, $top, 570, $this->y - 40);
@@ -628,15 +631,12 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             $x += $get_divider == 10 ? 1 : 2;
             if ($amount) {
                 $add_plural = (($counter = count($string)) && $amount > 9) ? 's' : null;
-                $amt_hundred = ($counter == 1 && $string[0]) ? ' and ' : null;
-                $string [] = ($amount < 21) ? $change_words[$amount] . ' ' . $here_digits[$counter] . $add_plural . ' 
-         ' . $amt_hundred : $change_words[floor($amount / 10) * 10] . ' ' . $change_words[$amount % 10] . ' 
-         ' . $here_digits[$counter] . $add_plural . ' ' . $amt_hundred;
+                $amt_hundred = ($counter == 1 && $string[0]) ? ' & ' : null;
+                $string [] = ($amount < 21) ? $change_words[$amount] . ' ' . $here_digits[$counter] . $add_plural . '' . $amt_hundred : $change_words[floor($amount / 10) * 10] . ' ' . $change_words[$amount % 10] . '' . $here_digits[$counter] . $add_plural . ' ' . $amt_hundred;
             } else $string[] = null;
         }
         $implode_to_Rupees = implode('', array_reverse($string));
-        $get_paise = ($amount_after_decimal > 0) ? "& " . ($change_words[$amount_after_decimal / 10] . " 
-   " . $change_words[$amount_after_decimal % 10]) . ' Cent Only' : '& Zero Cent Only';
+        $get_paise = ($amount_after_decimal > 0) ? "& " . ($change_words[$amount_after_decimal / 10] . " " . $change_words[$amount_after_decimal % 10]) . ' Cent Only' : '& Zero Cent Only';
         return ($implode_to_Rupees ? $implode_to_Rupees . 'Dollar ' : '') . $get_paise;
     }
 
@@ -718,6 +718,22 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     {
         $font = \Zend_Pdf_Font::fontWithPath(
             $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/Calibri Italic.ttf')
+        );
+        $object->setFont($font, $size);
+        return $font;
+    }
+    
+    /**
+     * Set font as bold italic
+     *
+     * @param \Zend_Pdf_Page $object
+     * @param int $size
+     * @return \Zend_Pdf_Resource_Font
+     */
+    protected function _setFontBoldItalic($object, $size = 7)
+    {
+        $font = \Zend_Pdf_Font::fontWithPath(
+            $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/Calibri Bold Italic.ttf')
         );
         $object->setFont($font, $size);
         return $font;
