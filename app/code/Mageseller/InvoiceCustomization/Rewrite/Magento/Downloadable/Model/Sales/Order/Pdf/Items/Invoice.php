@@ -5,18 +5,22 @@
  */
 declare(strict_types=1);
 
-namespace Mageseller\InvoiceCustomization\Rewrite\Magento\Sales\Model\Order\Pdf\Items\Invoice;
+namespace Mageseller\InvoiceCustomization\Rewrite\Magento\Downloadable\Model\Sales\Order\Pdf\Items;
 
-class DefaultInvoice extends \Magento\Sales\Model\Order\Pdf\Items\Invoice\DefaultInvoice
+class Invoice extends \Magento\Downloadable\Model\Sales\Order\Pdf\Items\Invoice
 {
-    public function __construct(\Magento\Framework\Model\Context $context, \Magento\Framework\Registry $registry, \Magento\Tax\Helper\Data $taxData, \Magento\Framework\Filesystem $filesystem, \Magento\Framework\Filter\FilterManager $filterManager, \Magento\Framework\Stdlib\StringUtils $string, \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null, \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null, array $data = [])
+    public function __construct(\Magento\Framework\Model\Context $context, \Magento\Framework\Registry $registry, \Magento\Tax\Helper\Data $taxData, \Magento\Framework\Filesystem $filesystem, \Magento\Framework\Filter\FilterManager $filterManager, \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Downloadable\Model\Link\PurchasedFactory $purchasedFactory, \Magento\Downloadable\Model\ResourceModel\Link\Purchased\Item\CollectionFactory $itemsFactory, \Magento\Framework\Stdlib\StringUtils $string, \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null, \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null, array $data = [])
     {
-        parent::__construct($context, $registry, $taxData, $filesystem, $filterManager, $string, $resource, $resourceCollection, $data);
+        parent::__construct($context, $registry, $taxData, $filesystem, $filterManager, $scopeConfig, $purchasedFactory, $itemsFactory, $string, $resource, $resourceCollection, $data);
     }
+
+
+
     /**
      * Draw item line
      *
      * @return void
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function draw()
     {
@@ -24,22 +28,14 @@ class DefaultInvoice extends \Magento\Sales\Model\Order\Pdf\Items\Invoice\Defaul
         $item = $this->getItem();
         $pdf = $this->getPdf();
         $page = $this->getPage();
-
         $lines = [];
 
         // draw Product name
-        $lines[0] = [
-            [
-                // phpcs:ignore Magento2.Functions.DiscouragedFunction
-                'text' => $this->string->split(html_entity_decode($item->getName()), 35, true, true),
-                'feed' => 35
-            ]
-        ];
+        $lines[0] = [['text' => $this->string->split($item->getName(), 35, true, true), 'feed' => 35]];
 
         // draw SKU
         $lines[0][] = [
-            // phpcs:ignore Magento2.Functions.DiscouragedFunction
-            'text' => $this->string->split(html_entity_decode($this->getSku($item)), 17),
+            'text' => $this->string->split($this->getSku($item), 17),
             'feed' => 300,
             'align' => 'right',
         ];
@@ -50,7 +46,7 @@ class DefaultInvoice extends \Magento\Sales\Model\Order\Pdf\Items\Invoice\Defaul
         // draw item Prices
         $i = 0;
         $prices = $this->getItemPricesForDisplay();
-        $feedPrice = 435; //395;
+        $feedPrice = 435;
         $feedSubtotal = $feedPrice + 130;
         foreach ($prices as $priceData) {
             if (isset($priceData['label'])) {
@@ -96,8 +92,7 @@ class DefaultInvoice extends \Magento\Sales\Model\Order\Pdf\Items\Invoice\Defaul
                     'feed' => 35,
                 ];
 
-                // Checking whether option value is not null
-                if ($option['value'] !== null) {
+                if ($option['value']) {
                     if (isset($option['print_value'])) {
                         $printValue = $option['print_value'];
                     } else {
@@ -111,9 +106,25 @@ class DefaultInvoice extends \Magento\Sales\Model\Order\Pdf\Items\Invoice\Defaul
             }
         }
 
+        // downloadable Items
+        $purchasedItems = $this->getLinks()->getPurchasedItems();
+
+        // draw Links title
+        $lines[][] = [
+            'text' => $this->string->split($this->getLinksTitle(), 70, true, true),
+            'font' => 'italic',
+            'feed' => 35,
+        ];
+
+        // draw Links
+        foreach ($purchasedItems as $link) {
+            $lines[][] = ['text' => $this->string->split($link->getLinkTitle(), 50, true, true), 'feed' => 40];
+        }
+
         $lineBlock = ['lines' => $lines, 'height' => 20];
 
         $page = $pdf->drawLineBlocks($page, [$lineBlock], ['table_header' => true]);
         $this->setPage($page);
     }
+
 }

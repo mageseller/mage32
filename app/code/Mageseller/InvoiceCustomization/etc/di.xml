@@ -2,4 +2,5 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 	<preference for="Magento\Sales\Model\Order\Pdf\Invoice" type="Mageseller\InvoiceCustomization\Rewrite\Magento\Sales\Model\Order\Pdf\Invoice"/>
 	<preference for="Magento\Sales\Model\Order\Pdf\Items\Invoice\DefaultInvoice" type="Mageseller\InvoiceCustomization\Rewrite\Magento\Sales\Model\Order\Pdf\Items\Invoice\DefaultInvoice"/>
+	<preference for="Magento\Downloadable\Model\Sales\Order\Pdf\Items\Invoice" type="Mageseller\InvoiceCustomization\Rewrite\Magento\Downloadable\Model\Sales\Order\Pdf\Items\Invoice"/>
 </config>

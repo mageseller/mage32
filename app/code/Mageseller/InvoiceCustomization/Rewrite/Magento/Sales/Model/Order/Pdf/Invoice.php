@@ -50,7 +50,8 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Framework\Locale\ResolverInterface $localeResolver,
         array $data = []
-    ) {
+    )
+    {
         parent::__construct(
             $paymentData,
             $string,
@@ -67,6 +68,254 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             $data
         );
     }
+
+    /**
+     * Return PDF document
+     *
+     * @param array|Collection $invoices
+     * @return \Zend_Pdf
+     */
+    public function getPdf($invoices = [])
+    {
+        $this->_beforeGetPdf();
+        $this->_initRenderer('invoice');
+
+        $pdf = new \Zend_Pdf();
+        $this->_setPdf($pdf);
+        $style = new \Zend_Pdf_Style();
+        $this->_setFontBold($style, 10);
+
+        foreach ($invoices as $invoice) {
+            if ($invoice->getStoreId()) {
+                $this->_localeResolver->emulate($invoice->getStoreId());
+                $this->_storeManager->setCurrentStore($invoice->getStoreId());
+            }
+            $page = $this->newPage();
+            $order = $invoice->getOrder();
+            //$this->insertWatermark($page, $invoice->getStore());
+
+            /* Add image */
+            $this->insertLogo($page, $invoice->getStore());
+            /* Add address */
+            $this->insertAddress($page, $invoice->getStore());
+
+            $page->setFillColor(new \Zend_Pdf_Color_GrayScale(0));
+            $this->_setFontBold($page, 16);
+            $this->y -= 15;
+
+            $page->drawText("Invoice", 265, $this->y, 'UTF-8');
+
+            $this->y -= 15;
+            /* Add head */
+            $this->insertOrder(
+                $page,
+                $order,
+                $this->_scopeConfig->isSetFlag(
+                    self::XML_PATH_SALES_PDF_INVOICE_PUT_ORDER_ID,
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+                    $order->getStoreId()
+                ),
+                $invoice
+            );
+
+            /* Add document text and number */
+            $this->insertDocumentNumber($page, __('Invoice # ') . $invoice->getIncrementId());
+            /* Add table */
+            $this->_drawHeader($page);
+
+            $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.6));
+            $page->setLineWidth(0.5);
+            $top = $this->y + 35;
+            $page->drawLine(25, $top, 25, $this->y);
+            $page->drawLine(220, $top, 220, $this->y);
+            $page->drawLine(320, $top, 320, $this->y);
+            $page->drawLine(380, $top, 380, $this->y);
+            $page->drawLine(440, $top, 440, $this->y);
+            $page->drawLine(500, $top, 500, $this->y);
+            $page->drawLine(570, $top, 570, $this->y);
+
+            /* Add body */
+            foreach ($invoice->getAllItems() as $item) {
+                if ($item->getOrderItem()->getParentItem()) {
+                    continue;
+                }
+                $top = $this->y + 20;
+                /* Draw item */
+                $this->_drawItem($item, $page, $order);
+                $page = end($pdf->pages);
+
+                $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.6));
+                $page->setLineWidth(0.5);
+                $page->drawLine(25, $top, 25, $this->y);
+                $page->drawLine(220, $top, 220, $this->y);
+                $page->drawLine(320, $top, 320, $this->y);
+                $page->drawLine(380, $top, 380, $this->y);
+                $page->drawLine(440, $top, 440, $this->y);
+                $page->drawLine(500, $top, 500, $this->y);
+                $page->drawLine(570, $top, 570, $this->y);
+                $page->drawLine(25, $this->y, 570, $this->y);
+            }
+            $top = $this->y + 20;
+            /* Add totals */
+            $this->insertTotals($page, $invoice);
+            $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.6));
+            $page->setLineWidth(0.5);
+            $page->drawLine(25, $top, 25, $this->y);
+            $page->drawLine(500, $top, 500, $this->y);
+            $page->drawLine(570, $top, 570, $this->y);
+            $page->drawLine(25, $this->y, 570, $this->y);
+
+            $top = $this->y - 40;
+            $num = floatval($invoice->getGtrandTotal());
+            $amountInWords = $this->numberTowords(21);
+            $page->drawText("In Words: $amountInWords", 35, $this->y - 23, 'UTF-8');
+            $page->drawLine(25, $top, 25, $this->y);
+            $page->drawLine(570, $top, 570, $this->y);
+            $page->drawLine(25, $top, 570, $this->y - 40);
+
+            if ($invoice->getStoreId()) {
+                $this->_localeResolver->revert();
+            }
+        }
+        $this->_drawFooter($page);
+        $this->_afterGetPdf();
+        return $pdf;
+    }
+
+    /**
+     * Set font as bold
+     *
+     * @param \Zend_Pdf_Page $object
+     * @param int $size
+     * @return \Zend_Pdf_Resource_Font
+     */
+    protected function _setFontBold($object, $size = 7)
+    {
+        $font = \Zend_Pdf_Font::fontWithPath(
+            $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/Calibri Bold.ttf')
+        );
+        $object->setFont($font, $size);
+        return $font;
+    }
+
+    /**
+     * Create new page and assign to PDF object
+     *
+     * @param array $settings
+     * @return \Zend_Pdf_Page
+     */
+    public function newPage(array $settings = [])
+    {
+        /* Add new table head */
+        $page = $this->_getPdf()->newPage(\Zend_Pdf_Page::SIZE_A4);
+        $this->_getPdf()->pages[] = $page;
+        $this->y = 800;
+        if (!empty($settings['table_header'])) {
+            $this->_drawHeader($page);
+        }
+        return $page;
+    }
+
+    /**
+     * Draw header for item table
+     *
+     * @param \Zend_Pdf_Page $page
+     * @return void
+     */
+    protected function _drawHeader(\Zend_Pdf_Page $page)
+    {
+        /* Add table head */
+        $this->_setFontRegular($page, 10);
+        $page->setFillColor(new \Zend_Pdf_Color_RGB(246, 245, 245));
+        $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.5));
+        $page->setLineWidth(0.5);
+        $page->drawRectangle(25, $this->y, 570, $this->y - 15);
+        $this->y -= 10;
+        $page->setFillColor(new \Zend_Pdf_Color_RGB(0, 0, 0));
+
+        //columns headers
+        $lines[0][] = ['text' => __('Products'), 'feed' => 35];
+
+        $lines[0][] = ['text' => __('Description'), 'feed' => 300, 'align' => 'right'];
+
+        $lines[0][] = ['text' => __('Qty'), 'feed' => 360, 'align' => 'right'];
+
+        $lines[0][] = ['text' => __('$ Price / Unit'), 'feed' => 435, 'align' => 'right'];
+
+        $lines[0][] = ['text' => __('$ Tax'), 'feed' => 495, 'align' => 'right'];
+
+        $lines[0][] = ['text' => __('$ Amount'), 'feed' => 565, 'align' => 'right'];
+
+        $lineBlock = ['lines' => $lines, 'height' => 5];
+
+        $this->drawLineBlocks($page, [$lineBlock], ['table_header' => true]);
+        $page->setFillColor(new \Zend_Pdf_Color_GrayScale(0));
+        $this->y -= 20;
+    }
+
+    /**
+     * Set font as regular
+     *
+     * @param \Zend_Pdf_Page $object
+     * @param int $size
+     * @return \Zend_Pdf_Resource_Font
+     */
+    protected function _setFontRegular($object, $size = 7)
+    {
+        $font = \Zend_Pdf_Font::fontWithPath(
+            $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/Calibri.ttf')
+        );
+        $object->setFont($font, $size);
+        return $font;
+    }
+
+    protected function insertLogo(&$page, $store = null)
+    {
+        $this->y = $this->y ? $this->y : 815;
+        $image = $this->_scopeConfig->getValue(
+            'sales/identity/logo',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
+        if ($image) {
+            $imagePath = '/sales/store/logo/' . $image;
+            if ($this->_mediaDirectory->isFile($imagePath)) {
+                $image = \Zend_Pdf_Image::imageWithPath($this->_mediaDirectory->getAbsolutePath($imagePath));
+                $top = 830;
+                //top border of the page
+                $widthLimit = 150;
+                //half of the page width
+                $heightLimit = 39;
+                //assuming the image is not a "skyscraper"
+                $width = $image->getPixelWidth();
+                $height = $image->getPixelHeight();
+
+                //preserving aspect ratio (proportions)
+                $ratio = $width / $height;
+                if ($ratio > 1 && $width > $widthLimit) {
+                    $width = $widthLimit;
+                    $height = $width / $ratio;
+                } elseif ($ratio < 1 && $height > $heightLimit) {
+                    $height = $heightLimit;
+                    $width = $height * $ratio;
+                } elseif ($ratio == 1 && $height > $heightLimit) {
+                    $height = $heightLimit;
+                    $width = $widthLimit;
+                }
+
+                $y1 = $top - $height;
+                $y2 = $top;
+                $x1 = 35;
+                $x2 = $x1 + $width;
+
+                //coordinates after transformation are rounded by Zend
+                $page->drawImage($image, $x1, $y1, $x2, $y2);
+
+                $this->y = $y1 - 10;
+            }
+        }
+    }
+
     /**
      * Insert order to pdf page
      *
@@ -98,7 +347,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         $font = $this->_setFontRegular($page, 10);
         if ($putOrderId) {
             $page->drawText(__('Order # ') . $order->getRealOrderId(), 35, $top -= 30, 'UTF-8');
-            $top +=15;
+            $top += 15;
         }
         if ($invoice) {
             $_value = __('Invoice Date: ') .
@@ -120,7 +369,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             'UTF-8'
         );
 
-        $top -=15;
+        $top -= 15;
         $_value = __('Order Date: ') .
             $this->_localeDate->formatDate(
                 $this->_localeDate->scopeDate(
@@ -334,158 +583,12 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             $this->y -= 15;
         }
     }
-    /**
-     * Draw header for item table
-     *
-     * @param \Zend_Pdf_Page $page
-     * @return void
-     */
-    protected function _drawHeader(\Zend_Pdf_Page $page)
-    {
-        /* Add table head */
-        $this->_setFontRegular($page, 10);
-        $page->setFillColor(new \Zend_Pdf_Color_RGB(246, 245, 245));
-        $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.5));
-        $page->setLineWidth(0.5);
-        $page->drawRectangle(25, $this->y, 570, $this->y - 15);
-        $this->y -= 10;
-        $page->setFillColor(new \Zend_Pdf_Color_RGB(0, 0, 0));
 
-        //columns headers
-        $lines[0][] = ['text' => __('Products'), 'feed' => 35];
-
-        $lines[0][] = ['text' => __('Description'), 'feed' => 220, 'align' => 'right'];
-
-        $lines[0][] = ['text' => __('Qty'), 'feed' => 300, 'align' => 'right'];
-
-        $lines[0][] = ['text' => __('$ Price / Unit'), 'feed' => 435, 'align' => 'right'];
-
-        $lines[0][] = ['text' => __('$ Tax'), 'feed' => 495, 'align' => 'right'];
-
-        $lines[0][] = ['text' => __('$ Amount'), 'feed' => 565, 'align' => 'right'];
-
-        $lineBlock = ['lines' => $lines, 'height' => 5];
-
-        $this->drawLineBlocks($page, [$lineBlock], ['table_header' => true]);
-        $page->setFillColor(new \Zend_Pdf_Color_GrayScale(0));
-        $this->y -= 20;
-    }
-
-    /**
-     * Return PDF document
-     *
-     * @param array|Collection $invoices
-     * @return \Zend_Pdf
-     */
-    public function getPdf($invoices = [])
-    {
-        $this->_beforeGetPdf();
-        $this->_initRenderer('invoice');
-
-        $pdf = new \Zend_Pdf();
-        $this->_setPdf($pdf);
-        $style = new \Zend_Pdf_Style();
-        $this->_setFontBold($style, 10);
-
-        foreach ($invoices as $invoice) {
-            if ($invoice->getStoreId()) {
-                $this->_localeResolver->emulate($invoice->getStoreId());
-                $this->_storeManager->setCurrentStore($invoice->getStoreId());
-            }
-            $page = $this->newPage();
-            $order = $invoice->getOrder();
-            //$this->insertWatermark($page, $invoice->getStore());
-
-            /* Add image */
-            $this->insertLogo($page, $invoice->getStore());
-            /* Add address */
-            $this->insertAddress($page, $invoice->getStore());
-
-            $page->setFillColor(new \Zend_Pdf_Color_GrayScale(0));
-            $this->_setFontBold($page, 16);
-            $this->y -=15;
-
-            $page->drawText("Invoice", 265, $this->y, 'UTF-8');
-
-            $this->y -=15;
-            /* Add head */
-            $this->insertOrder(
-                $page,
-                $order,
-                $this->_scopeConfig->isSetFlag(
-                    self::XML_PATH_SALES_PDF_INVOICE_PUT_ORDER_ID,
-                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-                    $order->getStoreId()
-                ),
-                $invoice
-            );
-
-            /* Add document text and number */
-            $this->insertDocumentNumber($page, __('Invoice # ') . $invoice->getIncrementId());
-            /* Add table */
-            $this->_drawHeader($page);
-
-            $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.6));
-            $page->setLineWidth(0.5);
-            $top = $this->y + 35;
-            $page->drawLine(25, $top, 25, $this->y);
-            $page->drawLine(140, $top, 140, $this->y);
-            $page->drawLine(260, $top, 260, $this->y);
-            $page->drawLine(320, $top, 320, $this->y);
-            $page->drawLine(440, $top, 440, $this->y);
-            $page->drawLine(500, $top, 500, $this->y);
-            $page->drawLine(570, $top, 570, $this->y);
-
-            /* Add body */
-            foreach ($invoice->getAllItems() as $item) {
-                if ($item->getOrderItem()->getParentItem()) {
-                    continue;
-                }
-                $top = $this->y + 20;
-                /* Draw item */
-                $this->_drawItem($item, $page, $order);
-                $page = end($pdf->pages);
-
-                $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.6));
-                $page->setLineWidth(0.5);
-                $page->drawLine(25, $top, 25, $this->y);
-                $page->drawLine(140, $top, 140, $this->y);
-                $page->drawLine(260, $top, 260, $this->y);
-                $page->drawLine(320, $top, 320, $this->y);
-                $page->drawLine(440, $top, 440, $this->y);
-                $page->drawLine(500, $top, 500, $this->y);
-                $page->drawLine(570, $top, 570, $this->y);
-                $page->drawLine(25, $this->y, 570, $this->y);
-            }
-            $top = $this->y + 20;
-            /* Add totals */
-            $this->insertTotals($page, $invoice);
-            $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.6));
-            $page->setLineWidth(0.5);
-            $page->drawLine(25, $top, 25, $this->y);
-            $page->drawLine(500, $top, 500, $this->y);
-            $page->drawLine(570, $top, 570, $this->y);
-            $page->drawLine(25, $this->y, 570, $this->y);
-
-            $top = $this->y - 40;
-            $page->drawText("In Words: Five Thousand Dollar & Zero Cent Only", 35, $this->y - 23, 'UTF-8');
-            $page->drawLine(25, $top, 25, $this->y);
-            $page->drawLine(570, $top, 570, $this->y);
-            $page->drawLine(25, $top, 570, $this->y - 40);
-
-            if ($invoice->getStoreId()) {
-                $this->_localeResolver->revert();
-            }
-        }
-        $this->_drawFooter($page);
-        $this->_afterGetPdf();
-        return $pdf;
-    }
     /**
      * Insert title and number for concrete document type
      *
-     * @param  \Zend_Pdf_Page $page
-     * @param  string $text
+     * @param \Zend_Pdf_Page $page
+     * @param string $text
      * @return void
      */
     public function insertDocumentNumber(\Zend_Pdf_Page $page, $text)
@@ -496,126 +599,54 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         $page->drawText($text, 35, $docHeader[1] - 15, 'UTF-8');
     }
 
-    /**
-     * Set font as regular
-     *
-     * @param  \Zend_Pdf_Page $object
-     * @param  int $size
-     * @return \Zend_Pdf_Resource_Font
-     */
-    protected function _setFontRegular($object, $size = 7)
+    public function numberTowords(float $amount)
     {
-        $font = \Zend_Pdf_Font::fontWithPath(
-            $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/Calibri.ttf')
-        );
-        $object->setFont($font, $size);
-        return $font;
-    }
+        $num = floor($amount);
 
-    /**
-     * Set font as bold
-     *
-     * @param  \Zend_Pdf_Page $object
-     * @param  int $size
-     * @return \Zend_Pdf_Resource_Font
-     */
-    protected function _setFontBold($object, $size = 7)
-    {
-        $font = \Zend_Pdf_Font::fontWithPath(
-            $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/Calibri Bold.ttf')
-        );
-        $object->setFont($font, $size);
-        return $font;
-    }
+        $amount_after_decimal = round($amount - ($num), 2) * 100;
 
-    /**
-     * Set font as italic
-     *
-     * @param  \Zend_Pdf_Page $object
-     * @param  int $size
-     * @return \Zend_Pdf_Resource_Font
-     */
-    protected function _setFontItalic($object, $size = 7)
-    {
-        $font = \Zend_Pdf_Font::fontWithPath(
-            $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/Calibri Italic.ttf')
-        );
-        $object->setFont($font, $size);
-        return $font;
-    }
+        // Check if there is any number after decimal
+        $amt_hundred = null;
+        $count_length = strlen((string)$num);
 
-    protected function insertLogo(&$page, $store = null)
-    {
-        $this->y = $this->y ? $this->y : 815;
-        $image = $this->_scopeConfig->getValue(
-            'sales/identity/logo',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-        if ($image) {
-            $imagePath = '/sales/store/logo/' . $image;
-            if ($this->_mediaDirectory->isFile($imagePath)) {
-                $image = \Zend_Pdf_Image::imageWithPath($this->_mediaDirectory->getAbsolutePath($imagePath));
-                $top = 830;
-                //top border of the page
-                $widthLimit = 150;
-                //half of the page width
-                $heightLimit = 39;
-                //assuming the image is not a "skyscraper"
-                $width = $image->getPixelWidth();
-                $height = $image->getPixelHeight();
-
-                //preserving aspect ratio (proportions)
-                $ratio = $width / $height;
-                if ($ratio > 1 && $width > $widthLimit) {
-                    $width = $widthLimit;
-                    $height = $width / $ratio;
-                } elseif ($ratio < 1 && $height > $heightLimit) {
-                    $height = $heightLimit;
-                    $width = $height * $ratio;
-                } elseif ($ratio == 1 && $height > $heightLimit) {
-                    $height = $heightLimit;
-                    $width = $widthLimit;
-                }
-
-                $y1 = $top - $height;
-                $y2 = $top;
-                $x1 = 35;
-                $x2 = $x1 + $width;
-
-                //coordinates after transformation are rounded by Zend
-                $page->drawImage($image, $x1, $y1, $x2, $y2);
-
-                $this->y = $y1 - 10;
-            }
+        $x = 0;
+        $string = array();
+        $change_words = array(0 => '', 1 => 'One', 2 => 'Two',
+            3 => 'Three', 4 => 'Four', 5 => 'Five', 6 => 'Six',
+            7 => 'Seven', 8 => 'Eight', 9 => 'Nine',
+            10 => 'Ten', 11 => 'Eleven', 12 => 'Twelve',
+            13 => 'Thirteen', 14 => 'Fourteen', 15 => 'Fifteen',
+            16 => 'Sixteen', 17 => 'Seventeen', 18 => 'Eighteen',
+            19 => 'Nineteen', 20 => 'Twenty', 30 => 'Thirty',
+            40 => 'Forty', 50 => 'Fifty', 60 => 'Sixty',
+            70 => 'Seventy', 80 => 'Eighty', 90 => 'Ninety');
+        $here_digits = array('', 'Hundred', 'Thousand', 'Lakh', 'Crore');
+        while ($x < $count_length) {
+            $get_divider = ($x == 2) ? 10 : 100;
+            $amount = floor($num % $get_divider);
+            $num = floor($num / $get_divider);
+            $x += $get_divider == 10 ? 1 : 2;
+            if ($amount) {
+                $add_plural = (($counter = count($string)) && $amount > 9) ? 's' : null;
+                $amt_hundred = ($counter == 1 && $string[0]) ? ' and ' : null;
+                $string [] = ($amount < 21) ? $change_words[$amount] . ' ' . $here_digits[$counter] . $add_plural . ' 
+         ' . $amt_hundred : $change_words[floor($amount / 10) * 10] . ' ' . $change_words[$amount % 10] . ' 
+         ' . $here_digits[$counter] . $add_plural . ' ' . $amt_hundred;
+            } else $string[] = null;
         }
-    }
-
-    /**
-     * Create new page and assign to PDF object
-     *
-     * @param  array $settings
-     * @return \Zend_Pdf_Page
-     */
-    public function newPage(array $settings = [])
-    {
-        /* Add new table head */
-        $page = $this->_getPdf()->newPage(\Zend_Pdf_Page::SIZE_A4);
-        $this->_getPdf()->pages[] = $page;
-        $this->y = 800;
-        if (!empty($settings['table_header'])) {
-            $this->_drawHeader($page);
-        }
-        return $page;
+        $implode_to_Rupees = implode('', array_reverse($string));
+        $get_paise = ($amount_after_decimal > 0) ? "& " . ($change_words[$amount_after_decimal / 10] . " 
+   " . $change_words[$amount_after_decimal % 10]) . ' Cent Only' : '& Zero Cent Only';
+        return ($implode_to_Rupees ? $implode_to_Rupees . 'Dollar ' : '') . $get_paise;
     }
 
     protected function _drawFooter(\Zend_Pdf_Page $page)
     {
-        $this->y =40;
+        $this->y = 40;
         $page->setFillColor(new \Zend_Pdf_Color_RGB(1, 1, 1));
         $page->setLineColor(new \Zend_Pdf_Color_GrayScale(0.5));
         $page->setLineWidth(0.5);
-        $page->drawRectangle(60, $this->y, 510, $this->y -30);
+        $page->drawRectangle(60, $this->y, 510, $this->y - 30);
 
         $page->setFillColor(new \Zend_Pdf_Color_RGB(0.1, 0.1, 0.1));
         $font = \Zend_Pdf_Font::fontWithPath(
@@ -623,10 +654,10 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
         );
         $page->setFont($font, 12);
 
-        $this->y -=15;
+        $this->y -= 15;
 
         $page->drawText("Mailing Address: ABC Road sector-1 Noida", 285, $this->y, 'UTF-8');
-        $this->y -=10;
+        $this->y -= 10;
         $page->drawText("help@abc.com", 285, $this->y, 'UTF-8');
 
         $store = null;
@@ -670,11 +701,28 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
                 //coordinates after transformation are rounded by Zend
                 $width = 260;
                 $height = 40;
-                $y  =   $height /2.5;
-                $page->drawImage($image, 80, $y, 35+ $width / 1.5, $y + $height/2);
+                $y = $height / 2.5;
+                $page->drawImage($image, 80, $y, 35 + $width / 1.5, $y + $height / 2);
             }
         }
     }
+
+    /**
+     * Set font as italic
+     *
+     * @param \Zend_Pdf_Page $object
+     * @param int $size
+     * @return \Zend_Pdf_Resource_Font
+     */
+    protected function _setFontItalic($object, $size = 7)
+    {
+        $font = \Zend_Pdf_Font::fontWithPath(
+            $this->_rootDirectory->getAbsolutePath('lib/internal/Calibre/Calibri Italic.ttf')
+        );
+        $object->setFont($font, $size);
+        return $font;
+    }
+
     protected function insertWatermark(&$page, $store = null)
     {
         $image = $this->_scopeConfig->getValue(
@@ -714,7 +762,6 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
                 $x1 = 35;
                 $x2 = $x1 + $width;
                 $rotation = 135;
-
 
 
                 //coordinates after transformation are rounded by Zend
