@@ -114,6 +114,7 @@ class Dickerdata extends AbstractHelper
      * @var ProcessResourceFactory
      */
     protected $processResourceFactory;
+
     /**
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Framework\Filesystem $filesystem
@@ -128,6 +129,10 @@ class Dickerdata extends AbstractHelper
      * @param CollectionFactory $categoryCollectionFactory
      * @param ResourceConnection $resourceConnection
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param ProductHelper $dickerdataProductHelper
+     * @param ImageHelper $dickerdataImageHelper
+     * @param MagentoConfig $configuration
+     * @param ProcessResourceFactory $processResourceFactory
      * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
@@ -167,7 +172,7 @@ class Dickerdata extends AbstractHelper
         $this->configuration = $configuration;
         $this->dickerdataProductHelper = $dickerdataProductHelper;
         $this->dickerdataImageHelper = $dickerdataImageHelper;
-        $this->filesystem = $filesystem;
+
     }
     /**
      * @return  int

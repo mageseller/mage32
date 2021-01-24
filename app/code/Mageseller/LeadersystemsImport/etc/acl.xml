@@ -12,7 +12,7 @@
 				<resource id="Magento_Backend::stores">
 					<resource id="Magento_Backend::stores_settings">
 						<resource id="Magento_Config::config">
-							<resource id="Mageseller_XitImport::top_level" title="Supplier's">
+							<resource id="Mageseller_LeadersystemsImport::top_level" title="Supplier's">
 								<resource id="Mageseller_LeadersystemsImport::leadersystems" title="Leadersystems">
 									<resource id="Mageseller_LeadersystemsImport::category" title="Leadersystems Category"/>
 									<resource id="Mageseller_LeadersystemsImport::category_map" title="Leadersystems Category Mapping"/>

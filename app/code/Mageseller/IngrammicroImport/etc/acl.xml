@@ -12,7 +12,7 @@
 				<resource id="Magento_Backend::stores">
 					<resource id="Magento_Backend::stores_settings">
 						<resource id="Magento_Config::config">
-							<resource id="Mageseller_XitImport::top_level" title="Supplier's">
+							<resource id="Mageseller_IngrammicroImport::top_level" title="Supplier's">
 								<resource id="Mageseller_IngrammicroImport::ingrammicro" title="Ingrammicro">
 									<resource id="Mageseller_IngrammicroImport::category" title="Ingrammicro Category"/>
 									<resource id="Mageseller_IngrammicroImport::category_map" title="Ingrammicro Category Mapping"/>

@@ -25,7 +25,7 @@ class Ingrammicro extends AbstractHelper
     const FILENAME = 'vendor-file.csv';
     const TMP_FILENAME = 'vendor-file-tmp.csv';
     const DOWNLOAD_FOLDER = 'supplier/ingrammicro';
-    const XIT_IMPORTCONFIG_IS_ENABLE = 'ingrammicro/importconfig/is_enable';
+    const INGRAMMICRO_IMPORTCONFIG_IS_ENABLE = 'ingrammicro/importconfig/is_enable';
     const CATEGORY_ID = 'Category ID';
     const SUB_CATEGORY = 'Sub-Category';
     const PRODUCT_GROUP_CODE = 'ProductGroupCode';
@@ -144,7 +144,7 @@ class Ingrammicro extends AbstractHelper
      */
     public function getEnable()
     {
-        return $this->getConfig(self::XIT_IMPORTCONFIG_IS_ENABLE);
+        return $this->getConfig(self::INGRAMMICRO_IMPORTCONFIG_IS_ENABLE);
     }
 
     /**

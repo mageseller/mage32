@@ -37,6 +37,52 @@
 					</depends>
 				</field>
 			</group>
+			<group id="images" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="180" translate="label comment">
+				<depends>
+					<field id="leadersystems/importconfig/is_enable">1</field>
+				</depends>
+				<label>Catalog Images Import</label>
+				<comment>Will download and import pending products images into Magento.</comment>
+				<field id="last_sync_images" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label comment" type="text">
+					<label>Last Synchronization Date</label>
+					<comment><![CDATA[Last synchronization date of operator images.]]></comment>
+				</field>
+				<field id="button_images" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="button_label">
+					<frontend_model>Mageseller\LeadersystemsImport\Block\Adminhtml\System\Config\Button\Sync\Images</frontend_model>
+				</field>
+			</group>
+			<group id="product" showInDefault="1" showInStore="0" showInWebsite="0" sortOrder="10" translate="label">
+				<depends>
+					<field id="leadersystems/importconfig/is_enable">1</field>
+				</depends>
+				<label>Products Import</label>
+				<field id="last_sync_product" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label comment" type="text">
+					<label>Last Synchronization Date</label>
+					<comment><![CDATA[Last synchronization date of operator products.]]></comment>
+				</field>
+				<field id="button_products" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="button_label">
+					<frontend_model>Mageseller\LeadersystemsImport\Block\Adminhtml\System\Config\Button\Sync\Products</frontend_model>
+				</field>
+			</group>
+			<group id="product_import_indexing" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="90" translate="label">
+				<depends>
+					<field id="leadersystems/importconfig/is_enable">1</field>
+				</depends>
+				<label>Product Import Indexing</label>
+				<field id="enable_indexing_import" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Enable Indexing During Product Import</label>
+					<comment><![CDATA[If disabled, all indexers for imported products will be turned off.<br>Disable this option when importing a large number of products.]]></comment>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="enable_indexing_import_after" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Enable Indexing at the End of the Import Process</label>
+					<comment><![CDATA[If enabled, all products imported will be sent to indexers at the end of the import and not for each product if indexer mode is 'Update On Save'.<br>You will have to reindex manually if you disable this option.]]></comment>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<depends>
+						<field id="enable_indexing_import">0</field>
+					</depends>
+				</field>
+			</group>
 		</section>
 	</system>
 </config>

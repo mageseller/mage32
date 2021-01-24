@@ -17,12 +17,14 @@
 		</arguments>
 	</type>
 	<type name="Magento\Catalog\Model\Category\DataProvider">
-		<plugin name="Mageplaza_HelloWorld_Plugin" type="Mageseller\LeadersystemsImport\Plugin\CategoryDropdownPlugin" sortOrder="10"   />
+		<plugin name="Leadersystems_CategoryDropdownPlugin" type="Mageseller\LeadersystemsImport\Plugin\CategoryDropdownPlugin" sortOrder="10"   />
 	</type>
 	<type name="Magento\Framework\Console\CommandList">
 		<arguments>
 			<argument name="commands" xsi:type="array">
 				<item name="LeadersystemsCategoryImport" xsi:type="object">Mageseller\LeadersystemsImport\Console\Command\LeadersystemsCategoryImport</item>
+				<item name="LeadersystemsProductImport" xsi:type="object">Mageseller\LeadersystemsImport\Console\Command\LeadersystemsProductImport</item>
+				<item name="LeadersystemsProductImageImport" xsi:type="object">Mageseller\LeadersystemsImport\Console\Command\LeadersystemsProductImageImport</item>
 			</argument>
 		</arguments>
 	</type>

@@ -6,7 +6,7 @@
                 id="Mageseller_LeadersystemsImport::leadersystems"
                 module="Mageseller_LeadersystemsImport"
                 resource="Mageseller_LeadersystemsImport::leadersystems"
-                parent="Mageseller_XitImport::top_level"
+                parent="Mageseller_LeadersystemsImport::top_level"
                 sortOrder="0"
                 title="Leadersystems Supplier"
         />

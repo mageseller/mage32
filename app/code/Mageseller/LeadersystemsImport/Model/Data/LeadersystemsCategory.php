@@ -22,7 +22,7 @@ class LeadersystemsCategory extends \Magento\Framework\Api\AbstractExtensibleObj
      */
     public function getLeadersystemscategoryId()
     {
-        return $this->_get(self::XITCATEGORY_ID);
+        return $this->_get(self::LEADERSYSTEMSCATEGORY_ID);
     }
 
     /**
@@ -32,7 +32,7 @@ class LeadersystemsCategory extends \Magento\Framework\Api\AbstractExtensibleObj
      */
     public function setLeadersystemscategoryId($leadersystemscategoryId)
     {
-        return $this->setData(self::XITCATEGORY_ID, $leadersystemscategoryId);
+        return $this->setData(self::LEADERSYSTEMSCATEGORY_ID, $leadersystemscategoryId);
     }
 
     /**

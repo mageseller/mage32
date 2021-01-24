@@ -15,7 +15,7 @@ interface LeadersystemsCategoryInterface extends \Magento\Framework\Api\Extensib
 {
 
     const NAME = 'name';
-    const XITCATEGORY_ID = 'leadersystemscategory_id';
+    const LEADERSYSTEMSCATEGORY_ID = 'leadersystemscategory_id';
 
     /**
      * Get leadersystemscategory_id

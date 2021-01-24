@@ -15,7 +15,7 @@ interface IngrammicroCategoryInterface extends \Magento\Framework\Api\Extensible
 {
 
     const NAME = 'name';
-    const XITCATEGORY_ID = 'ingrammicrocategory_id';
+    const  ingrammicroCATEGORY_ID = 'ingrammicrocategory_id';
 
     /**
      * Get ingrammicrocategory_id

@@ -22,7 +22,7 @@ class IngrammicroCategory extends \Magento\Framework\Api\AbstractExtensibleObjec
      */
     public function getIngrammicrocategoryId()
     {
-        return $this->_get(self::XITCATEGORY_ID);
+        return $this->_get(self::INGRAMMICROCATEGORY_ID);
     }
 
     /**
@@ -32,7 +32,7 @@ class IngrammicroCategory extends \Magento\Framework\Api\AbstractExtensibleObjec
      */
     public function setIngrammicrocategoryId($ingrammicrocategoryId)
     {
-        return $this->setData(self::XITCATEGORY_ID, $ingrammicrocategoryId);
+        return $this->setData(self::INGRAMMICROCATEGORY_ID, $ingrammicrocategoryId);
     }
 
     /**
