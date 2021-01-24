@@ -6,7 +6,7 @@
                 id="Mageseller_DickerdataImport::dickerdata"
                 module="Mageseller_DickerdataImport"
                 resource="Mageseller_DickerdataImport::dickerdata"
-                parent="Mageseller_XitImport::top_level"
+                parent="Mageseller_DickerdataImport::top_level"
                 sortOrder="0"
                 title="Dickerdata Supplier"
         />

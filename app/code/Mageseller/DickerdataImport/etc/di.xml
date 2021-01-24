@@ -23,6 +23,8 @@
 		<arguments>
 			<argument name="commands" xsi:type="array">
 				<item name="DickerdataCategoryImport" xsi:type="object">Mageseller\DickerdataImport\Console\Command\DickerdataCategoryImport</item>
+				<item name="DickerdataImportProductImport" xsi:type="object">Mageseller\DickerdataImport\Console\Command\DickerdataProductImport</item>
+				<item name="DickerdataImportProductImageImport" xsi:type="object">Mageseller\DickerdataImport\Console\Command\DickerdataProductImageImport</item>
 			</argument>
 		</arguments>
 	</type>

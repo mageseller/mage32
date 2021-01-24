@@ -12,7 +12,7 @@
 				<resource id="Magento_Backend::stores">
 					<resource id="Magento_Backend::stores_settings">
 						<resource id="Magento_Config::config">
-							<resource id="Mageseller_XitImport::top_level" title="Supplier's">
+							<resource id="Mageseller_DickerdataImport::top_level" title="Supplier's">
 								<resource id="Mageseller_DickerdataImport::dickerdata" title="Dickerdata">
 									<resource id="Mageseller_DickerdataImport::category" title="Dickerdata Category"/>
 									<resource id="Mageseller_DickerdataImport::category_map" title="Dickerdata Category Mapping"/>

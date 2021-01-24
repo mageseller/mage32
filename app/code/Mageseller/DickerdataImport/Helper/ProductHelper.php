@@ -1,15 +1,15 @@
 <?php
 /**
- * A Magento 2 module named Mageseller/XitImport
+ * A Magento 2 module named Mageseller/DickerdataImport
  * Copyright (C) 2019
  *
- * This file included in Mageseller/XitImport is licensed under OSL 3.0
+ * This file included in Mageseller/DickerdataImport is licensed under OSL 3.0
  *
  * http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  * Please see LICENSE.txt for the full text of the OSL 3.0 license
  */
 
-namespace Mageseller\XitImport\Helper;
+namespace Mageseller\DickerdataImport\Helper;
 
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductFactory;
@@ -33,18 +33,18 @@ use Mageseller\ProductImport\Api\Data\SimpleProduct;
 use Mageseller\ProductImport\Api\ImportConfig;
 use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
 use Mageseller\ProductImport\Model\Resource\MetaData;
-use Mageseller\XitImport\Helper\Product\Import\Inventory as InventoryHelper;
+use Mageseller\DickerdataImport\Helper\Product\Import\Inventory as InventoryHelper;
 
 class ProductHelper extends AbstractHelper
 {
     const FILENAME = 'vendor-file.xml';
     const TMP_FILENAME = 'vendor-file-tmp.xml';
-    const DOWNLOAD_FOLDER = 'supplier/xit';
-    const XIT_IMPORTCONFIG_IS_ENABLE = 'xit/importconfig/is_enable';
+    const DOWNLOAD_FOLDER = 'supplier/dickerdata';
+    const DICKERDATA_IMPORTCONFIG_IS_ENABLE = 'dickerdata/importconfig/is_enable';
     const ATTRIBUTE_PRODUCT_SKU = 'sku';
-    const XIT_CATEGORY_TABLE = "mageseller_xitimport_xitcategory";
+    const DICKERDATA_CATEGORY_TABLE = "mageseller_dickerdataimport_dickerdatacategory";
     const PDF_FOLDER = 'devicesPdf';
-    const SUPPLIER = 'xitdistribution';
+    const SUPPLIER = 'dickerdatadistribution';
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -78,9 +78,9 @@ class ProductHelper extends AbstractHelper
      */
     protected $_productCollectionFactory;
     /**
-     * @var \Mageseller\XitImport\Logger\XitImport
+     * @var \Mageseller\DickerdataImport\Logger\DickerdataImport
      */
-    protected $xitimportLogger;
+    protected $dickerdataimportLogger;
     /**
      * @var ProductCollectionFactory
      */
@@ -120,7 +120,7 @@ class ProductHelper extends AbstractHelper
     /**
      * @var \Magento\Framework\DB\Adapter\AdapterInterface
      */
-    protected $xitCategoryIdsWithName;
+    protected $dickerdataCategoryIdsWithName;
     /**
      * @var \Magento\Framework\Indexer\IndexerRegistry
      */
@@ -143,9 +143,9 @@ class ProductHelper extends AbstractHelper
     private $flushCacheByProductIds;
 
     /**
-     * @var \Mageseller\XitImport\Model\XitCategoryFactory
+     * @var \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory
      */
-    private $xitCategoryFactory;
+    private $dickerdataCategoryFactory;
     /**
      * @var \Magento\Catalog\Model\CategoryFactory
      */
@@ -173,7 +173,7 @@ class ProductHelper extends AbstractHelper
     protected $db;
     /** @var MetaData */
     protected $metaData;
-    private $existingXitCategoryIds;
+    private $existingDickerdataCategoryIds;
     private $existingSkus;
     private $mediaUrl;
 
@@ -190,8 +190,8 @@ class ProductHelper extends AbstractHelper
      * @param \Magento\Framework\Filesystem\Io\File $fileFactory
      * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
      * @param MessageManagerInterface $messageManager
-     * @param \Mageseller\XitImport\Logger\XitImport $xitimportLogger
-     * @param \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory
+     * @param \Mageseller\DickerdataImport\Logger\DickerdataImport $dickerdataimportLogger
+     * @param \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory $dickerdataCategoryFactory
      * @param CollectionFactory $categoryCollectionFactory
      * @param ResourceConnection $resourceConnection
      * @param Indexer $indexer
@@ -223,8 +223,8 @@ class ProductHelper extends AbstractHelper
         \Magento\Framework\Filesystem\Io\File $fileFactory,
         \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
         MessageManagerInterface $messageManager,
-        \Mageseller\XitImport\Logger\XitImport $xitimportLogger,
-        \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory,
+        \Mageseller\DickerdataImport\Logger\DickerdataImport $dickerdataimportLogger,
+        \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory $dickerdataCategoryFactory,
         CollectionFactory $categoryCollectionFactory,
         ResourceConnection $resourceConnection,
         Indexer $indexer,
@@ -254,8 +254,8 @@ class ProductHelper extends AbstractHelper
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
         $this->_storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
-        $this->xitimportLogger = $xitimportLogger;
-        $this->xitCategoryFactory = $xitCategoryFactory;
+        $this->dickerdataimportLogger = $dickerdataimportLogger;
+        $this->dickerdataCategoryFactory = $dickerdataCategoryFactory;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryFactory = $categoryFactory;
         $this->resourceConnection = $resourceConnection;
@@ -283,7 +283,7 @@ class ProductHelper extends AbstractHelper
     public function processProducts($items, Process $process, $since, $sendReport = true)
     {
         try {
-            $allXitSkus = $this->getAllXitSkus();
+            $allDickerdataSkus = $this->getAllDickerdataSkus();
             $allSkus = [];
             $allCategoryNames = [];
             foreach ($items as $item) {
@@ -293,9 +293,9 @@ class ProductHelper extends AbstractHelper
                 //$categories = [];
                 $allCategoryNames = array_unique(array_merge($allCategoryNames, $categories));
             }
-            $disableSkus = array_diff($allXitSkus, $allSkus);
+            $disableSkus = array_diff($allDickerdataSkus, $allSkus);
 
-            $this->existingXitCategoryIds = $this->getExistingXitCategoryIds($allCategoryNames);
+            $this->existingDickerdataCategoryIds = $this->getExistingDickerdataCategoryIds($allCategoryNames);
             $this->existingSkus = $this->getExistingSkus($allSkus);
             // Disable or not the indexing when UpdateOnSave mode
             $this->indexer->initIndexers();
@@ -472,9 +472,9 @@ class ProductHelper extends AbstractHelper
         unset($categories['@attributes']);
         $categoryIds = [];
         foreach ($categories as $categoryName) {
-            $existingXitCategoryIds = $this->existingXitCategoryIds[$categoryName] ?? [];
-            if ($existingXitCategoryIds) {
-                $categoryIds = array_merge($categoryIds, explode(",", $existingXitCategoryIds));
+            $existingDickerdataCategoryIds = $this->existingDickerdataCategoryIds[$categoryName] ?? [];
+            if ($existingDickerdataCategoryIds) {
+                $categoryIds = array_merge($categoryIds, explode(",", $existingDickerdataCategoryIds));
             }
         }
         if ($categoryIds) {
@@ -491,20 +491,20 @@ class ProductHelper extends AbstractHelper
         $j++;
         $importer->importSimpleProduct($product);
     }
-    private function getExistingXitCategoryIds($allCategoryNames)
+    private function getExistingDickerdataCategoryIds($allCategoryNames)
     {
         if (empty($allCategoryNames)) {
             return [];
         }
-        $xitCategoryTable = $this->db->getFullTableName(self::XIT_CATEGORY_TABLE);
+        $dickerdataCategoryTable = $this->db->getFullTableName(self::DICKERDATA_CATEGORY_TABLE);
         $categoryCollection = $this->categoryCollectionFactory->create();
-        $categoryCollection->addAttributeToSelect('xit_category_ids', 'left');
+        $categoryCollection->addAttributeToSelect('dickerdata_category_ids', 'left');
         $select = $categoryCollection->getSelect();
         $select->reset(Select::COLUMNS)->columns('GROUP_CONCAT(`e`.`entity_id`)');
-        $select->where("FIND_IN_SET(`{$xitCategoryTable}`.`xitcategory_id`, `at_xit_category_ids`.`value`)");
+        $select->where("FIND_IN_SET(`{$dickerdataCategoryTable}`.`dickerdatacategory_id`, `at_dickerdata_category_ids`.`value`)");
         return $this->db->fetchMap("
             SELECT `name`, ({$select}) as `category_ids`  
-            FROM `{$xitCategoryTable}`
+            FROM `{$dickerdataCategoryTable}`
             WHERE BINARY `name` IN (" . $this->db->getMarks($allCategoryNames) . ")
         ", array_values($allCategoryNames));
     }
@@ -522,13 +522,13 @@ class ProductHelper extends AbstractHelper
         ]);
         return $options;
     }
-    private function getAllXitSkus()
+    private function getAllDickerdataSkus()
     {
         $option = $this->loadOptionValues('supplier');
-        $xitOptionId = $option['xitdistribution'] ?? "";
-        if ($xitOptionId) {
+        $dickerdataOptionId = $option['dickerdatadistribution'] ?? "";
+        if ($dickerdataOptionId) {
             $productCollection = $this->_productCollectionFactory->create();
-            $productCollection->addAttributeToFilter('supplier', ['eq' => $xitOptionId ], 'left');
+            $productCollection->addAttributeToFilter('supplier', ['eq' => $dickerdataOptionId ], 'left');
             $select = $productCollection->getSelect();
             $select->reset(Select::COLUMNS)->columns(['sku']);
             return $this->db->fetchSingleColumn($select);

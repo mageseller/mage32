@@ -22,7 +22,7 @@ class DickerdataCategory extends \Magento\Framework\Api\AbstractExtensibleObject
      */
     public function getDickerdatacategoryId()
     {
-        return $this->_get(self::XITCATEGORY_ID);
+        return $this->_get(self::DICKERDATACATEGORY_ID);
     }
 
     /**
@@ -32,7 +32,7 @@ class DickerdataCategory extends \Magento\Framework\Api\AbstractExtensibleObject
      */
     public function setDickerdatacategoryId($dickerdatacategoryId)
     {
-        return $this->setData(self::XITCATEGORY_ID, $dickerdatacategoryId);
+        return $this->setData(self::DICKERDATACATEGORY_ID, $dickerdatacategoryId);
     }
 
     /**

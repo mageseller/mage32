@@ -22,8 +22,7 @@ class OptionResolver
     public function __construct(
         Magento2DbConnection $db,
         MetaData $metaData
-    )
-    {
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
     }
@@ -36,7 +35,6 @@ class OptionResolver
     protected function loadOptionValues(string $attributeCode)
     {
         if (!array_key_exists($attributeCode, $this->allOptionValues)) {
-
             $this->allOptionValues[$attributeCode] = $this->db->fetchMap("
                 SELECT V.`value`, O.`option_id`
                 FROM {$this->metaData->attributeTable} A
@@ -93,13 +91,11 @@ class OptionResolver
             $this->loadOptionValues($attributeCode);
 
             if (!array_key_exists($optionName, $this->allOptionValues[$attributeCode])) {
-
                 if (in_array($attributeCode, $autoCreateOptionAttributes)) {
                     $id = $this->addAttributeOption($attributeCode, $optionName);
                 } else {
                     $error = "option '" . $optionName . "' not found in attribute '" . $attributeCode . "'";
                 }
-
             } else {
                 $id = $this->allOptionValues[$attributeCode][$optionName];
             }
@@ -122,7 +118,6 @@ class OptionResolver
 
             $missingOptions = [];
             foreach ($optionNames as $optionName) {
-
                 if (!array_key_exists($optionName, $this->allOptionValues[$attributeCode])) {
                     if (in_array($attributeCode, $autoCreateOptionAttributes)) {
                         $ids[] = $this->addAttributeOption($attributeCode, $optionName);

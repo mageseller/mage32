@@ -12,13 +12,17 @@
 namespace Mageseller\DickerdataImport\Helper;
 
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Store\Model\ScopeInterface;
-
+use Magento\Store\Model\StoreManagerInterface;
+use Mageseller\Process\Model\Process;
+use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
 class Dickerdata extends AbstractHelper
 {
     const FILENAME = 'vendor-file.csv';
@@ -88,7 +92,28 @@ class Dickerdata extends AbstractHelper
      * @var \Magento\Framework\Filesystem
      */
     private $filesystem;
+    /**
+     * @var ProductHelper
+     */
+    private $dickerdataProductHelper;
+    /**
+     * @var MagentoConfig
+     */
+    protected $configuration;
 
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+    /**
+     * @var StoreManagerInterface
+     */
+    private $dickerdataImageHelper;
+
+    /**
+     * @var ProcessResourceFactory
+     */
+    protected $processResourceFactory;
     /**
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Framework\Filesystem $filesystem
@@ -118,7 +143,11 @@ class Dickerdata extends AbstractHelper
         \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory $dickerdataCategoryFactory,
         CollectionFactory $categoryCollectionFactory,
         ResourceConnection $resourceConnection,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory
+        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        \Mageseller\DickerdataImport\Helper\ProductHelper $dickerdataProductHelper,
+        \Mageseller\DickerdataImport\Helper\ImageHelper $dickerdataImageHelper,
+        MagentoConfig $configuration,
+        ProcessResourceFactory $processResourceFactory
     ) {
         parent::__construct($context);
         $this->_dateTime = $dateTime;
@@ -134,8 +163,177 @@ class Dickerdata extends AbstractHelper
         $this->categoryFactory = $categoryFactory;
         $this->resourceConnection = $resourceConnection;
         $this->filesystem = $filesystem;
+        $this->processResourceFactory = $processResourceFactory;
+        $this->configuration = $configuration;
+        $this->dickerdataProductHelper = $dickerdataProductHelper;
+        $this->dickerdataImageHelper = $dickerdataImageHelper;
+        $this->filesystem = $filesystem;
+    }
+    /**
+     * @return  int
+     */
+    public function getCurrentStoreId()
+    {
+        return $this->storeManager->getStore()->getId();
     }
 
+    /**
+     * @return  int
+     */
+    public function getCurrentWebsiteId()
+    {
+        return $this->storeManager->getStore()->getWebsiteId();
+    }
+
+    /**
+     * Returns a config flag
+     *
+     * @param   string  $path
+     * @param   mixed   $store
+     * @return  bool
+     */
+    public function getFlag($path, $store = null)
+    {
+        return $this->scopeConfig->isSetFlag($path, ScopeInterface::SCOPE_STORE, $store);
+    }
+
+    /**
+     * Returns store locale
+     *
+     * @param   mixed   $store
+     * @return  string
+     */
+    public function getLocale($store = null)
+    {
+        return $this->getValue('general/locale/code', $store);
+    }
+
+    /**
+     * Get tax class id specified for shipping tax estimation
+     *
+     * @param   mixed   $store
+     * @return  int
+     */
+    public function getShippingTaxClass($store = null)
+    {
+        return $this->getValue(\Magento\Tax\Model\Config::CONFIG_XML_PATH_SHIPPING_TAX_CLASS, $store);
+    }
+
+    /**
+     * Reads the configuration directly from the database
+     *
+     * @param   string  $path
+     * @param   string  $scope
+     * @param   int     $scopeId
+     * @return  string|false
+     */
+    public function getRawValue($path, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0)
+    {
+        $connection = $this->configuration->getConnection();
+
+        $select = $connection->select()
+            ->from($this->configuration->getMainTable(), 'value')
+            ->where('path = ?', $path)
+            ->where('scope = ?', $scope)
+            ->where('scope_id = ?', $scopeId);
+
+        return $connection->fetchOne($select);
+    }
+
+    /**
+     * Returns a config value
+     *
+     * @param   string  $path
+     * @param   mixed   $store
+     * @return  mixed
+     */
+    public function getValue($path, $store = null)
+    {
+        return $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $store);
+    }
+
+    /**
+     * Returns store name if defined
+     *
+     * @param   mixed   $store
+     * @return  string
+     */
+    public function getStoreName($store = null)
+    {
+        return $this->getValue(\Magento\Store\Model\Information::XML_PATH_STORE_INFO_NAME, $store);
+    }
+
+    /**
+     * @return  bool
+     */
+    public function isSingleStoreMode()
+    {
+        return $this->storeManager->hasSingleStore();
+    }
+    /**
+     * @param   string  $entity
+     * @param   mixed   $store
+     * @return  \DateTime|null
+     */
+    public function getSyncDate($entity, $store = null)
+    {
+        $path = "dickerdata/$entity/last_sync_$entity";
+
+        if (null === $store) {
+            $date = $this->getRawValue($path);
+        } else {
+            $scopeId = $this->storeManager->getStore($store)->getId();
+            $date = $this->getRawValue($path, ScopeInterface::SCOPE_STORES, $scopeId);
+        }
+
+        return !empty($date) ? new \DateTime($date) : null;
+    }
+
+    /**
+     * @return  $this
+     */
+    protected function resetConfig()
+    {
+        $this->storeManager->getStore()->resetConfig();
+
+        return $this;
+    }
+
+    /**
+     * @param   string  $entity
+     * @return  $this
+     */
+    public function resetSyncDate($entity)
+    {
+        $this->setValue("dickerdata/$entity/last_sync_$entity", null);
+
+        return $this->resetConfig();
+    }
+
+    /**
+     * @param   string  $entity
+     * @param   string  $time
+     * @return  $this
+     */
+    public function setSyncDate($entity, $time = 'now')
+    {
+        $datetime = new \DateTime($time);
+        $this->setValue("dickerdata/$entity/last_sync_$entity", $datetime->format(\DateTime::ISO8601));
+
+        return $this->resetConfig();
+    }
+    /**
+     * Set a config value
+     *
+     * @param   string  $path
+     * @param   string  $value
+     * @param   string  $scope
+     * @param   int     $scopeId
+     */
+    public function setValue($path, $value, $scope = 'default', $scopeId = 0)
+    {
+        $this->configuration->saveConfig($path, $value, $scope, $scopeId);
+    }
     /**
      * @return mixed
      */
@@ -153,7 +351,62 @@ class Dickerdata extends AbstractHelper
     {
         return $this->scopeConfig->getValue($value, $scope);
     }
+    public function importDickerdataProducts(Process $process, $since, $sendReport = true)
+    {
+        if (!$since && ($lastSyncDate = $this->getSyncDate('product'))) {
+            $since = $lastSyncDate;
+        }
 
+        // Save last synchronization date now if file download is too long
+        $this->setSyncDate('product');
+        if ($since) {
+            $process->output(__('Downloading products from Dickerdatafeed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
+            $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];
+        } else {
+            $process->output(__('Downloading products from Dickerdata feed to Magento'), true);
+        }
+
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
+        $process->output(__('Downloading file...'), true);
+        $apiUrl = $this->getApiUrl();
+        $filepath = $this->downloadFile($apiUrl);
+        $xml = simplexml_load_file($filepath, null, LIBXML_NOCDATA);
+        if ($xml instanceof SimpleXMLElement) {
+            $items = $xml->xpath("/Catalogue/Items/Item");
+            $this->dickerDataProductHelper->processProducts($items, $process, $since, $sendReport);
+        }
+    }
+    public function importDickerdataImages(Process $process, $since, $sendReport = true)
+    {
+        if (!$since && ($lastSyncDate = $this->getSyncDate('images'))) {
+            $since = $lastSyncDate;
+        }
+
+        // Save last synchronization date now if file download is too long
+        $this->setSyncDate('images');
+        if ($since) {
+            $process->output(__('Downloading images from Dickerdata feed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
+            $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];
+        } else {
+            $process->output(__('Downloading images from Dickerdata feed to Magento'), true);
+        }
+
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
+        $process->output(__('Downloading file...'), true);
+        $apiUrl = $this->getApiUrl();
+        $filepath = $this->downloadFile($apiUrl);
+        $xml = simplexml_load_file($filepath, null, LIBXML_NOCDATA);
+        if ($xml instanceof SimpleXMLElement) {
+            $items = $xml->xpath("/Catalogue/Items/Item");
+            $this->dickerDataImageHelper->processProductImages($items, $process, $since, $sendReport);
+        }
+    }
+    public function secureRip(string $str): string
+    {
+        return mb_convert_encoding($str, "UTF-8", "UTF-16LE");
+    }
     public function importDickerdataCategory()
     {
         ini_set("memory_limit", "-1");

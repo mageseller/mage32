@@ -15,7 +15,7 @@ interface DickerdataCategoryInterface extends \Magento\Framework\Api\ExtensibleD
 {
 
     const NAME = 'name';
-    const XITCATEGORY_ID = 'dickerdatacategory_id';
+    const DICKERDATACATEGORY_ID = 'dickerdatacategory_id';
 
     /**
      * Get dickerdatacategory_id
