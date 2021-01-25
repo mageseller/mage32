@@ -19,6 +19,7 @@ use Magento\Framework\DB\Select;
 use Magento\Framework\Filesystem\File\ReadInterface;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 class Ingrammicro extends AbstractHelper
 {
@@ -35,10 +36,7 @@ class Ingrammicro extends AbstractHelper
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
-    /**
-     * @var \Magento\Store\Model\StoreManager
-     */
-    protected $_storeManager;
+
     /**
      *
      * @var unknown
@@ -111,7 +109,6 @@ class Ingrammicro extends AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\Filesystem $filesystem,
-        \Magento\Store\Model\StoreManager $storeManager,
         \Magento\Framework\Filesystem\DirectoryList $dirReader,
         \Magento\Framework\Filesystem\Io\File $fileFactory,
         \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
@@ -121,6 +118,7 @@ class Ingrammicro extends AbstractHelper
         \Mageseller\IngrammicroImport\Model\IngrammicroCategoryFactory $ingrammicroCategoryFactory,
         CollectionFactory $categoryCollectionFactory,
         ResourceConnection $resourceConnection,
+        StoreManagerInterface $storeManager,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory
     ) {
         parent::__construct($context);
@@ -130,7 +128,7 @@ class Ingrammicro extends AbstractHelper
         $this->scopeConfig = $context->getScopeConfig();
         $this->_dirReader = $dirReader;
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
-        $this->_storeManager = $storeManager;
+        $this->storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->ingrammicroimportLogger = $ingrammicroimportLogger;
         $this->ingrammicroCategoryFactory = $ingrammicroCategoryFactory;

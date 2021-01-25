@@ -24,6 +24,7 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\InventoryCache\Model\FlushCacheByProductIds;
+use Mageseller\DickerdataImport\Helper\Product\Import\Inventory as InventoryHelper;
 use Mageseller\Process\Helper\Product\Import\Url;
 use Mageseller\Process\Model\Process;
 use Mageseller\Process\Model\Product\Import\Indexer\Indexer;
@@ -33,7 +34,6 @@ use Mageseller\ProductImport\Api\Data\SimpleProduct;
 use Mageseller\ProductImport\Api\ImportConfig;
 use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
 use Mageseller\ProductImport\Model\Resource\MetaData;
-use Mageseller\DickerdataImport\Helper\Product\Import\Inventory as InventoryHelper;
 
 class ProductHelper extends AbstractHelper
 {
@@ -44,7 +44,7 @@ class ProductHelper extends AbstractHelper
     const ATTRIBUTE_PRODUCT_SKU = 'sku';
     const DICKERDATA_CATEGORY_TABLE = "mageseller_dickerdataimport_dickerdatacategory";
     const PDF_FOLDER = 'devicesPdf';
-    const SUPPLIER = 'dickerdatadistribution';
+
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -280,19 +280,25 @@ class ProductHelper extends AbstractHelper
         $this->mediaUrl = $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
     }
 
-    public function processProducts($items, Process $process, $since, $sendReport = true)
+    public function processProducts($file, Process $process, $since, $sendReport = true)
     {
         try {
             $allDickerdataSkus = $this->getAllDickerdataSkus();
             $allSkus = [];
             $allCategoryNames = [];
-            foreach ($items as $item) {
-                $allSkus[] = (string)$item->ItemDetail->ManufacturerPartID;
-                $categories = $this->parseObject($item->ItemDetail->Classifications->Classification);
-                unset($categories['@attributes']);
-                //$categories = [];
-                $allCategoryNames = array_unique(array_merge($allCategoryNames, $categories));
+            $headers = array_flip($file->readCsv());
+            $items = [];
+            while (false !== ($row = $file->readCsv())) {
+                //$items[] = $row;
+                //$categoryLevel1 = $row[$headers[Dickerdata::PRIMARY_CATEGORY]] ?? "";
+                //$categoryLevel2 = $row[$headers[Dickerdata::SECONDARY_CATEGORY]] ?? "";
+                $sku = $row[$headers[Dickerdata::STOCK_CODE]] ?? "";
+
+                $allSkus[] = $sku;
+                //$allCategoryNames = array_unique(array_merge($allCategoryNames, [$categoryLevel1,$categoryLevel2]));
             }
+            echo json_encode($allSkus);
+            die;
             $disableSkus = array_diff($allDickerdataSkus, $allSkus);
 
             $this->existingDickerdataCategoryIds = $this->getExistingDickerdataCategoryIds($allCategoryNames);
@@ -365,7 +371,7 @@ class ProductHelper extends AbstractHelper
         } finally {
             //if (!$isFlush) {
             $this->start = microtime(true);
-            $importer->flush();
+            // $importer->flush();
             //}
             // Reindex
             $process->output(__('Reindexing...'), true);
@@ -466,7 +472,7 @@ class ProductHelper extends AbstractHelper
             $length = (string)$data->ItemDetail->Length;
             $global->setCustomAttribute('ts_dimensions_length', $length);
         }
-        $global->setSelectAttribute('supplier', self::SUPPLIER);
+        $global->setSelectAttribute('supplier', Dickerdata::SUPPLIER);
 
         $categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
         unset($categories['@attributes']);
@@ -525,7 +531,7 @@ class ProductHelper extends AbstractHelper
     private function getAllDickerdataSkus()
     {
         $option = $this->loadOptionValues('supplier');
-        $dickerdataOptionId = $option['dickerdatadistribution'] ?? "";
+        $dickerdataOptionId = $option[Dickerdata::SUPPLIER] ?? "";
         if ($dickerdataOptionId) {
             $productCollection = $this->_productCollectionFactory->create();
             $productCollection->addAttributeToFilter('supplier', ['eq' => $dickerdataOptionId ], 'left');

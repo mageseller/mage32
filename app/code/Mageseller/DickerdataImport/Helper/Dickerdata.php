@@ -23,6 +23,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Mageseller\Process\Model\Process;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
+
 class Dickerdata extends AbstractHelper
 {
     const FILENAME = 'vendor-file.csv';
@@ -31,6 +32,8 @@ class Dickerdata extends AbstractHelper
     const DICKERDATA_IMPORTCONFIG_IS_ENABLE = 'dickerdata/importconfig/is_enable';
     const PRIMARY_CATEGORY = 'PrimaryCategory';
     const SECONDARY_CATEGORY = 'SecondaryCategory';
+    const STOCK_CODE = 'StockCode';
+    const SUPPLIER = 'dickerdata';
     const TERTIARY_CATEGORY = 'TertiaryCategory';
     const SEPERATOR = " ---|--- ";
     /**
@@ -38,10 +41,7 @@ class Dickerdata extends AbstractHelper
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
-    /**
-     * @var \Magento\Store\Model\StoreManager
-     */
-    protected $_storeManager;
+
     /**
      *
      * @var unknown
@@ -138,7 +138,6 @@ class Dickerdata extends AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\Filesystem $filesystem,
-        \Magento\Store\Model\StoreManager $storeManager,
         \Magento\Framework\Filesystem\DirectoryList $dirReader,
         \Magento\Framework\Filesystem\Io\File $fileFactory,
         \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
@@ -151,6 +150,7 @@ class Dickerdata extends AbstractHelper
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         \Mageseller\DickerdataImport\Helper\ProductHelper $dickerdataProductHelper,
         \Mageseller\DickerdataImport\Helper\ImageHelper $dickerdataImageHelper,
+        StoreManagerInterface $storeManager,
         MagentoConfig $configuration,
         ProcessResourceFactory $processResourceFactory
     ) {
@@ -160,7 +160,7 @@ class Dickerdata extends AbstractHelper
         $this->scopeConfig = $context->getScopeConfig();
         $this->_dirReader = $dirReader;
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
-        $this->_storeManager = $storeManager;
+        $this->storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->dickerdataimportLogger = $dickerdataimportLogger;
         $this->dickerdataCategoryFactory = $dickerdataCategoryFactory;
@@ -172,7 +172,6 @@ class Dickerdata extends AbstractHelper
         $this->configuration = $configuration;
         $this->dickerdataProductHelper = $dickerdataProductHelper;
         $this->dickerdataImageHelper = $dickerdataImageHelper;
-
     }
     /**
      * @return  int
@@ -376,11 +375,11 @@ class Dickerdata extends AbstractHelper
         $process->output(__('Downloading file...'), true);
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
-        $xml = simplexml_load_file($filepath, null, LIBXML_NOCDATA);
-        if ($xml instanceof SimpleXMLElement) {
-            $items = $xml->xpath("/Catalogue/Items/Item");
-            $this->dickerDataProductHelper->processProducts($items, $process, $since, $sendReport);
-        }
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $file = $directoryRead->openFile(self::FILENAME);
+        $this->dickerdataProductHelper->processProducts($file, $process, $since, $sendReport);
+
     }
     public function importDickerdataImages(Process $process, $since, $sendReport = true)
     {
@@ -405,7 +404,7 @@ class Dickerdata extends AbstractHelper
         $xml = simplexml_load_file($filepath, null, LIBXML_NOCDATA);
         if ($xml instanceof SimpleXMLElement) {
             $items = $xml->xpath("/Catalogue/Items/Item");
-            $this->dickerDataImageHelper->processProductImages($items, $process, $since, $sendReport);
+            $this->dickerdataImageHelper->processProductImages($items, $process, $since, $sendReport);
         }
     }
     public function secureRip(string $str): string
@@ -505,7 +504,7 @@ class Dickerdata extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
-
+        return $filepath;
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);

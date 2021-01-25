@@ -6,7 +6,7 @@
                 id="Mageseller_IngrammicroImport::ingrammicro"
                 module="Mageseller_IngrammicroImport"
                 resource="Mageseller_IngrammicroImport::ingrammicro"
-                parent="Mageseller_IngrammicroImport::top_level"
+                parent="Mageseller_XitImport::top_level"
                 sortOrder="0"
                 title="Ingrammicro Supplier"
         />

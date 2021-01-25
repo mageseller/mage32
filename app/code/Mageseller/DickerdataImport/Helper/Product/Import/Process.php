@@ -44,7 +44,7 @@ class Process
             ->setName('DickerData products import')
             ->setParams([$since])
             ->setHelper(DickerdataHandler::class)
-            ->setMethod('importDickerDataProducts');
+            ->setMethod('importDickerdataProducts');
 
         $this->processResourceFactory->create()->save($process);
 

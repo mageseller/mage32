@@ -293,6 +293,8 @@ class ProductHelper extends AbstractHelper
                 //$categories = [];
                 $allCategoryNames = array_unique(array_merge($allCategoryNames, $categories));
             }
+            print_r($allSkus);
+            die;
             $disableSkus = array_diff($allXitSkus, $allSkus);
 
             $this->existingXitCategoryIds = $this->getExistingXitCategoryIds($allCategoryNames);

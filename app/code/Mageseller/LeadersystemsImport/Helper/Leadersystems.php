@@ -42,10 +42,7 @@ class Leadersystems extends AbstractHelper
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
-    /**
-     * @var \Magento\Store\Model\StoreManager
-     */
-    protected $_storeManager;
+
     /**
      *
      * @var unknown
@@ -142,7 +139,6 @@ class Leadersystems extends AbstractHelper
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Framework\Filesystem $filesystem,
-        \Magento\Store\Model\StoreManager $storeManager,
         \Magento\Framework\Filesystem\DirectoryList $dirReader,
         \Magento\Framework\Filesystem\Io\File $fileFactory,
         \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
@@ -156,6 +152,7 @@ class Leadersystems extends AbstractHelper
         \Mageseller\LeadersystemsImport\Helper\ProductHelper $leadersystemsProductHelper,
         \Mageseller\LeadersystemsImport\Helper\ImageHelper $leadersystemsImageHelper,
         MagentoConfig $configuration,
+        StoreManagerInterface $storeManager,
         ProcessResourceFactory $processResourceFactory
     ) {
         parent::__construct($context);
@@ -165,7 +162,7 @@ class Leadersystems extends AbstractHelper
         $this->scopeConfig = $context->getScopeConfig();
         $this->_dirReader = $dirReader;
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
-        $this->_storeManager = $storeManager;
+        $this->storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->leadersystemsimportLogger = $leadersystemsimportLogger;
         $this->leadersystemsCategoryFactory = $leadersystemsCategoryFactory;

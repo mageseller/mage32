@@ -70,11 +70,11 @@ class InstallSchema implements InstallSchemaInterface
 
         $indexName = $setup->getIdxName(
             $setup->getTable('mageseller_ingrammicroimport_ingrammicrocategory'),
-            [ 'name'],
+            [ 'name','ingrammicrocategory_id'],
             \Magento\Framework\DB\Adapter\AdapterInterface::INDEX_TYPE_UNIQUE
         );
         $installer->getConnection()->createTable($table_mageseller_ingrammicroimport_ingrammicrocategory);
-        $installer->getConnection()->rawQuery("ALTER TABLE `{$setup->getTable('mageseller_ingrammicroimport_ingrammicrocategory')}` ADD UNIQUE `{$indexName}` (`supplier_cat_id`(255))");
+        $installer->getConnection()->rawQuery("ALTER TABLE `{$setup->getTable('mageseller_ingrammicroimport_ingrammicrocategory')}` ADD UNIQUE `{$indexName}` (`supplier_cat_id`(255),`ingrammicrocategory_id`)");
     }
 
 }
