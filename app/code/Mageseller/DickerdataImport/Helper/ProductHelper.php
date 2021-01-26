@@ -181,6 +181,10 @@ class ProductHelper extends AbstractHelper
      * @var float|string
      */
     private $start;
+    /**
+     * @var array
+     */
+    private $headers;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -286,23 +290,41 @@ class ProductHelper extends AbstractHelper
             $allDickerdataSkus = $this->getAllDickerdataSkus();
             $allSkus = [];
             $allCategoryNames = [];
-            $headers = array_flip($file->readCsv());
+            /*
+             * Array
+(
+    [StockCode] => 0
+    [Vendor] => 1
+    [VendorStockCode] => 2
+    [StockDescription] => 3
+    [PrimaryCategory] => 4
+    [SecondaryCategory] => 5
+    [TertiaryCategory] => 6
+    [RRPEx] => 7
+    [DealerEx] => 8
+    [StockAvailable] => 9
+    [ETA] => 10
+    [Status] => 11
+    [Type] => 12
+    [BundledItem1] => 13
+    [BundledItem2] => 14
+    [BundledItem3] => 15
+    [BundledItem4] => 16
+    [BundledItem5] => 17
+)*/
+            $this->headers = array_flip($file->readCsv());
             $items = [];
             while (false !== ($row = $file->readCsv())) {
-                //$items[] = $row;
-                //$categoryLevel1 = $row[$headers[Dickerdata::PRIMARY_CATEGORY]] ?? "";
-                //$categoryLevel2 = $row[$headers[Dickerdata::SECONDARY_CATEGORY]] ?? "";
-                $sku = $row[$headers[Dickerdata::STOCK_CODE]] ?? "";
-
-                $allSkus[] = $sku;
-                //$allCategoryNames = array_unique(array_merge($allCategoryNames, [$categoryLevel1,$categoryLevel2]));
+                $items[] = $row;
+//                $categoryLevel1 = $row[$this->headers[Dickerdata::PRIMARY_CATEGORY]] ?? "";
+//                $categoryLevel2 = $row[$this->headers[Dickerdata::SECONDARY_CATEGORY]] ?? "";
+//                $sku = $row[$this->headers[Dickerdata::STOCK_CODE]] ?? "";
+//                $allSkus[] = $sku;
+//                $allCategoryNames = array_unique(array_merge($allCategoryNames, [$categoryLevel1,$categoryLevel2]));
             }
-            echo json_encode($allSkus);
-            die;
             $disableSkus = array_diff($allDickerdataSkus, $allSkus);
-
-            $this->existingDickerdataCategoryIds = $this->getExistingDickerdataCategoryIds($allCategoryNames);
-            $this->existingSkus = $this->getExistingSkus($allSkus);
+           //$this->existingDickerdataCategoryIds = $this->getExistingDickerdataCategoryIds($allCategoryNames);
+            //$this->existingSkus = $this->getExistingSkus($allSkus);
             // Disable or not the indexing when UpdateOnSave mode
             $this->indexer->initIndexers();
             $config = new ImportConfig();
@@ -322,14 +344,14 @@ class ProductHelper extends AbstractHelper
                 }
                 $this->start = microtime(true);
             };
-            $importer = $this->importerFactory->createImporter($config);
-            foreach ($disableSkus as $lineNumber => $sku) {
-                $product = new SimpleProduct($sku);
-                $product->lineNumber = $lineNumber;
-                $product->global()->setStatus(ProductStoreView::STATUS_DISABLED);
-                $importer->importSimpleProduct($product);
-            }
-            $importer->flush();
+            /* $importer = $this->importerFactory->createImporter($config);
+             foreach ($disableSkus as $lineNumber => $sku) {
+                 $product = new SimpleProduct($sku);
+                 $product->lineNumber = $lineNumber;
+                 $product->global()->setStatus(ProductStoreView::STATUS_DISABLED);
+                 $importer->importSimpleProduct($product);
+             }
+             $importer->flush();*/
 
             $importer = $this->importerFactory->createImporter($config);
             $isFlush = false;
@@ -338,7 +360,7 @@ class ProductHelper extends AbstractHelper
             $i = 0; // Line number
             $j = 0; // Line number
             foreach ($items as $item) {
-                $sku = (string)$item->ItemDetail->ManufacturerPartID;
+                $sku = $item[$this->headers[Dickerdata::STOCK_CODE]];
                 try {
                     ++$i;
                     $this->start = microtime(true);
@@ -349,13 +371,14 @@ class ProductHelper extends AbstractHelper
                     $isFlush = false;
                     if ($i % 5 === 0) {
                         $processResource->save($process);
-                        /*if (!$isFlush) {
+                        if (!$isFlush) {
                             $this->start = microtime(true);
                             $importer->flush();
                             $importer = $this->importerFactory->createImporter($config);
                             $isFlush = true;
-                        }*/
+                        }
                     }
+                    
                 } catch (WarningException $e) {
                     $message = __("Warning on sku %1: {$e->getMessage()}", $sku);
                     $process->output($message);
@@ -369,10 +392,10 @@ class ProductHelper extends AbstractHelper
             $process->fail($e->getMessage());
             throw $e;
         } finally {
-            //if (!$isFlush) {
-            $this->start = microtime(true);
-            // $importer->flush();
-            //}
+            if (!$isFlush) {
+                $this->start = microtime(true);
+                $importer->flush();
+            }
             // Reindex
             $process->output(__('Reindexing...'), true);
             $this->reindexProducts($productIdsToReindex);
@@ -383,30 +406,22 @@ class ProductHelper extends AbstractHelper
     }
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-        $sku = (string)$data->ItemDetail->ManufacturerPartID;
-        $price = (string)$data->ItemDetail->UnitPrice;
+        $sku = $data[$this->headers[Dickerdata::STOCK_CODE]];
+        $price = $data[$this->headers['RRPEx']];
         $price = floatval(preg_replace('/[^\d.]/', '', $price));
-        $taxRate = (string)$data->ItemDetail->TaxRate;
+        /*$taxRate = (string)$data->ItemDetail->TaxRate;
         $updatedAt = (string)$data->UpdatedAt;
         $currentUpdateAT = date_parse($updatedAt);
-        $oldUpdateAt = date_parse($since->format('Y-m-d H:i:s'));
+        $oldUpdateAt = date_parse($since->format('Y-m-d H:i:s'));*/
 
-        $availibilities = $data->Availability->Warehouse;
-        $quantity = 0;
-        foreach ($availibilities as $avail) {
-            $v = (string)$avail->StockLevel;
-            if (strtolower($v) == 'call') {
-                $quantity = '999999';
-                continue;
-            }
-            if (strtolower($v) == 'on order') {
-                $quantity = '999999';
-                continue;
-            }
-            $trimmedQty = trim($v, '+');
-            if ($trimmedQty) {
-                $quantity =  $trimmedQty;
-            }
+        $stockAvailable = $data[$this->headers['StockAvailable']];
+        $quantity = $stockAvailable;
+        if ($stockAvailable == '999999999') {
+            $quantity = '999999';
+        }
+        $trimmedQty = trim($quantity, '+');
+        if ($trimmedQty) {
+            $quantity =  $trimmedQty;
         }
 
         $product = new SimpleProduct($sku);
@@ -415,8 +430,8 @@ class ProductHelper extends AbstractHelper
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
         $global->setPrice($price);
-        if (isset($data->ItemDetail->RRP)) {
-            $specialPrice = (string)$data->ItemDetail->RRP;
+        if (isset($data[$this->headers['DealerEx']])) {
+            $specialPrice = $data[$this->headers['DealerEx']];
             $specialPrice = $specialPrice ? floatval(preg_replace('/[^\d.]/', '', $specialPrice)) : null;
             $global->setSpecialPrice($specialPrice);
         }
@@ -433,15 +448,11 @@ class ProductHelper extends AbstractHelper
         $stock->setQuantityIncrements(1);
 
         if (isset($this->existingSkus[$sku])) {
-            if ($oldUpdateAt <= $currentUpdateAT) {
-                $j++;
-                $importer->importSimpleProduct($product);
-            }
+            $j++;
+            $importer->importSimpleProduct($product);
             return;
         }
-
-        $name = (string)$data->ItemDetail->Title;
-        $description = (string)$data->ItemDetail->Description;
+        $name = $data[$this->headers['StockDescription']];
         $taxClassName = 'Taxable Goods';
         $attributeSetName = "Default";
 
@@ -449,32 +460,15 @@ class ProductHelper extends AbstractHelper
         $product->setWebsitesByCode(['base']);
 
         $global->setName($name);
-        $global->setDescription($description);
         $global->setPrice($price);
         $global->setTaxClassName($taxClassName);
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
         $global->setVisibility(ProductStoreView::VISIBILITY_BOTH);
         $global->generateUrlKey();
 
-        if (isset($data->ItemDetail->ShippingWeight)) {
-            $weight = (string)$data->ItemDetail->ShippingWeight;
-            $global->setWeight($weight);
-        }
-        if (isset($data->ItemDetail->Height)) {
-            $height = (string)$data->ItemDetail->Height;
-            $global->setCustomAttribute('ts_dimensions_height', $height);
-        }
-        if (isset($data->ItemDetail->Width)) {
-            $width = (string)$data->ItemDetail->Width;
-            $global->setCustomAttribute('ts_dimensions_width', $width);
-        }
-        if (isset($data->ItemDetail->Length)) {
-            $length = (string)$data->ItemDetail->Length;
-            $global->setCustomAttribute('ts_dimensions_length', $length);
-        }
         $global->setSelectAttribute('supplier', Dickerdata::SUPPLIER);
 
-        $categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
+        /*$categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
         unset($categories['@attributes']);
         $categoryIds = [];
         foreach ($categories as $categoryName) {
@@ -486,7 +480,7 @@ class ProductHelper extends AbstractHelper
         if ($categoryIds) {
             $categoryIds = array_filter(array_unique($categoryIds));
             $product->addCategoryIds($categoryIds);
-        }
+        }*/
 
         //brochure_url
         /*// German eav attributes
