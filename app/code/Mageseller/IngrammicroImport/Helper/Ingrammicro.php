@@ -28,9 +28,11 @@ class Ingrammicro extends AbstractHelper
     const DOWNLOAD_FOLDER = 'supplier/ingrammicro';
     const INGRAMMICRO_IMPORTCONFIG_IS_ENABLE = 'ingrammicro/importconfig/is_enable';
     const CATEGORY_ID = 'Category ID';
+    const CATEGORY = 'Category';
     const SUB_CATEGORY = 'Sub-Category';
     const PRODUCT_GROUP_CODE = 'ProductGroupCode';
     const DESCRIPTION = 'Description';
+    const SEPERATOR = " ---|--- ";
     /**
      * /**
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
@@ -90,6 +92,10 @@ class Ingrammicro extends AbstractHelper
      * @since 100.1.0
      */
     protected $filesystem;
+    private $conn;
+    private $dir;
+    private $sftp;
+
     /**
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Framework\Filesystem $filesystem
@@ -170,13 +176,14 @@ class Ingrammicro extends AbstractHelper
     }
     public function importIngrammicroCategory()
     {
-        ini_set("memory_limit", "-1");
-        set_time_limit(0);
         if (empty($_FILES['groups']['tmp_name']['importconfig']['fields']['import_category_file']['value'])) {
             return $this;
         }
-        $filePath = $_FILES['groups']['tmp_name']['importconfig']['fields']['import_category_file']['value'];
 
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
+        $filePath = $_FILES['groups']['tmp_name']['importconfig']['fields']['import_category_file']['value'];
+        $this->downloadFile();
         /**
          * @var ReadInterface $object
          */
@@ -185,11 +192,12 @@ class Ingrammicro extends AbstractHelper
         $fileName = self::FILENAME;
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
-        //$filepath = $downloadFolder . '/' . $fileName;
-        //$directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $filepath = $downloadFolder . '/' . $fileName;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
 
-        //$file2 =  $directoryRead->openFile($fileName);
+        $file2 =  $directoryRead->openFile($fileName);
         try {
+
             /*Adding category names start*/
             $headers = array_flip($file->readCsv(0, "\t"));
             while (false !== ($row = $file->readCsv(0, "\t"))) {
@@ -197,39 +205,74 @@ class Ingrammicro extends AbstractHelper
                 $catName =  $row[$headers[self::DESCRIPTION]]  ?? '';
 
                 $allCategories[] = [
-                        'ingrammicrocategory_id' => ltrim($catId, "0"),
-                        'name' => $catName,
-                    ];
+                    'ingrammicrocategory_id' => ltrim($catId, "0"),
+                    'name' => $catName,
+                ];
             }
             $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
             $collection->insertOnDuplicate($allCategories);
+            /*Adding category names ends*/
 
-            //$collection = $this->ingrammicroCategoryFactory->create()->getCollection();
-            /*$select = (clone $collection->getSelect())
-                ->reset(Select::COLUMNS)
-                ->columns(['supplier_cat_id' => 'supplier_cat_id','id' => 'ingrammicrocategory_id']);
-            $connection = $this->resourceConnection->getConnection();
-            $allCategoryIds = $connection->fetchAssoc($select);*/
-
-            /*$categoriesWithParents = [];
+            /*Creating category tree start*/
+            $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
             $headers = array_flip($file2->readCsv(0, ","));
-            $i = 0;
-            $connection = $this->resourceConnection->getConnection();
             while (false !== ($row = $file2->readCsv(0, ","))) {
-                $categoryLevel1 =  $row[$headers[self::CATEGORY_ID]] ?? 0;
+                $categoryLevel1 =  $row[$headers[self::CATEGORY]] ?? 0;
                 $categoryLevel2 =  $row[$headers[self::SUB_CATEGORY]]  ?? 0;
-                $categoriesWithParents[ltrim($categoryLevel1, "0")] = null;
-                if ($categoryLevel2) {
-                    $categoriesWithParents[ltrim($categoryLevel2, "0")] = ltrim($categoryLevel1, "0");
+                $categoryLevel3 =  $row[$headers[self::CATEGORY_ID]]  ?? 0;
+                $level = implode(self::SEPERATOR, [$categoryLevel1,$categoryLevel2,$categoryLevel3]);
+                if ($categoryLevel1) {
+                    $categoriesWithParents[$categoryLevel1 . self::SEPERATOR . ''] = $level;
+                    if ($categoryLevel2) {
+                        $categoriesWithParents[$categoryLevel2 . self::SEPERATOR . $categoryLevel1] = $level;
+                        if ($categoryLevel3) {
+                            $categoriesWithParents[$categoryLevel3 . self::SEPERATOR . $categoryLevel2] = $level;
+                        }
+                    }
+                }
+            }
+
+            $allCategories = array_map(function ($v) {
+                $names = explode(self::SEPERATOR, $v);
+                return $names[0] ? [
+                    'ingrammicrocategory_id' => $names[0],
+                    'name' => $names[0],
+                    'parent_id' => $names[1]
+                ] : [];
+            }, array_keys($categoriesWithParents));
+
+            $allCategories = array_filter($allCategories);
+
+            $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
+
+            /*Adding parent id to child category starts*/
+            $select = (clone $collection->getSelect())
+                ->reset(Select::COLUMNS)
+                ->columns([ 'ingrammicrocategory_id' ]);
+            $connection = $this->resourceConnection->getConnection();
+            $allCategoryIds = $connection->fetchCol($select);
+            foreach ($allCategories as $category) {
+                $categoryId = $category['ingrammicrocategory_id'];
+                $name = $category['name'];
+                $parentId = $category['parent_id'];
+                if (in_array($categoryId, $allCategoryIds)) {
                     $connection->update(
                         $collection->getMainTable(),
-                        [ 'parent_id' => ltrim($categoryLevel1)],
-                        ['ingrammicrocategory_id = ?' => ltrim($categoryLevel2)]
+                        [ 'parent_id' => trim($parentId)],
+                        ['ingrammicrocategory_id = ?' => trim($categoryId)]
+                    );
+                } else {
+                    $connection->insert(
+                        $collection->getMainTable(),
+                        [
+                            'parent_id' => $parentId,
+                            'name' => $name,
+                            'ingrammicrocategory_id' => $categoryId
+                        ]
                     );
                 }
-                $i++;
-            }*/
-             //$collection->insertOnDuplicate($parentMap);
+            }
+            /*Creating category tree ends*/
             /*Adding category names ends*/
         } catch (\Exception $e) {
             echo $e->getMessage();
@@ -240,30 +283,9 @@ class Ingrammicro extends AbstractHelper
             );
         } finally {
             $file->close();
-            //$file2->close();
+            $file2->close();
         }
         return;
-//        return $this;
-//        $apiUrl = $this->getApiUrl();
- //       $filepath = $this->downloadFile($apiUrl);
-//        $allCategories = [];
-//        $categoriesWithParents = [];
-//        /*Adding parent id to child category starts*/
-//        $select = (clone $collection->getSelect())
-//                    ->reset(Select::COLUMNS)
-//                    ->columns(['name' => 'name','id' => 'ingrammicrocategory_id']);
-//        $connection = $this->resourceConnection->getConnection();
-//        $allCategoryIds = $connection->fetchAssoc($select);
-//        $parentMap = [];
-//        foreach ($categoriesWithParents as $childCategory => $parentCategory) {
-//            $parentMap[] = [
-//                'name' => $childCategory,
-//                'parent_id' => $allCategoryIds[$parentCategory]['id'] ?? 0
-//            ];
-//        }
-//        $collection->insertOnDuplicate($parentMap);
-//        /*Adding parent id to child category ends*/
-//        return true;
     }
 
     public function getApiUrl()
@@ -282,11 +304,8 @@ class Ingrammicro extends AbstractHelper
         return $this->getConfig('ingrammicro/importconfig/url');
     }
 
-    public function downloadFile($source)
+    public function downloadFile()
     {
-        //download file to var/dropship/ folder from url provided in config
-        $this->ingrammicroimportLogger->debug('Cron Download File : ' . $source);
-
         $fileName = self::FILENAME;
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
@@ -296,33 +315,113 @@ class Ingrammicro extends AbstractHelper
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);
         }
+        $ftpRemoteDir = $this->getConfig('ingrammicro/importconfig/path');
+        $ftpHost = $this->getConfig('ingrammicro/importconfig/host');
+        $ftpUser = $this->getConfig('ingrammicro/importconfig/username');
+        $ftpPass = $this->getConfig('ingrammicro/importconfig/password');
+        $tmpLocation = $downloadFolder;
+        $prodFileName = "STDPRICE_FULL.TXT.zip";
+        $this->setRemoteDirectory($ftpRemoteDir);
+        $this->ftpConnect($ftpHost, $ftpUser, $ftpPass);
+        $this->downloadFileFromFtp($tmpLocation . "/" . $prodFileName, $prodFileName, $ftpRemoteDir);
+        // Checking the download file extension
+        $fileObj = new \SplFileInfo($tmpLocation . "/" . $prodFileName);
 
-        if (!$this->fileFactory->fileExists($filepath)) {
-            $this->ingrammicroimportLogger->debug('Importing file Ingrammicro : ' . $source);
-            $ch = curl_init($source);
-            $fp = fopen($filepath, 'wb');
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_exec($ch);
-            curl_close($ch);
-            fclose($fp);
-        } else {
-            $this->ingrammicroimportLogger->info('Import File Already Exists: ' . $filepath);
-            $this->ingrammicroimportLogger->debug('Importing file to tmp file: ' . $source);
-            $tmpFilePath = $downloadFolder . '/' . $tmpFileName;
-            $ch = curl_init($source);
-            $fp = fopen($tmpFilePath, 'wb');
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_exec($ch);
-            curl_close($ch);
-            fclose($fp);
+        if ($fileObj->getExtension() === 'ZIP') {
+
+            // init the zip archive object and open so i can unzip the file
+            $zip = new \ZipArchive();
+            $result = $zip->open($tmpLocation . "/" . $prodFileName);
+
+            // checking the result of the open zip
+            if ($result === true) {
+                $zip->extractTo($tmpLocation);
+                $zip->close();
+            } else {
+                throw new \Exception("Zip: Failed, code: " . $result, 1);
+            }
+
+            // prepareing the name of the file because inside of the archive is a TXT file
+            $filename = str_replace($fileObj->getExtension(), 'TXT', $prodFileName);
             $this->fileFactory->open(['path' => $downloadFolder]);
-            $this->fileFactory->mv($tmpFileName, $fileName);
+            $this->fileFactory->mv($filename, $fileName);
+        } else {
+            // if the file is not archived the file name is ok
+            $filename = $prodFileName;
         }
         return $filepath;
     }
+    /**
+     * Set Remote Directory
+     * @param string $dir
+     */
+    public function setRemoteDirectory($dir)
+    {
+        $this->dir = $dir;
+    }
 
+    /**
+     * Connect to FTP
+     * @param $host
+     * @param $user
+     * @param $pass
+     * @param int $port
+     * @throws \Exception
+     */
+    public function ftpConnect($host, $user, $pass, $port=22)
+    {
+        $this->conn = \ssh2_connect($host, $port);
+        if ($this->conn === false) {
+            throw new Exception("Could not connect to $host on port $port.");
+        }
+        if (!\ssh2_auth_password($this->conn, $user, $pass)) {
+            throw new Exception("Could not authenticate with username $user " .
+                "and password *******.");
+        }
+        $this->sftp = \ssh2_sftp($this->conn);
+        if (!$this->sftp) {
+            throw new Exception("Could not initialize SFTP subsystem.");
+        }
+        return;// $this->conn;
+    }
+
+    /**
+     * Download a file from the server
+     *
+     * @param string $localFile
+     * @param string $remoteFile
+     * @param string $type
+     * @return bool
+     */
+    public function downloadFileFromFtp($localFile, $remoteFile, $ftpRemoteDir, $type=FTP_BINARY)
+    {
+        return $this->receiveFile($ftpRemoteDir, $remoteFile, $localFile);
+    }
+    public function receiveFile($ftpRemoteDir, $remote_file, $local_file)
+    {
+        $sftp = $this->sftp;
+        $stream = @fopen("ssh2.sftp://{$sftp}{$ftpRemoteDir}/{$remote_file}", 'r');
+        if (! $stream) {
+            throw new \Exception("Could not open file: $remote_file");
+        }
+
+        $contents = stream_get_contents($stream);
+        file_put_contents($local_file, $contents);
+        @fclose($stream);
+
+    }
+
+    /**
+     * Close the ftp connection
+     *
+     * @param none
+     * @return bool
+     */
+    public function ftpClose()
+    {
+        return "";
+        return \ftp_close($this->conn);
+    }
     public function parseObject($value)
     {
         return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {

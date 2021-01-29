@@ -52,7 +52,7 @@ class InstallData implements InstallDataInterface
                 'source' => 'Mageseller\LeadersystemsImport\Model\Category\Attribute\Source\LeadersystemsCategoryIds',
                 'global' => 1,
                 'visible' => true,
-                'required' => true,
+                'required' => false,
                 'user_defined' => true,
                 'default' => null,
                 'group' => 'General Information',

@@ -52,7 +52,7 @@ class InstallData implements InstallDataInterface
                 'source' => 'Mageseller\XitImport\Model\Category\Attribute\Source\XitCategoryIds',
                 'global' => 1,
                 'visible' => true,
-                'required' => true,
+                'required' => false,
                 'user_defined' => true,
                 'default' => null,
                 'group' => 'General Information',

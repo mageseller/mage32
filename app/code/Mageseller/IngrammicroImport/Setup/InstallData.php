@@ -51,7 +51,7 @@ class InstallData implements InstallDataInterface
                 'sort_order' => 333,
                 'source' => 'Mageseller\IngrammicroImport\Model\Category\Attribute\Source\IngrammicroCategoryIds',
                 'global' => 1,
-                'visible' => true,
+                'visible' => false,
                 'required' => true,
                 'user_defined' => true,
                 'default' => null,

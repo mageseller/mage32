@@ -51,7 +51,7 @@ class InstallData implements InstallDataInterface
                 'sort_order' => 333,
                 'source' => 'Mageseller\DickerdataImport\Model\Category\Attribute\Source\DickerdataCategoryIds',
                 'global' => 1,
-                'visible' => true,
+                'visible' => false,
                 'required' => true,
                 'user_defined' => true,
                 'default' => null,
