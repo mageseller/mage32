@@ -323,7 +323,7 @@ class ProductHelper extends AbstractHelper
 //                $allCategoryNames = array_unique(array_merge($allCategoryNames, [$categoryLevel1,$categoryLevel2]));
             }
             $disableSkus = array_diff($allDickerdataSkus, $allSkus);
-           //$this->existingDickerdataCategoryIds = $this->getExistingDickerdataCategoryIds($allCategoryNames);
+            //$this->existingDickerdataCategoryIds = $this->getExistingDickerdataCategoryIds($allCategoryNames);
             //$this->existingSkus = $this->getExistingSkus($allSkus);
             // Disable or not the indexing when UpdateOnSave mode
             $this->indexer->initIndexers();
@@ -371,14 +371,13 @@ class ProductHelper extends AbstractHelper
                     $isFlush = false;
                     if ($i % 5 === 0) {
                         $processResource->save($process);
-                        if (!$isFlush) {
+                        /*if (!$isFlush) {
                             $this->start = microtime(true);
                             $importer->flush();
                             $importer = $this->importerFactory->createImporter($config);
                             $isFlush = true;
-                        }
+                        }*/
                     }
-                    
                 } catch (WarningException $e) {
                     $message = __("Warning on sku %1: {$e->getMessage()}", $sku);
                     $process->output($message);
@@ -392,10 +391,10 @@ class ProductHelper extends AbstractHelper
             $process->fail($e->getMessage());
             throw $e;
         } finally {
-            if (!$isFlush) {
-                $this->start = microtime(true);
-                $importer->flush();
-            }
+            // if (!$isFlush) {
+            $this->start = microtime(true);
+            $importer->flush();
+            //}
             // Reindex
             $process->output(__('Reindexing...'), true);
             $this->reindexProducts($productIdsToReindex);
