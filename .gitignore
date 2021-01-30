@@ -70,3 +70,5 @@ atlassian*
 /generated/*
 !/generated/.htaccess
 .DS_Store
+pub/media/sales/store/logo/default/logo_1.png
+pub/media/sales/store/logo_html/default/logo_1.png
