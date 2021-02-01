@@ -197,52 +197,57 @@ class Ingrammicro extends AbstractHelper
 
         $file2 =  $directoryRead->openFile($fileName);
         try {
-
             /*Adding category names start*/
+            $allCsvCategories = [];
             $headers = array_flip($file->readCsv(0, "\t"));
             while (false !== ($row = $file->readCsv(0, "\t"))) {
                 $catId = (int) $row[$headers[self::PRODUCT_GROUP_CODE]] ?? '';
                 $catName =  $row[$headers[self::DESCRIPTION]]  ?? '';
-
-                $allCategories[] = [
-                    'ingrammicrocategory_id' => ltrim($catId, "0"),
-                    'name' => $catName,
-                ];
+                $allCsvCategories[$catId] = $catName;
             }
-            $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
-            $collection->insertOnDuplicate($allCategories);
             /*Adding category names ends*/
-
             /*Creating category tree start*/
-            $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
             $headers = array_flip($file2->readCsv(0, ","));
             while (false !== ($row = $file2->readCsv(0, ","))) {
-                $categoryLevel1 =  $row[$headers[self::CATEGORY]] ?? 0;
+                $categoryLevel1 =  $row[$headers[self::CATEGORY]] ?? '';
                 $categoryLevel2 =  $row[$headers[self::SUB_CATEGORY]]  ?? 0;
                 $categoryLevel3 =  $row[$headers[self::CATEGORY_ID]]  ?? 0;
-                $level = implode(self::SEPERATOR, [$categoryLevel1,$categoryLevel2,$categoryLevel3]);
-                if ($categoryLevel1) {
-                    $categoriesWithParents[$categoryLevel1 . self::SEPERATOR . ''] = $level;
-                    if ($categoryLevel2) {
-                        $categoriesWithParents[$categoryLevel2 . self::SEPERATOR . $categoryLevel1] = $level;
-                        if ($categoryLevel3) {
-                            $categoriesWithParents[$categoryLevel3 . self::SEPERATOR . $categoryLevel2] = $level;
-                        }
+                $parentId1 = ltrim($categoryLevel1, '0');
+                if ($categoryLevel1 == '000') {
+                    $categoryLevel1 = 0;
+                    $parentId1 = '';
+                } else {
+                    $categoryLevel1 = $parentId1;
+                }
+                $categoriesWithParents['1_' . intval($categoryLevel1) . self::SEPERATOR . ''] = $categoryLevel1;
+                if ($categoryLevel2) {
+                    $categoriesWithParents['2_' . intval($categoryLevel2) . self::SEPERATOR . '1_' . intval($categoryLevel1)] = $parentId1 . $categoryLevel2;
+                    if ($categoryLevel3) {
+                        $categoriesWithParents['3_' . intval($categoryLevel3) . self::SEPERATOR . '2_' . intval($categoryLevel2)] = $parentId1 . $categoryLevel2 . $categoryLevel3;
                     }
                 }
             }
-
-            $allCategories = array_map(function ($v) {
-                $names = explode(self::SEPERATOR, $v);
-                return $names[0] ? [
-                    'ingrammicrocategory_id' => $names[0],
-                    'name' => $names[0],
-                    'parent_id' => $names[1]
-                ] : [];
-            }, array_keys($categoriesWithParents));
-
-            $allCategories = array_filter($allCategories);
-
+            $allCategories = [];
+            foreach ($categoriesWithParents as $k => $v) {
+                $names = explode(self::SEPERATOR, $k);
+                if (isset($allCategories[$names[0]])) {
+                    continue;
+                }
+                $supplierCategoryIds = explode('_', $names[0]);
+                $ingrammicrocategoryId = str_replace('_', '', $names[0]);
+                $parentId = str_replace('_', '', $names[1]);
+                $allCategories[intval($ingrammicrocategoryId)] = [
+                    'ingrammicrocategory_id' => intval($ingrammicrocategoryId),
+                    'name' => $allCsvCategories[intval($v)] ?? $ingrammicrocategoryId,
+                    'supplier_cat_id' => $supplierCategoryIds[1] ?? "",
+                    'parent_id' => intval($parentId),
+                ];
+            }
+            /*echo "<pre>";
+            print_r($allCsvCategories);
+            print_r($categoriesWithParents);
+            print_r($allCategories);
+            die;*/
             $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
 
             /*Adding parent id to child category starts*/
@@ -250,30 +255,37 @@ class Ingrammicro extends AbstractHelper
                 ->reset(Select::COLUMNS)
                 ->columns([ 'ingrammicrocategory_id' ]);
             $connection = $this->resourceConnection->getConnection();
-            $allCategoryIds = $connection->fetchCol($select);
+            $allCategoryIds = $connection->fetchAssoc($select);
+
+            $isCategories = [];
             foreach ($allCategories as $category) {
-                $categoryId = $category['ingrammicrocategory_id'];
+                $categoryId = ltrim($category['ingrammicrocategory_id'], "0");
                 $name = $category['name'];
-                $parentId = $category['parent_id'];
-                if (in_array($categoryId, $allCategoryIds)) {
+                $parentId = ltrim($category['parent_id'], "0");
+                $supplier_cat_id = $category['supplier_cat_id'];
+                if (isset($isCategories[$categoryId])) {
+                    continue;
+                }
+                if (isset($allCategoryIds[$categoryId])) {
                     $connection->update(
                         $collection->getMainTable(),
-                        [ 'parent_id' => trim($parentId)],
+                        [ 'parent_id' => trim($parentId),'name' => $name],
                         ['ingrammicrocategory_id = ?' => trim($categoryId)]
                     );
                 } else {
                     $connection->insert(
                         $collection->getMainTable(),
                         [
+                            'ingrammicrocategory_id' => $categoryId,
+                            'supplier_cat_id' => $supplier_cat_id,
                             'parent_id' => $parentId,
-                            'name' => $name,
-                            'ingrammicrocategory_id' => $categoryId
+                            'name' => $name
                         ]
                     );
                 }
+                $isCategories[$categoryId] = true;
             }
             /*Creating category tree ends*/
-            /*Adding category names ends*/
         } catch (\Exception $e) {
             echo $e->getMessage();
             die;
@@ -321,13 +333,13 @@ class Ingrammicro extends AbstractHelper
         $ftpPass = $this->getConfig('ingrammicro/importconfig/password');
         $tmpLocation = $downloadFolder;
         $prodFileName = "STDPRICE_FULL.TXT.zip";
-        $this->setRemoteDirectory($ftpRemoteDir);
+        /*$this->setRemoteDirectory($ftpRemoteDir);
         $this->ftpConnect($ftpHost, $ftpUser, $ftpPass);
-        $this->downloadFileFromFtp($tmpLocation . "/" . $prodFileName, $prodFileName, $ftpRemoteDir);
+        $this->downloadFileFromFtp($tmpLocation . "/" . $prodFileName, $prodFileName, $ftpRemoteDir);*/
         // Checking the download file extension
         $fileObj = new \SplFileInfo($tmpLocation . "/" . $prodFileName);
 
-        if ($fileObj->getExtension() === 'ZIP') {
+        if (strtolower($fileObj->getExtension()) === strtolower('ZIP')) {
 
             // init the zip archive object and open so i can unzip the file
             $zip = new \ZipArchive();
@@ -342,7 +354,7 @@ class Ingrammicro extends AbstractHelper
             }
 
             // prepareing the name of the file because inside of the archive is a TXT file
-            $filename = str_replace($fileObj->getExtension(), 'TXT', $prodFileName);
+            $filename = str_replace("." . $fileObj->getExtension(), '', $prodFileName);
             $this->fileFactory->open(['path' => $downloadFolder]);
             $this->fileFactory->mv($filename, $fileName);
         } else {
@@ -408,7 +420,6 @@ class Ingrammicro extends AbstractHelper
         $contents = stream_get_contents($stream);
         file_put_contents($local_file, $contents);
         @fclose($stream);
-
     }
 
     /**
