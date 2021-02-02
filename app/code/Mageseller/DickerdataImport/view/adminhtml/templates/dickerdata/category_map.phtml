@@ -1,6 +1,7 @@
 <?php
 /** @var \Mageseller\DickerdataImport\Block\Adminhtml\Category $block */
 $helper = $this->helper(\Mageseller\DickerdataImport\Helper\Dickerdata::class);
+$productAttributes = $helper->getAllProductAttributes();
 $isEnableEdsModule = $helper->getEnable();
 ?>
 <?php if ($isEnableEdsModule) : ?>
@@ -13,7 +14,7 @@ $isEnableEdsModule = $helper->getEnable();
         <tr>
             <td><label style="float: left;">Supplier Category</label></td>
             <td><label style="float: left;">Magento Category</label></td>
-            <td>Action</td>
+            <td colspan="3" >&nbsp;</td>
         </tr>
         <tr>
             <td>
@@ -26,6 +27,21 @@ $isEnableEdsModule = $helper->getEnable();
             </td>
             <td>
                 <button name="submit" id="submit" value="Submit" class="action- scalable primary"> Submit</button>
+            </td>
+            <td>
+                <div class="or-tag"> OR </div>
+            </td>
+            <td>
+
+                <select id="attribute_id" name="attribute_id">
+                    <option> <?= __('Select Option ')?></option>
+                    <?php foreach ($productAttributes as $attribute): ?>
+                        <option value="<?= $attribute['id'] ?>"> <?= ucfirst($attribute['label']) ?></option>
+                    <?php endforeach;?>
+                </select>
+            </td>
+            <td>
+                <button name="submit" id="use_as_attribute" value="Use As Attribute" class="action- scalable primary">Use As Attribute</button>
             </td>
         </tr>
     </table>
@@ -48,6 +64,7 @@ $isEnableEdsModule = $helper->getEnable();
     $formData['save_category_url'] = $this->getUrl("mageseller_dickerdataimport/dickerdatacategory/savecategory");
     $formData['delete_category_url'] = $this->getUrl("mageseller_dickerdataimport/dickerdatacategory/delcategory");
     $formData['supplier_category_url'] = $this->getUrl("mageseller_dickerdataimport/dickerdatacategory/suppliercategory");
+    $formData['use_as_attribute_url'] = $this->getUrl("mageseller_dickerdataimport/dickerdatacategory/useasattribute");
     $formData['already_mapped_array'] = json_encode($categoryNameArray);
     $serializedFormData = $this->helper('Magento\Framework\Json\Helper\Data')->jsonEncode($formData); ?>
     <script type="text/x-magento-init">

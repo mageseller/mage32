@@ -11,16 +11,30 @@
 
 namespace Mageseller\DickerdataImport\Helper;
 
+use Magento\Catalog\Model\CategoryFactory;
+use Magento\Catalog\Model\Product as ProductEntityType;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
+use Magento\Eav\Api\Data\AttributeInterface;
+use Magento\Eav\Model\Config;
+use Magento\Eav\Model\Entity;
+use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory as AttributeCollectionFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Select;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Filesystem;
+use Magento\Framework\Filesystem\Io\File;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Mageseller\DickerdataImport\Logger\DickerdataImport;
+use Mageseller\DickerdataImport\Model\DickerdataCategoryFactory;
 use Mageseller\Process\Model\Process;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
 
@@ -53,29 +67,29 @@ class Dickerdata extends AbstractHelper
      */
     protected $scopeConfig;
     /**
-     * @var \Magento\Framework\Filesystem\Io\File
+     * @var File
      */
     protected $fileFactory;
     /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
+     * @var DateTime
      */
     protected $_dateTime;
     /**
      *
-     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
+     * @var ProductCollectionFactory
      */
     protected $_productCollectionFactory;
     /**
-     * @var \Mageseller\DickerdataImport\Logger\DickerdataImport
+     * @var DickerdataImport
      */
     protected $dickerdataimportLogger;
     private $apiUrl;
     /**
-     * @var \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory
+     * @var DickerdataCategoryFactory
      */
     private $dickerdataCategoryFactory;
     /**
-     * @var \Magento\Catalog\Model\CategoryFactory
+     * @var CategoryFactory
      */
     private $categoryFactory;
     /**
@@ -89,7 +103,7 @@ class Dickerdata extends AbstractHelper
 
     private $supplierCategories;
     /**
-     * @var \Magento\Framework\Filesystem
+     * @var Filesystem
      */
     private $filesystem;
     /**
@@ -114,44 +128,56 @@ class Dickerdata extends AbstractHelper
      * @var ProcessResourceFactory
      */
     protected $processResourceFactory;
+    /**
+     * @var Config
+     */
+    private $eavConfig;
+    /**
+     * @var AttributeCollectionFactory
+     */
+    private $attributeFactory;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Store\Model\StoreManager $storeManager
-     * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
-     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
+     * @param Context $context
+     * @param Filesystem $filesystem
+     * @param Filesystem\DirectoryList $dirReader
+     * @param File $fileFactory
+     * @param DateTime $dateTime
      * @param MessageManagerInterface $messageManager
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param \Mageseller\DickerdataImport\Logger\DickerdataImport $dickerdataimportLogger
-     * @param \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory $dickerdataCategoryFactory
-     * @param CollectionFactory $categoryCollectionFactory
      * @param ResourceConnection $resourceConnection
-     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param MagentoConfig $configuration
+     * @param AttributeCollectionFactory $attributeFactory
+     * @param Config $eavConfig
+     * @param StoreManagerInterface $storeManager
+     * @param CategoryFactory $categoryFactory
+     * @param ProductCollectionFactory $productCollectionFactory
+     * @param CollectionFactory $categoryCollectionFactory
+     * @param DickerdataImport $dickerdataimportLogger
+     * @param DickerdataCategoryFactory $dickerdataCategoryFactory
      * @param ProductHelper $dickerdataProductHelper
      * @param ImageHelper $dickerdataImageHelper
-     * @param MagentoConfig $configuration
      * @param ProcessResourceFactory $processResourceFactory
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws FileSystemException
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\Filesystem $filesystem,
-        \Magento\Framework\Filesystem\DirectoryList $dirReader,
-        \Magento\Framework\Filesystem\Io\File $fileFactory,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
+        Context $context,
+        Filesystem $filesystem,
+        Filesystem\DirectoryList $dirReader,
+        File $fileFactory,
+        DateTime $dateTime,
         MessageManagerInterface $messageManager,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
-        \Mageseller\DickerdataImport\Logger\DickerdataImport $dickerdataimportLogger,
-        \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory $dickerdataCategoryFactory,
-        CollectionFactory $categoryCollectionFactory,
         ResourceConnection $resourceConnection,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
-        \Mageseller\DickerdataImport\Helper\ProductHelper $dickerdataProductHelper,
-        \Mageseller\DickerdataImport\Helper\ImageHelper $dickerdataImageHelper,
-        StoreManagerInterface $storeManager,
         MagentoConfig $configuration,
+        AttributeCollectionFactory $attributeFactory,
+        Config $eavConfig,
+        StoreManagerInterface $storeManager,
+        CategoryFactory $categoryFactory,
+        ProductCollectionFactory $productCollectionFactory,
+        CollectionFactory $categoryCollectionFactory,
+        DickerdataImport $dickerdataimportLogger,
+        DickerdataCategoryFactory $dickerdataCategoryFactory,
+        ProductHelper $dickerdataProductHelper,
+        ImageHelper $dickerdataImageHelper,
         ProcessResourceFactory $processResourceFactory
     ) {
         parent::__construct($context);
@@ -162,14 +188,16 @@ class Dickerdata extends AbstractHelper
         $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
         $this->storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
-        $this->dickerdataimportLogger = $dickerdataimportLogger;
-        $this->dickerdataCategoryFactory = $dickerdataCategoryFactory;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryFactory = $categoryFactory;
         $this->resourceConnection = $resourceConnection;
         $this->filesystem = $filesystem;
+        $this->eavConfig = $eavConfig;
+        $this->attributeFactory = $attributeFactory;
         $this->processResourceFactory = $processResourceFactory;
         $this->configuration = $configuration;
+        $this->dickerdataimportLogger = $dickerdataimportLogger;
+        $this->dickerdataCategoryFactory = $dickerdataCategoryFactory;
         $this->dickerdataProductHelper = $dickerdataProductHelper;
         $this->dickerdataImageHelper = $dickerdataImageHelper;
     }
@@ -211,7 +239,24 @@ class Dickerdata extends AbstractHelper
     {
         return $this->getValue('general/locale/code', $store);
     }
+    public function getAllProductAttributes()
+    {
+        $collection = $this->attributeFactory->create();
+        $collection
+            ->addFieldToFilter('entity_type_id', $this->eavConfig->getEntityType(ProductEntityType::ENTITY)->getEntityTypeId())
+            ->addFieldToFilter('frontend_input', 'select')
+            ->setOrder('attribute_id', 'desc');
 
+        $attributeCodes = [];
+        foreach ($collection->getData() as $attributes) {
+            $attributeCodes[] = [
+                'id' => $attributes[AttributeInterface::ATTRIBUTE_ID],
+                'value' => $attributes[AttributeInterface::ATTRIBUTE_CODE],
+                'label' => $attributes[AttributeInterface::FRONTEND_LABEL]
+            ];
+        }
+        return $attributeCodes;
+    }
     /**
      * Get tax class id specified for shipping tax estimation
      *
@@ -379,7 +424,6 @@ class Dickerdata extends AbstractHelper
         $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
         $file = $directoryRead->openFile(self::FILENAME);
         $this->dickerdataProductHelper->processProducts($file, $process, $since, $sendReport);
-
     }
     public function importDickerdataImages(Process $process, $since, $sendReport = true)
     {
@@ -614,18 +658,6 @@ class Dickerdata extends AbstractHelper
         $categoryMapArray = $this->getMappedCategory();
         $supplierTreeCategories = $this->getSupplierTreeCategory();
         $html = $this->getSupplierCategoryTree($supplierTreeCategories, $categoryMapArray);
-        /*$html = "<ul>";
-        foreach ($supplierCategories as $supplierCategory) {
-            $supplierCategoryId = $supplierCategory->getId();
-            $style = isset($categoryMapArray[$supplierCategoryId]) ? "style=color:green;" : "";
-            $name = isset($categoryMapArray[$supplierCategoryId]) ? $categoryMapArray[$supplierCategoryId] : "";
-            $supplierCategoryName = $supplierCategory->getName();
-            $html .= "<li>
-                        <a data-id='$supplierCategoryId' href='javascript:void(0)' $style>$supplierCategoryName</a>
-                        $name
-                    </li>";
-        }
-        $html .= "</ul>";*/
         return $html;
     }
 
@@ -659,14 +691,21 @@ class Dickerdata extends AbstractHelper
 
     public function getSupplierTreeCategory()
     {
+        $connection = $this->resourceConnection->getConnection();
         $collection = $this->dickerdataCategoryFactory->create()->getCollection();
         $select = $collection->getSelect()->reset(Select::COLUMNS)
+            ->joinLeft(
+                ['eav' => $this->resourceConnection->getTableName('eav_attribute')],
+                'eav.attribute_id = main_table.attribute_id',
+                ['attribute_name' => 'frontend_label']
+            )
             ->columns([
                 'id' => 'dickerdatacategory_id',
                 'name' => 'name',
-                'parent_id' => 'parent_id'
+                'parent_id' => 'parent_id',
+                'attribute_id' => 'attribute_id',
             ]);
-        $connection = $this->resourceConnection->getConnection();
+
         $categoryWithParents = $connection->fetchAll($select);
         $tree = $this->buildTreeFromArray($categoryWithParents);
         return $tree;
@@ -697,6 +736,9 @@ class Dickerdata extends AbstractHelper
         foreach ($supplierTreeCategories as $supplierTreeCategory) {
             $html .= "<li>";
             $supplierCategoryId = $supplierTreeCategory['id'];
+            $attributeId = $supplierTreeCategory['attribute_id'];
+            $attributeName = $supplierTreeCategory['attribute_name'];
+
             $style = isset($categoryMapArray[$supplierCategoryId]) ? "style=color:green;" : "";
             $name = isset($categoryMapArray[$supplierCategoryId]) ? $categoryMapArray[$supplierCategoryId] : "";
             $supplierCategoryName = $supplierTreeCategory['name'];
@@ -704,6 +746,9 @@ class Dickerdata extends AbstractHelper
                         $name";
             if (isset($supplierTreeCategory['childs'])) {
                 $html .= $this->getSupplierCategoryTree($supplierTreeCategory['childs'], $categoryMapArray);
+            }
+            if ($attributeName) {
+                $html .= " ==> Used as Attribute :  " . $attributeName;
             }
             $html .= "</li>";
         }

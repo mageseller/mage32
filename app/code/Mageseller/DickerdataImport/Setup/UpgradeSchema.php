@@ -44,6 +44,18 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 ]
             );
         }
+        if (version_compare($context->getVersion(), '1.0.2', '<')) {
+            $installer->getConnection()->addColumn(
+                $installer->getTable('mageseller_dickerdataimport_dickerdatacategory'),
+                'attribute_id',
+                [
+                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                    'length' => 10,
+                    'nullable' => true,
+                    'comment' => 'Attribute Id'
+                ]
+            );
+        }
         $installer->endSetup();
     }
 }
