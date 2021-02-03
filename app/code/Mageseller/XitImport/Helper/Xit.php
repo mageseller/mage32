@@ -11,8 +11,12 @@
 
 namespace Mageseller\XitImport\Helper;
 
+use Magento\Catalog\Model\Product as ProductEntityType;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
+use Magento\Eav\Api\Data\AttributeInterface;
+use Magento\Eav\Model\Config;
+use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory as AttributeCollectionFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -113,6 +117,14 @@ class Xit extends AbstractHelper
      * @var \Magento\Framework\Filesystem
      */
     private $filesystem;
+    /**
+     * @var Config
+     */
+    private $eavConfig;
+    /**
+     * @var AttributeCollectionFactory
+     */
+    private $attributeFactory;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -132,6 +144,8 @@ class Xit extends AbstractHelper
      * @param StoreManagerInterface $storeManager
      * @param ProcessResourceFactory $processResourceFactory
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param AttributeCollectionFactory $attributeFactory
+     * @param Config $eavConfig
      * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
@@ -151,7 +165,9 @@ class Xit extends AbstractHelper
         MagentoConfig $configuration,
         StoreManagerInterface $storeManager,
         ProcessResourceFactory $processResourceFactory,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory
+        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        AttributeCollectionFactory $attributeFactory,
+        Config $eavConfig
     ) {
         parent::__construct($context);
         $this->_dateTime = $dateTime;
@@ -171,6 +187,26 @@ class Xit extends AbstractHelper
         $this->configuration = $configuration;
         $this->processResourceFactory = $processResourceFactory;
         $this->storeManager = $storeManager;
+        $this->eavConfig = $eavConfig;
+        $this->attributeFactory = $attributeFactory;
+    }
+    public function getAllProductAttributes()
+    {
+        $collection = $this->attributeFactory->create();
+        $collection
+            ->addFieldToFilter('entity_type_id', $this->eavConfig->getEntityType(ProductEntityType::ENTITY)->getEntityTypeId())
+            ->addFieldToFilter('frontend_input', 'select')
+            ->setOrder('attribute_id', 'desc');
+
+        $attributeCodes = [];
+        foreach ($collection->getData() as $attributes) {
+            $attributeCodes[] = [
+                'id' => $attributes[AttributeInterface::ATTRIBUTE_ID],
+                'value' => $attributes[AttributeInterface::ATTRIBUTE_CODE],
+                'label' => $attributes[AttributeInterface::FRONTEND_LABEL]
+            ];
+        }
+        return $attributeCodes;
     }
     /**
      * @return  int
@@ -683,6 +719,8 @@ class Xit extends AbstractHelper
         foreach ($supplierTreeCategories as $supplierTreeCategory) {
             $html .= "<li>";
             $supplierCategoryId = $supplierTreeCategory['id'];
+            $attributeId = $supplierTreeCategory['attribute_id'];
+            $attributeName = $supplierTreeCategory['attribute_name'];
             $style = isset($categoryMapArray[$supplierCategoryId]) ? "style=color:green;" : "";
             $name = isset($categoryMapArray[$supplierCategoryId]) ? $categoryMapArray[$supplierCategoryId] : "";
             $supplierCategoryName = $supplierTreeCategory['name'];
@@ -690,6 +728,9 @@ class Xit extends AbstractHelper
                         $name";
             if (isset($supplierTreeCategory['childs'])) {
                 $html .= $this->getSupplierCategoryTree($supplierTreeCategory['childs'], $categoryMapArray);
+            }
+            if ($attributeName) {
+                $html .= " ==> Used as Attribute :  " . $attributeName;
             }
             $html .= "</li>";
         }
@@ -733,10 +774,16 @@ class Xit extends AbstractHelper
     {
         $collection = $this->xitCategoryFactory->create()->getCollection();
         $select = $collection->getSelect()->reset(Select::COLUMNS)
+                    ->joinLeft(
+                        ['eav' => $this->resourceConnection->getTableName('eav_attribute')],
+                        'eav.attribute_id = main_table.attribute_id',
+                        ['attribute_name' => 'frontend_label']
+                    )
                     ->columns([
                         'id' => 'xitcategory_id',
                         'name' => 'name',
-                        'parent_id' => 'parent_id'
+                        'parent_id' => 'parent_id',
+                        'attribute_id' => 'attribute_id'
                     ]);
         $connection = $this->resourceConnection->getConnection();
         $categoryWithParents = $connection->fetchAll($select);

@@ -19,6 +19,7 @@ define([
         _bind: function () {
             var self = this;
             var saveCategoryUrl = self.options.save_category_url;
+            var useAsAttribute_url = self.options.use_as_attribute_url;
             var deleteCategoryUrl = self.options.delete_category_url;
             var supplierCategoryUrl = self.options.supplier_category_url;
             var alreadyMappedArray = self.options.already_mapped_array;
@@ -32,7 +33,56 @@ define([
                 $("#shop_input").val($(this).html().trim().replace("&amp;", "&"));
                 $("#shop_input_id").val($(this).data("id"));
             });
-
+            $('#use_as_attribute').live('click', function () {
+                var supplierId = $("#supplier_input_id").val().trim();
+                var attribute_id = $("#attribute_id").val().trim();
+                if(supplierId && attribute_id){
+                    $.ajax({
+                        url: useAsAttribute_url,
+                        data: {
+                            "category_id": supplierId,
+                            "attribute_id": attribute_id,
+                            "form_key": window.FORM_KEY
+                        },
+                        type: "POST",
+                        showLoader: true,
+                        success: function (response) {
+                            if(response){
+                                $('.supplier-category-body').html(response);
+                                $("#shop_input").val("");
+                                $("#shop_input_id").val("");
+                                $("#supplier_input").val("");
+                                $("#supplier_input_id").val("");
+                            }
+                        }
+                    });
+                }
+            });
+            $('#remove_use_as_attribute').live('click', function () {
+                var supplierId = $("#supplier_input_id").val().trim();
+                var attribute_id = $("#attribute_id").val().trim();
+                if(supplierId && attribute_id){
+                    $.ajax({
+                        url: useAsAttribute_url,
+                        data: {
+                            "category_id": supplierId,
+                            "remove_attribute": true,
+                            "form_key": window.FORM_KEY
+                        },
+                        type: "POST",
+                        showLoader: true,
+                        success: function (response) {
+                            if(response){
+                                $('.supplier-category-body').html(response);
+                                $("#shop_input").val("");
+                                $("#shop_input_id").val("");
+                                $("#supplier_input").val("");
+                                $("#supplier_input_id").val("");
+                            }
+                        }
+                    });
+                }
+            });
             $('#submit').live('click', function () {
                 var supplier = $("#supplier_input").val().trim();
                 var shop = $("#shop_input").val().trim();

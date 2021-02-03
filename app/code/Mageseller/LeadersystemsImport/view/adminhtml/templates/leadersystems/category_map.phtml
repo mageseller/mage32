@@ -1,6 +1,7 @@
 <?php
 /** @var \Mageseller\LeadersystemsImport\Block\Adminhtml\Category $block */
 $helper = $this->helper(\Mageseller\LeadersystemsImport\Helper\Leadersystems::class);
+$productAttributes = $helper->getAllProductAttributes();
 $isEnableEdsModule = $helper->getEnable();
 ?>
 <?php if ($isEnableEdsModule) : ?>
@@ -27,6 +28,24 @@ $isEnableEdsModule = $helper->getEnable();
             <td>
                 <button name="submit" id="submit" value="Submit" class="action- scalable primary"> Submit</button>
             </td>
+            <td>
+                <div class="or-tag"> OR </div>
+            </td>
+            <td>
+
+                <select id="attribute_id" name="attribute_id">
+                    <option> <?= __('Select Option ')?></option>
+                    <?php foreach ($productAttributes as $attribute): ?>
+                        <option value="<?= $attribute['id'] ?>"> <?= ucfirst($attribute['label']) ?></option>
+                    <?php endforeach;?>
+                </select>
+            </td>
+            <td>
+                <button name="submit" id="use_as_attribute" value="Use As Attribute" class="action- scalable primary">Use As Attribute</button>
+            </td>
+            <td>
+                <button name="submit" id="remove_use_as_attribute" value="Remove Use As Attribute" class="action- scalable primary">Remove Use As Attribute</button>
+            </td>
         </tr>
     </table>
     <div style="display: flex;">
@@ -48,6 +67,7 @@ $isEnableEdsModule = $helper->getEnable();
     $formData['save_category_url'] = $this->getUrl("mageseller_leadersystemsimport/leadersystemscategory/savecategory");
     $formData['delete_category_url'] = $this->getUrl("mageseller_leadersystemsimport/leadersystemscategory/delcategory");
     $formData['supplier_category_url'] = $this->getUrl("mageseller_leadersystemsimport/leadersystemscategory/suppliercategory");
+    $formData['use_as_attribute_url'] = $this->getUrl("mageseller_leadersystemsimport/leadersystemscategory/useasattribute");
     $formData['already_mapped_array'] = json_encode($categoryNameArray);
     $serializedFormData = $this->helper('Magento\Framework\Json\Helper\Data')->jsonEncode($formData); ?>
     <script type="text/x-magento-init">

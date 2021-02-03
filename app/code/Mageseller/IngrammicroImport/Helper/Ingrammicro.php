@@ -11,7 +11,11 @@
 
 namespace Mageseller\IngrammicroImport\Helper;
 
+use Magento\Catalog\Model\Product as ProductEntityType;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use Magento\Eav\Api\Data\AttributeInterface;
+use Magento\Eav\Model\Config;
+use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory as AttributeCollectionFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\ResourceConnection;
@@ -95,11 +99,18 @@ class Ingrammicro extends AbstractHelper
     private $conn;
     private $dir;
     private $sftp;
+    /**
+     * @var Config
+     */
+    private $eavConfig;
+    /**
+     * @var AttributeCollectionFactory
+     */
+    private $attributeFactory;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
      * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Store\Model\StoreManager $storeManager
      * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
      * @param \Magento\Framework\Filesystem\Io\File $fileFactory
      * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
@@ -109,7 +120,10 @@ class Ingrammicro extends AbstractHelper
      * @param \Mageseller\IngrammicroImport\Model\IngrammicroCategoryFactory $ingrammicroCategoryFactory
      * @param CollectionFactory $categoryCollectionFactory
      * @param ResourceConnection $resourceConnection
+     * @param StoreManagerInterface $storeManager
      * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param AttributeCollectionFactory $attributeFactory
+     * @param Config $eavConfig
      * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
@@ -125,7 +139,9 @@ class Ingrammicro extends AbstractHelper
         CollectionFactory $categoryCollectionFactory,
         ResourceConnection $resourceConnection,
         StoreManagerInterface $storeManager,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory
+        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        AttributeCollectionFactory $attributeFactory,
+        Config $eavConfig
     ) {
         parent::__construct($context);
         $this->_dateTime = $dateTime;
@@ -141,8 +157,27 @@ class Ingrammicro extends AbstractHelper
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryFactory = $categoryFactory;
         $this->resourceConnection = $resourceConnection;
+        $this->eavConfig = $eavConfig;
+        $this->attributeFactory = $attributeFactory;
     }
+    public function getAllProductAttributes()
+    {
+        $collection = $this->attributeFactory->create();
+        $collection
+            ->addFieldToFilter('entity_type_id', $this->eavConfig->getEntityType(ProductEntityType::ENTITY)->getEntityTypeId())
+            ->addFieldToFilter('frontend_input', 'select')
+            ->setOrder('attribute_id', 'desc');
 
+        $attributeCodes = [];
+        foreach ($collection->getData() as $attributes) {
+            $attributeCodes[] = [
+                'id' => $attributes[AttributeInterface::ATTRIBUTE_ID],
+                'value' => $attributes[AttributeInterface::ATTRIBUTE_CODE],
+                'label' => $attributes[AttributeInterface::FRONTEND_LABEL]
+            ];
+        }
+        return $attributeCodes;
+    }
     /**
      * @return mixed
      */
@@ -524,6 +559,8 @@ class Ingrammicro extends AbstractHelper
         foreach ($supplierTreeCategories as $supplierTreeCategory) {
             $html .= "<li>";
             $supplierCategoryId = $supplierTreeCategory['id'];
+            $attributeId = $supplierTreeCategory['attribute_id'];
+            $attributeName = $supplierTreeCategory['attribute_name'];
             $style = isset($categoryMapArray[$supplierCategoryId]) ? "style=color:green;" : "";
             $name = isset($categoryMapArray[$supplierCategoryId]) ? $categoryMapArray[$supplierCategoryId] : "";
             $supplierCategoryName = $supplierTreeCategory['name'];
@@ -531,6 +568,9 @@ class Ingrammicro extends AbstractHelper
                         $name";
             if (isset($supplierTreeCategory['childs'])) {
                 $html .= $this->getSupplierCategoryTree($supplierTreeCategory['childs'], $categoryMapArray);
+            }
+            if ($attributeName) {
+                $html .= " ==> Used as Attribute :  " . $attributeName;
             }
             $html .= "</li>";
         }
@@ -574,10 +614,16 @@ class Ingrammicro extends AbstractHelper
     {
         $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
         $select = $collection->getSelect()->reset(Select::COLUMNS)
+                    ->joinLeft(
+                        ['eav' => $this->resourceConnection->getTableName('eav_attribute')],
+                        'eav.attribute_id = main_table.attribute_id',
+                        ['attribute_name' => 'frontend_label']
+                    )
                     ->columns([
                         'id' => 'ingrammicrocategory_id',
                         'name' => 'name',
-                        'parent_id' => 'parent_id'
+                        'parent_id' => 'parent_id',
+                        'attribute_id' => 'attribute_id'
                     ]);
         $connection = $this->resourceConnection->getConnection();
         $categoryWithParents = $connection->fetchAll($select);
