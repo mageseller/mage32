@@ -7,7 +7,7 @@
  *
  * This source file is subject to the Mageseller.com license that is
  * available through the world-wide-web at this URL:
- * https://www.mageplaza.com/LICENSE.txt
+ * https://www.mageseller.com/LICENSE.txt
  *
  * DISCLAIMER
  *
@@ -16,27 +16,27 @@
  *
  * @category    Mageseller
  * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageplaza.com/)
- * @license     https://www.mageplaza.com/LICENSE.txt
+ * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license     https://www.mageseller.com/LICENSE.txt
  */
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <update handle="editor"/>
     <body>
         <referenceContainer name="content">
-            <block class="Mageseller\Customization\Block\Adminhtml\Category\Edit" name="mpbrand_category_edit"/>
+            <block class="Mageseller\Customization\Block\Adminhtml\Category\Edit" name="devices_category_edit"/>
         </referenceContainer>
         <referenceContainer name="left">
-            <block class="Mageseller\Customization\Block\Adminhtml\Category\Edit\Tabs" name="mpbrand_category_edit_tabs">
-                <block class="Mageseller\Customization\Block\Adminhtml\Category\Edit\Tab\Category" name="mpbrand_category_edit_tab_category"/>
-                <block class="Mageseller\Customization\Block\Adminhtml\Category\Edit\Tab\Brand" name="mpbrand_category_edit_tab_brand"/>
+            <block class="Mageseller\Customization\Block\Adminhtml\Category\Edit\Tabs" name="devices_category_edit_tabs">
+                <block class="Mageseller\Customization\Block\Adminhtml\Category\Edit\Tab\Category" name="devices_category_edit_tab_category"/>
+                <block class="Mageseller\Customization\Block\Adminhtml\Category\Edit\Tab\Devices" name="devices_category_edit_tab_devices"/>
                 <action method="addTab">
                     <argument name="name" xsi:type="string">category_section</argument>
-                    <argument name="block" xsi:type="string">mpbrand_category_edit_tab_category</argument>
+                    <argument name="block" xsi:type="string">devices_category_edit_tab_category</argument>
                 </action>
                 <action method="addTab">
-                    <argument name="name" xsi:type="string">brand_section</argument>
-                    <argument name="block" xsi:type="string">mpbrand_category_edit_tab_brand</argument>
+                    <argument name="name" xsi:type="string">devices_section</argument>
+                    <argument name="block" xsi:type="string">devices_category_edit_tab_devices</argument>
                 </action>
             </block>
         </referenceContainer>

@@ -1,26 +1,26 @@
 <?php
 /**
- * Mageplaza
+ * Mageseller
  *
  * NOTICE OF LICENSE
  *
- * This source file is subject to the Mageplaza.com license that is
+ * This source file is subject to the Mageseller.com license that is
  * available through the world-wide-web at this URL:
- * https://www.mageplaza.com/LICENSE.txt
+ * https://www.mageseller.com/LICENSE.txt
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageplaza
- * @package     Mageplaza_Shopbybrand
- * @copyright   Copyright (c) 2017 Mageplaza (http://www.mageplaza.com/)
- * @license     https://www.mageplaza.com/LICENSE.txt
+ * @category    Mageseller
+ * @package     Mageseller_Customization
+ * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license     https://www.mageseller.com/LICENSE.txt
  */
 ?>
 
-<?php if ($block->isBrandAttribute()): ?>
+<?php if ($block->isSelectAttribute()): ?>
 	<script id="row-template" type="text/x-magento-template">
          <tr>
             <td class="col-draggable">
@@ -42,7 +42,7 @@
 						 id="setting_button_<%- data.id %>"
 						 title="<?php echo $block->escapeHtml(__('Configure')) ?>"
 						 type="button"
-						 class="action- scalable setting setting-option brand_setting_<%- data.id %>" onclick="window.openBrandModal('<%- data.id %>');">
+						 class="action- scalable setting setting-option devices_setting_<%- data.id %>" onclick="window.openDevicesModal('<%- data.id %>');">
 						<span><?php echo $block->escapeHtml(__('Configure')) ?></span>
 						</button>
 					 <button id="delete_button_<%- data.id %>" title="<?php /* @escapeNotVerified */ echo __('Delete') ?>" type="button"
@@ -77,7 +77,7 @@
                 <input type="hidden" class="delete-flag" name="optiontext[delete][<%- data.id %>]" value="" />
 				<?php if (!$block->getReadOnly() && !$block->canManageOptionDefaultOnly()):?>
 					<button title="<?php echo $block->escapeHtml(__('Configure')) ?>" type="button"
-							class="action- scalable delete setting-option brand_setting_<%- data.id %>" onclick="window.openBrandModal('<%- data.id %>');"
+							class="action- scalable delete setting-option devices_setting_<%- data.id %>" onclick="window.openDevicesModal('<%- data.id %>');"
 						>
                         <span><?php echo $block->escapeHtml(__('Configure')) ?></span>
                     </button>
@@ -137,7 +137,7 @@
                 <input type="hidden" class="delete-flag" name="optionvisual[delete][<%- data.id %>]" value="" />
 				<?php if (!$block->getReadOnly() && !$block->canManageOptionDefaultOnly()):?>
 					<button title="<?php echo $block->escapeHtml(__('Configure')) ?>" type="button"
-							class="action- scalable delete setting-option brand_setting_<%- data.id %>" onclick="window.openBrandModal('<%- data.id %>');">
+							class="action- scalable delete setting-option devices_setting_<%- data.id %>" onclick="window.openDevicesModal('<%- data.id %>');">
                         <span><?php echo $block->escapeHtml(__('Configure')) ?></span>
                     </button>
 					<button title="<?php /* @escapeNotVerified */ echo __('Delete') ?>" type="button"

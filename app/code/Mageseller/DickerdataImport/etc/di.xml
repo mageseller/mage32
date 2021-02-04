@@ -17,7 +17,7 @@
 		</arguments>
 	</type>
 	<type name="Magento\Catalog\Model\Category\DataProvider">
-		<plugin name="Mageplaza_HelloWorld_Plugin" type="Mageseller\DickerdataImport\Plugin\CategoryDropdownPlugin" sortOrder="10"   />
+		<plugin name="Mageseller_HelloWorld_Plugin" type="Mageseller\DickerdataImport\Plugin\CategoryDropdownPlugin" sortOrder="10"   />
 	</type>
 	<type name="Magento\Framework\Console\CommandList">
 		<arguments>
