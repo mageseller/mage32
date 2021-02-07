@@ -32,6 +32,14 @@ class Options extends \Magento\Eav\Block\Adminhtml\Attribute\Edit\Options\Option
      * @var \Mageplaza\Shopbybrand\Helper\Data|\Mageseller\Customization\Helper\Data
      */
     private $brandHelper;
+    /**
+     * @var \Magento\Framework\Module\Manager
+     */
+    private $moduleManager;
+    /**
+     * @var \Magento\Framework\ObjectManagerInterface
+     */
+    private $objectManager;
 
     /**
      * Options constructor.
@@ -39,8 +47,10 @@ class Options extends \Magento\Eav\Block\Adminhtml\Attribute\Edit\Options\Option
      * @param \Magento\Framework\Registry $registry
      * @param \Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\CollectionFactory $attrOptionCollectionFactory
      * @param \Magento\Framework\Validator\UniversalFactory $universalFactory
+     * @param \Mageplaza\Shopbybrand\Helper\Data $helper
      * @param \Magento\Framework\App\ProductMetadataInterface $productMetadata
-     * @param \Mageseller\Customization\Helper\Data $helper
+     * @param \Magento\Framework\Module\Manager $moduleManager
+     * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param array $data
      */
     public function __construct(
@@ -48,12 +58,15 @@ class Options extends \Magento\Eav\Block\Adminhtml\Attribute\Edit\Options\Option
         \Magento\Framework\Registry $registry,
         \Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\CollectionFactory $attrOptionCollectionFactory,
         \Magento\Framework\Validator\UniversalFactory $universalFactory,
-        \Mageplaza\Shopbybrand\Helper\Data $helper,
         \Magento\Framework\App\ProductMetadataInterface $productMetadata,
+        \Magento\Framework\Module\Manager $moduleManager,
+        \Magento\Framework\ObjectManagerInterface $objectManager,
         array $data = []
     ) {
         parent::__construct($context, $registry, $attrOptionCollectionFactory, $universalFactory, $data);
-        $this->brandHelper = $helper;
+
+        $this->moduleManager = $moduleManager;
+        $this->objectManager = $objectManager;
         if (version_compare($productMetadata->getVersion(), '2.1.0') < 0) {
             $this->setTemplate('Mageseller_Customization::catalog/product/attribute/options_old.phtml');
         }
@@ -71,7 +84,11 @@ class Options extends \Magento\Eav\Block\Adminhtml\Attribute\Edit\Options\Option
      */
     public function isBrandAttribute()
     {
-        return $this->brandHelper->isEnabled() && (in_array($this->getAttributeObject()->getAttributeCode(), $this->brandHelper->getAllBrandsAttributeCode()));
+        if ($this->moduleManager->isEnabled('Mageplaza_Shopbybrand')) {
+            $this->brandHelper = $this->objectManager->get(\Mageplaza\Shopbybrand\Helper\Data::class);
+            return $this->brandHelper->isEnabled() && (in_array($this->getAttributeObject()->getAttributeCode(), $this->brandHelper->getAllBrandsAttributeCode()));
+        }
+        return  false;
     }
 
     /**

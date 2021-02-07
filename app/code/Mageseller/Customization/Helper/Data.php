@@ -248,7 +248,7 @@ class Data extends AbstractHelper
      */
     public function getDevicesTitle()
     {
-        return $this->getGeneralConfig('link_title') ?: __('Devicess');
+        return $this->getGeneralConfig('link_title') ?: __('Devices');
     }
 
     /**
@@ -293,7 +293,7 @@ class Data extends AbstractHelper
 
     /**
      * Get route name for devices.
-     * If empty, default 'devicess' will be used
+     * If empty, default 'devices' will be used
      *
      * @param null $store
      * @return string
@@ -405,7 +405,7 @@ class Data extends AbstractHelper
     /**
      * @return array
      */
-    public function getAllDevicessAttributeCode()
+    public function getAllDevicesAttributeCode()
     {
         $stores         = $this->storeManager->getStores();
         $attributeCodes = [];
@@ -511,19 +511,19 @@ class Data extends AbstractHelper
      */
     public function getDevicesList($type = null, $ids = null, $char = null)
     {
-        $devicess = $this->_devicesFactory->create();
+        $devices = $this->_devicesFactory->create();
         switch ($type) {
             //Get Devices List by Category
             case self::CATEGORY:
-                $list = $devicess->getDevicesCollection(null, ['main_table.option_id' => ['in' => $ids]]);
+                $list = $devices->getDevicesCollection(null, ['main_table.option_id' => ['in' => $ids]]);
                 break;
             //Get Devices List Filtered by Devices First Char
             case self::BRAND_FIRST_CHAR:
-                $list = $devicess->getDevicesCollection(null, ['main_table.option_id' => ['in' => $ids]], "IF(tsv.value_id > 0, tsv.value, tdv.value) LIKE '" . $char . "%'");
+                $list = $devices->getDevicesCollection(null, ['main_table.option_id' => ['in' => $ids]], "IF(tsv.value_id > 0, tsv.value, tdv.value) LIKE '" . $char . "%'");
                 break;
             default:
             //Get Devices List
-                $list = $devicess->getDevicesCollection();
+                $list = $devices->getDevicesCollection();
         }
 
         return $list;

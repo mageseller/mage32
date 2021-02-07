@@ -94,9 +94,9 @@ class Devices extends \Magento\Backend\Block\Widget\Form\Generic
             'text',
             [
                 'name'  => 'alternate_options',
-                'label' => __('Alternate Options'),
-                'title' => __('Alternate Options'),
-                'note'  => __('If empty, option label by store will be used.')
+                'label' => __('Attribute replacement names'),
+                'title' => __('Attribute replacement names'),
+                'note'  => __('Add semicolon seperator ";" if more than one replacement is there.')
             ]
         );
 

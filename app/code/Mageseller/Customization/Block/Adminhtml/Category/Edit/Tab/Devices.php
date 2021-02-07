@@ -59,16 +59,16 @@ class Devices extends \Magento\Backend\Block\Widget\Form\Generic implements \Mag
         $fieldset = $form->addFieldset(
             'base_fieldset',
             [
-                'legend' => __('Devicess'),
+                'legend' => __('Custom Information'),
                 'class'  => 'fieldset-wide'
             ]
         );
         $field = $fieldset->addField(
-            'devicess',
+            'devices',
             'text',
             [
-                'label' => __('Devicess'),
-                'title' => __('Devicess')
+                'label' => __('Custom Information'),
+                'title' => __('Custom Information')
             ]
         );
 
@@ -89,7 +89,7 @@ class Devices extends \Magento\Backend\Block\Widget\Form\Generic implements \Mag
      */
     public function getTabLabel()
     {
-        return __('Devicess');
+        return __('Custom Information');
     }
 
     /**
@@ -99,7 +99,7 @@ class Devices extends \Magento\Backend\Block\Widget\Form\Generic implements \Mag
      */
     public function getTabTitle()
     {
-        return __('Devicess');
+        return __('Custom Information');
     }
 
     /**
