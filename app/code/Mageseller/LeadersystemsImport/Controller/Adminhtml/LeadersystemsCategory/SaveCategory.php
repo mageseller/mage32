@@ -12,7 +12,9 @@ use Mageseller\LeadersystemsImport\Helper\Leadersystems;
 
 class SaveCategory extends Action
 {
-    /** @var  Page */
+    /**
+     * @var Page 
+     */
     protected $resultPageFactory;
     protected $helper;
     /**
@@ -24,11 +26,13 @@ class SaveCategory extends Action
      */
     private $attributeDataWithoutLoad;
 
-    /**      *
-     * @param Context $context
-     * @param PageFactory $resultPageFactory
-     * @param Leadersystems $helper
-     * @param EavAtrributeUpdateHelper $eavAtrributeUpdateHelper
+    /**
+     * *
+     *
+     * @param Context                     $context
+     * @param PageFactory                 $resultPageFactory
+     * @param Leadersystems               $helper
+     * @param EavAtrributeUpdateHelper    $eavAtrributeUpdateHelper
      * @param EavAttributeDataWithoutLoad $attributeDataWithoutLoad
      */
     public function __construct(

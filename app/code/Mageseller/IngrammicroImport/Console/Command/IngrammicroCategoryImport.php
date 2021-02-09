@@ -26,6 +26,7 @@ class IngrammicroCategoryImport extends Command
 
     /**
      * IngrammicroCategoryImport constructor.
+     *
      * @param string|null $name
      */
     public function __construct(\Mageseller\IngrammicroImport\Helper\Ingrammicro $ingrammicroHelper, string $name = null)
@@ -55,10 +56,12 @@ class IngrammicroCategoryImport extends Command
     {
         $this->setName("mageseller_ingrammicroimport:ingrammicrocategoryimport");
         $this->setDescription("Category Import Ingrammicro");
-        $this->setDefinition([
+        $this->setDefinition(
+            [
             new InputArgument(self::NAME_ARGUMENT, InputArgument::OPTIONAL, "Name"),
             new InputOption(self::NAME_OPTION, "-a", InputOption::VALUE_NONE, "Option functionality")
-        ]);
+            ]
+        );
         parent::configure();
     }
 }

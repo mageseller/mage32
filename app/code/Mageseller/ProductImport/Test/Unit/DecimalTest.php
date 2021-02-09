@@ -12,7 +12,7 @@ class DecimalTest extends \PHPUnit\Framework\TestCase
     public static function setUpBeforeClass(): void
     {
         // include Magento auto-loading
-        require_once __DIR__ . '/../../../../../app/autoload.php';
+        include_once __DIR__ . '/../../../../../app/autoload.php';
     }
 
     public function testDecimal()

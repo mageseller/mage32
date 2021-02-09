@@ -18,6 +18,7 @@ class IngrammicroCategory extends \Magento\Framework\Api\AbstractExtensibleObjec
 
     /**
      * Get ingrammicrocategory_id
+     *
      * @return string|null
      */
     public function getIngrammicrocategoryId()
@@ -27,7 +28,8 @@ class IngrammicroCategory extends \Magento\Framework\Api\AbstractExtensibleObjec
 
     /**
      * Set ingrammicrocategory_id
-     * @param string $ingrammicrocategoryId
+     *
+     * @param  string $ingrammicrocategoryId
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface
      */
     public function setIngrammicrocategoryId($ingrammicrocategoryId)
@@ -37,6 +39,7 @@ class IngrammicroCategory extends \Magento\Framework\Api\AbstractExtensibleObjec
 
     /**
      * Get name
+     *
      * @return string|null
      */
     public function getName()
@@ -46,7 +49,8 @@ class IngrammicroCategory extends \Magento\Framework\Api\AbstractExtensibleObjec
 
     /**
      * Set name
-     * @param string $name
+     *
+     * @param  string $name
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface
      */
     public function setName($name)
@@ -56,6 +60,7 @@ class IngrammicroCategory extends \Magento\Framework\Api\AbstractExtensibleObjec
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryExtensionInterface|null
      */
     public function getExtensionAttributes()
@@ -65,7 +70,8 @@ class IngrammicroCategory extends \Magento\Framework\Api\AbstractExtensibleObjec
 
     /**
      * Set an extension attributes object.
-     * @param \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryExtensionInterface $extensionAttributes
+     *
+     * @param  \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

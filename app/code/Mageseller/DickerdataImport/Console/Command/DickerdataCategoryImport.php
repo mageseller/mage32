@@ -26,6 +26,7 @@ class DickerdataCategoryImport extends Command
 
     /**
      * DickerdataCategoryImport constructor.
+     *
      * @param string|null $name
      */
     public function __construct(\Mageseller\DickerdataImport\Helper\Dickerdata $dickerdataHelper, string $name = null)
@@ -55,10 +56,12 @@ class DickerdataCategoryImport extends Command
     {
         $this->setName("mageseller_dickerdataimport:dickerdatacategoryimport");
         $this->setDescription("Category Import Dickerdata");
-        $this->setDefinition([
+        $this->setDefinition(
+            [
             new InputArgument(self::NAME_ARGUMENT, InputArgument::OPTIONAL, "Name"),
             new InputOption(self::NAME_OPTION, "-a", InputOption::VALUE_NONE, "Option functionality")
-        ]);
+            ]
+        );
         parent::configure();
     }
 }

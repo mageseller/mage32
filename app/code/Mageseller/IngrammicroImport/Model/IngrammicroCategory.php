@@ -24,13 +24,13 @@ class IngrammicroCategory extends \Magento\Framework\Model\AbstractModel
     protected $_eventPrefix = 'mageseller_ingrammicroimport_ingrammicrocategory';
 
     /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param IngrammicroCategoryInterfaceFactory $ingrammicrocategoryDataFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param \Mageseller\IngrammicroImport\Model\ResourceModel\IngrammicroCategory $resource
+     * @param \Magento\Framework\Model\Context                                                 $context
+     * @param \Magento\Framework\Registry                                                      $registry
+     * @param IngrammicroCategoryInterfaceFactory                                              $ingrammicrocategoryDataFactory
+     * @param DataObjectHelper                                                                 $dataObjectHelper
+     * @param \Mageseller\IngrammicroImport\Model\ResourceModel\IngrammicroCategory            $resource
      * @param \Mageseller\IngrammicroImport\Model\ResourceModel\IngrammicroCategory\Collection $resourceCollection
-     * @param array $data
+     * @param array                                                                            $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -48,6 +48,7 @@ class IngrammicroCategory extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Retrieve ingrammicrocategory model with ingrammicrocategory data
+     *
      * @return IngrammicroCategoryInterface
      */
     public function getDataModel()

@@ -9,21 +9,29 @@ class Weee
     const DEFAULT_WEBSITE_ID = 0;
     const DEFAULT_STATE = 0;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $country = null;
 
-    /** @var string A 12.4 decimal */
+    /**
+     * @var string A 12.4 decimal 
+     */
     protected $value = null;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $websiteId;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $state;
 
     /**
-     * @param string $country
-     * @param string $value
+     * @param string      $country
+     * @param string      $value
      * @param string|null $websiteId
      * @param string|null $state
      */
@@ -36,10 +44,10 @@ class Weee
     }
 
     /**
-     * @param string $country
-     * @param string $value
-     * @param string|null $websiteId
-     * @param string|null $state
+     * @param  string      $country
+     * @param  string      $value
+     * @param  string|null $websiteId
+     * @param  string|null $state
      * @return Weee
      */
     public static function createWeee(string $country, string $value, string $websiteId = null, string $state = null)

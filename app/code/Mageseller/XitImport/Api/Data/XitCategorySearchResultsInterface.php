@@ -16,13 +16,15 @@ interface XitCategorySearchResultsInterface extends \Magento\Framework\Api\Searc
 
     /**
      * Get XitCategory list.
+     *
      * @return \Mageseller\XitImport\Api\Data\XitCategoryInterface[]
      */
     public function getItems();
 
     /**
      * Set name list.
-     * @param \Mageseller\XitImport\Api\Data\XitCategoryInterface[] $items
+     *
+     * @param  \Mageseller\XitImport\Api\Data\XitCategoryInterface[] $items
      * @return $this
      */
     public function setItems(array $items);

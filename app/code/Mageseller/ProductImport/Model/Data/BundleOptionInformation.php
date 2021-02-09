@@ -9,10 +9,14 @@ use Mageseller\ProductImport\Api\Data\BundleProductOption;
  */
 class BundleOptionInformation
 {
-    /** @var BundleProductOption */
+    /**
+     * @var BundleProductOption 
+     */
     protected $option;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $title;
 
     public function __construct(BundleProductOption $option, string $title)

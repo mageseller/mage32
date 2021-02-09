@@ -20,13 +20,14 @@ use Mageseller\DriveFx\Logger\DrivefxLogger;
 /**
  * Class to work with HTTP protocol using curl library
  *
- * @author      Mageseller <satis29g@hotmail.com>
+ * @author                                           Mageseller <satis29g@hotmail.com>
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Curl extends \Magento\Framework\HTTP\Client\Curl
 {
     /**
      * Max supported protocol by curl CURL_SSLVERSION_TLSv1_2
+     *
      * @var int
      */
     private $sslVersion;
@@ -40,7 +41,7 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
 
     /**
      * @param DrivefxLogger $drivefxlogger
-     * @param int|null $sslVersion
+     * @param int|null      $sslVersion
      */
     public function __construct(DrivefxLogger $drivefxlogger, $sslVersion = null)
     {
@@ -51,7 +52,7 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
     /**
      * Make GET request
      *
-     * @param string $uri uri relative to host, ex. "/index.php"
+     * @param  string $uri uri relative to host, ex. "/index.php"
      * @return void
      */
     public function get($uri)
@@ -65,9 +66,9 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
      * String type was added to parameter $param in order to support sending JSON or XML requests.
      * This feature was added base on Community Pull Request https://github.com/magento/magento2/pull/8373
      *
-     * @param string $uri
-     * @param array|string $params
-     * @param bool $post
+     * @param  string       $uri
+     * @param  array|string $params
+     * @param  bool         $post
      * @return void
      *
      * @see \Magento\Framework\HTTP\Client#post($uri, $params)
@@ -83,12 +84,12 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
      * String type was added to parameter $param in order to support sending JSON or XML requests.
      * This feature was added base on Community Pull Request https://github.com/magento/magento2/pull/8373
      *
-     * @param string $method
-     * @param string $uri
-     * @param array|string $params - use $params as a string in case of JSON or XML POST request.
-     * @param bool $post
-     * @return void
-     * @throws \Exception
+     * @param                                        string       $method
+     * @param                                        string       $uri
+     * @param                                        array|string $params - use $params as a string in case of JSON or XML POST request.
+     * @param                                        bool         $post
+     * @return                                       void
+     * @throws                                       \Exception
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */

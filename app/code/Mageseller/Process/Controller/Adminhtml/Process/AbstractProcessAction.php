@@ -15,13 +15,15 @@ abstract class AbstractProcessAction extends \Magento\Backend\App\Action
     const ADMIN_RESOURCE = 'Mageseller_Process::process';
 
     /**
-     * @return  Process
+     * @return Process
      */
     protected function getProcess()
     {
         $id = (int) $this->getRequest()->getParam('id');
 
-        /** @var Process $process */
+        /**
+ * @var Process $process 
+*/
         $process = $this->getProcessModel();
         $this->getProcessResource()->load($process, $id);
 
@@ -29,7 +31,7 @@ abstract class AbstractProcessAction extends \Magento\Backend\App\Action
     }
 
     /**
-     * @return  Process
+     * @return Process
      */
     protected function getProcessModel()
     {
@@ -37,7 +39,7 @@ abstract class AbstractProcessAction extends \Magento\Backend\App\Action
     }
 
     /**
-     * @return  ProcessResource
+     * @return ProcessResource
      */
     protected function getProcessResource()
     {
@@ -45,9 +47,9 @@ abstract class AbstractProcessAction extends \Magento\Backend\App\Action
     }
 
     /**
-     * @param   string  $errorMessage
-     * @param   bool    $referer
-     * @return  \Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
+     * @param  string $errorMessage
+     * @param  bool   $referer
+     * @return \Magento\Framework\Controller\Result\Redirect|\Magento\Framework\Controller\ResultInterface
      */
     protected function redirectError($errorMessage, $referer = false)
     {

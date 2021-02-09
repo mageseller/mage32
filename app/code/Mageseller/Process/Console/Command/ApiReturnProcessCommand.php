@@ -33,10 +33,10 @@ class ApiReturnProcessCommand extends Command
     private $helper;
 
     /**
-     * @param   ProcessFactory          $processFactory
-     * @param   ProcessResourceFactory  $processResourceFactory
-     * @param   Helper                  $helper
-     * @param   string|null             $name
+     * @param ProcessFactory         $processFactory
+     * @param ProcessResourceFactory $processResourceFactory
+     * @param Helper                 $helper
+     * @param string|null            $name
      */
     public function __construct(
         ProcessFactory $processFactory,
@@ -89,7 +89,9 @@ class ApiReturnProcessCommand extends Command
             $processes = $this->helper->getMagesellerStatusToCheckProcesses();
             if ($processes->count() > 0) {
                 foreach ($processes as $process) {
-                    /** @var Process $process */
+                    /**
+ * @var Process $process 
+*/
                     $output->writeln(sprintf('<info>Processing API Status #%s %s</info>', $process->getId(), $process->getName()));
                     $process->addOutput('cli');
                     $process->checkMagesellerStatus();

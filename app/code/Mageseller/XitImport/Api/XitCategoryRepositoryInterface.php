@@ -18,7 +18,8 @@ interface XitCategoryRepositoryInterface
 
     /**
      * Save XitCategory
-     * @param \Mageseller\XitImport\Api\Data\XitCategoryInterface $xitCategory
+     *
+     * @param  \Mageseller\XitImport\Api\Data\XitCategoryInterface $xitCategory
      * @return \Mageseller\XitImport\Api\Data\XitCategoryInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -28,7 +29,8 @@ interface XitCategoryRepositoryInterface
 
     /**
      * Retrieve XitCategory
-     * @param string $xitcategoryId
+     *
+     * @param  string $xitcategoryId
      * @return \Mageseller\XitImport\Api\Data\XitCategoryInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -36,7 +38,8 @@ interface XitCategoryRepositoryInterface
 
     /**
      * Retrieve XitCategory matching the specified criteria.
-     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
+     *
+     * @param  \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
      * @return \Mageseller\XitImport\Api\Data\XitCategorySearchResultsInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -46,7 +49,8 @@ interface XitCategoryRepositoryInterface
 
     /**
      * Delete XitCategory
-     * @param \Mageseller\XitImport\Api\Data\XitCategoryInterface $xitCategory
+     *
+     * @param  \Mageseller\XitImport\Api\Data\XitCategoryInterface $xitCategory
      * @return bool true on success
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -56,7 +60,8 @@ interface XitCategoryRepositoryInterface
 
     /**
      * Delete XitCategory by ID
-     * @param string $xitcategoryId
+     *
+     * @param  string $xitcategoryId
      * @return bool true on success
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\LocalizedException

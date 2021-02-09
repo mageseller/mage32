@@ -9,16 +9,20 @@ use Mageseller\ProductImport\Api\Data\Product;
  */
 class TierPriceResolver
 {
-    /** @var WebsiteResolver */
+    /**
+     * @var WebsiteResolver 
+     */
     protected $websiteResolver;
 
-    /** @var CustomerGroupResolver */
+    /**
+     * @var CustomerGroupResolver 
+     */
     protected $customerGroupResolver;
 
     public function __construct(
         WebsiteResolver $websiteResolver,
-        CustomerGroupResolver $customerGroupResolver)
-    {
+        CustomerGroupResolver $customerGroupResolver
+    ) {
         $this->websiteResolver = $websiteResolver;
         $this->customerGroupResolver = $customerGroupResolver;
     }

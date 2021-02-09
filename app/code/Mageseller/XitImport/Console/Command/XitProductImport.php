@@ -43,10 +43,11 @@ class XitProductImport extends Command
 
     /**
      * XitCategoryImport constructor.
-     * @param State $state
-     * @param Xit $xitHelper
+     *
+     * @param State         $state
+     * @param Xit           $xitHelper
      * @param ImportProcess $importProcess
-     * @param string|null $name
+     * @param string|null   $name
      */
     public function __construct(
         State $state,

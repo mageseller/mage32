@@ -13,20 +13,23 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 namespace Mageseller\Customization\Block\Adminhtml\Attribute\Edit;
 
 /**
  * Class Options
+ *
  * @package Mageseller\Customization\Block\Adminhtml\Attribute\Edit
  */
 class Options extends \Magento\Eav\Block\Adminhtml\Attribute\Edit\Options\Options
 {
-    /** @var string Option template */
+    /**
+     * @var string Option template 
+     */
     protected $_template = 'Mageseller_Customization::catalog/product/attribute/options.phtml';
     /**
      * @var \Mageplaza\Shopbybrand\Helper\Data|\Mageseller\Customization\Helper\Data
@@ -43,15 +46,16 @@ class Options extends \Magento\Eav\Block\Adminhtml\Attribute\Edit\Options\Option
 
     /**
      * Options constructor.
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Framework\Registry $registry
+     *
+     * @param \Magento\Backend\Block\Template\Context                                    $context
+     * @param \Magento\Framework\Registry                                                $registry
      * @param \Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\CollectionFactory $attrOptionCollectionFactory
-     * @param \Magento\Framework\Validator\UniversalFactory $universalFactory
-     * @param \Mageplaza\Shopbybrand\Helper\Data $helper
-     * @param \Magento\Framework\App\ProductMetadataInterface $productMetadata
-     * @param \Magento\Framework\Module\Manager $moduleManager
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
-     * @param array $data
+     * @param \Magento\Framework\Validator\UniversalFactory                              $universalFactory
+     * @param \Mageplaza\Shopbybrand\Helper\Data                                         $helper
+     * @param \Magento\Framework\App\ProductMetadataInterface                            $productMetadata
+     * @param \Magento\Framework\Module\Manager                                          $moduleManager
+     * @param \Magento\Framework\ObjectManagerInterface                                  $objectManager
+     * @param array                                                                      $data
      */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
@@ -108,13 +112,15 @@ class Options extends \Magento\Eav\Block\Adminhtml\Attribute\Edit\Options\Option
     {
         $stores = $this->getStores();
         if (is_array($stores)) {
-            usort($stores, function ($storeA, $storeB) {
-                if ($storeA->getSortOrder() == $storeB->getSortOrder()) {
-                    return $storeA->getId() < $storeB->getId() ? -1 : 1;
-                }
+            usort(
+                $stores, function ($storeA, $storeB) {
+                    if ($storeA->getSortOrder() == $storeB->getSortOrder()) {
+                        return $storeA->getId() < $storeB->getId() ? -1 : 1;
+                    }
 
-                return ($storeA->getSortOrder() < $storeB->getSortOrder()) ? -1 : 1;
-            });
+                    return ($storeA->getSortOrder() < $storeB->getSortOrder()) ? -1 : 1;
+                }
+            );
         }
 
         return $stores;

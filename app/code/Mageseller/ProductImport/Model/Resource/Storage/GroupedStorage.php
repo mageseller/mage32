@@ -13,16 +13,20 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class GroupedStorage
 {
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(
         Magento2DbConnection $db,
-        MetaData $metaData)
-    {
+        MetaData $metaData
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
     }
@@ -55,7 +59,8 @@ class GroupedStorage
             $position = 1;
             foreach ($product->getMembers() as $i => $member) {
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO `{$this->metaData->linkTable}`
                     SET 
                         `product_id` = ?,
@@ -65,11 +70,13 @@ class GroupedStorage
                     $product->id,
                     $member->getProductId(),
                     $linkInfo->typeId
-                ]);
+                    ]
+                );
 
                 $linkId = $this->db->getLastInsertId();
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO `{$this->metaData->linkAttributeIntTable}`
                     SET
                         `product_link_attribute_id` = ?,
@@ -79,9 +86,11 @@ class GroupedStorage
                     $linkInfo->positionAttributeId,
                     $linkId,
                     $position
-                ]);
+                    ]
+                );
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO `{$this->metaData->linkAttributeDecimalTable}`
                     SET
                         `product_link_attribute_id` = ?,
@@ -91,7 +100,8 @@ class GroupedStorage
                     $linkInfo->defaultQuantityAttributeId,
                     $linkId,
                     $member->getDefaultQuantity()
-                ]);
+                    ]
+                );
 
                 $position++;
             }

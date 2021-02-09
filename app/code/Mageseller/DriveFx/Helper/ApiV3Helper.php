@@ -42,11 +42,12 @@ class ApiV3Helper extends ApiHelper
 
     /**
      * Data constructor.
-     * @param Context $context
-     * @param DrivefxLogger $drivefxlogger
-     * @param Curl $curl
+     *
+     * @param Context                  $context
+     * @param DrivefxLogger            $drivefxlogger
+     * @param Curl                     $curl
      * @param EavAtrributeUpdateHelper $eavAtrributeUpdateHelper
-     * @param V3Curl $v3url
+     * @param V3Curl                   $v3url
      */
     public function __construct(
         Context $context,
@@ -121,7 +122,8 @@ class ApiV3Helper extends ApiHelper
     }
     public function getLastV3OrderId()
     {
-        $response = $this->searchV3Entities('Bo', "", "", [
+        $response = $this->searchV3Entities(
+            'Bo', "", "", [
             "limit" => 1,
             "orderByItems" => [
                 [
@@ -132,7 +134,8 @@ class ApiV3Helper extends ApiHelper
                     "OrderType" => 1
                 ]
             ],"SelectItems" => ["obrano"]
-        ]);
+            ]
+        );
         return $response[0]['obrano'] ?? "0";
     }
     public function searchV3Entities($entityName, $filterItem = '', $valueitem = '', $customFilter = [])
@@ -313,7 +316,8 @@ class ApiV3Helper extends ApiHelper
     {
         $clientEntityTable = $this->entity[parent::CLIENT];
         $email = is_array($customerObject) ? $customerObject['email'] : $customerObject;
-        $response = $this->searchV3Entities($clientEntityTable, 'email', $email, [
+        $response = $this->searchV3Entities(
+            $clientEntityTable, 'email', $email, [
             "limit" => 1,
             "orderByItems" => [
                 [
@@ -324,14 +328,16 @@ class ApiV3Helper extends ApiHelper
                     "OrderType" => 1
                 ]
             ],"SelectItems" => ["no"]
-        ]);
+            ]
+        );
         $client = $response[0] ?? [];
 
         if ($client) {
             return  $client;
         } else {
             $response = $this->createNewCustomer($customerObject);
-            $response = $this->searchV3Entities($clientEntityTable, 'email', $email, [
+            $response = $this->searchV3Entities(
+                $clientEntityTable, 'email', $email, [
                 "limit" => 1,
                 "orderByItems" => [
                     [
@@ -342,7 +348,8 @@ class ApiV3Helper extends ApiHelper
                         "OrderType" => 1
                     ]
                 ],"SelectItems" => ["no"]
-            ]);
+                ]
+            );
             return $response[0] ?? [];
 
             /*$response = $this->getNewV3Instance($clientEntityTable, 1);
@@ -542,9 +549,11 @@ class ApiV3Helper extends ApiHelper
             if (!$productObject->getData('productObjects')) {
                 $productRef = $this->getProduct($product);
                 if ($productRef) {
-                    $this->eavAtrributeUpdateHelper->updateProductAttributes([$productObject->getId()], [
+                    $this->eavAtrributeUpdateHelper->updateProductAttributes(
+                        [$productObject->getId()], [
                         'drivefx_ref_id' => $productRef['ref']
-                    ], $productObject->getStoreId());
+                        ], $productObject->getStoreId()
+                    );
                 }
             }
 

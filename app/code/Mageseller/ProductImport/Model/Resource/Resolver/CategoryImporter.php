@@ -13,22 +13,34 @@ use Magento\Catalog\Model\Category;
  */
 class CategoryImporter
 {
-    /** @var string Internal category path separator, i.e. 1/2/18/125 */
+    /**
+ * @var string Internal category path separator, i.e. 1/2/18/125 
+*/
     const CATEGORY_ID_PATH_SEPARATOR = '/';
 
-    /**  @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var NameToUrlKeyConverter */
+    /**
+     * @var NameToUrlKeyConverter 
+     */
     protected $nameToUrlKeyConverter;
 
-    /** @var array A category-path =>  category-id map */
+    /**
+     * @var array A category-path =>  category-id map 
+     */
     protected $categoryCache = [];
 
-    /** @var CategoryInfo[] A category-id => CategoryInfo map */
+    /**
+     * @var CategoryInfo[] A category-id => CategoryInfo map 
+     */
     protected $allCategoryInfo = null;
 
     public function __construct(Magento2DbConnection $db, MetaData $metaData, NameToUrlKeyConverter $nameToUrlKeyConverter)
@@ -52,16 +64,20 @@ class CategoryImporter
 
             $urlKeyAttributeId = $this->metaData->categoryAttributeMap['url_key'];
 
-            $categoryData = $this->db->fetchAllAssoc("
+            $categoryData = $this->db->fetchAllAssoc(
+                "
                 SELECT E.`entity_id`, E.`path`, URL_KEY.`value` as url_key, URL_KEY.`store_id`
                 FROM `{$this->metaData->categoryEntityTable}` E
                 LEFT JOIN `{$this->metaData->categoryEntityTable}_varchar` URL_KEY ON URL_KEY.`entity_id` = E.`entity_id` 
                     AND URL_KEY.`attribute_id` = ? 
             ", [
                 $urlKeyAttributeId
-            ]);
+                ]
+            );
 
-            /** @var CategoryInfo[] $categories */
+            /**
+ * @var CategoryInfo[] $categories 
+*/
             $categories = [];
 
             foreach ($categoryData as $categoryDatum) {
@@ -91,7 +107,7 @@ class CategoryImporter
     }
 
     /**
-     * @param $categoryId
+     * @param  $categoryId
      * @return CategoryInfo|null
      */
     public function getCategoryInfo($categoryId)
@@ -105,8 +121,8 @@ class CategoryImporter
     /**
      * Return the url_keys of all child categories of the given parent.
      *
-     * @param int $parentCategoryId
-     * @param int $storeViewId
+     * @param  int $parentCategoryId
+     * @param  int $storeViewId
      * @return array
      */
     protected function getExistingCategoryUrlKeys(int $parentCategoryId, int $storeViewId)
@@ -128,9 +144,9 @@ class CategoryImporter
     }
 
     /**
-     * @param int $categoryId
-     * @param int[] $idPath The ids of the parent categories, including $categoryId
-     * @param array $urlKeys A store-id => url_key array
+     * @param int   $categoryId
+     * @param int[] $idPath     The ids of the parent categories, including $categoryId
+     * @param array $urlKeys    A store-id => url_key array
      */
     protected function addCategoryInfo(int $categoryId, array $idPath, array $urlKeys)
     {
@@ -141,9 +157,9 @@ class CategoryImporter
      * Returns the names of the categories.
      * Category names may be paths separated with /
      *
-     * @param array $categoryPaths
-     * @param bool $autoCreateCategories
-     * @param string $categoryNamePathSeparator
+     * @param  array  $categoryPaths
+     * @param  bool   $autoCreateCategories
+     * @param  string $categoryNamePathSeparator
      * @return array
      */
     public function importCategoryPaths(array $categoryPaths, bool $autoCreateCategories, string $categoryNamePathSeparator)
@@ -177,9 +193,9 @@ class CategoryImporter
     /**
      * Creates a path of categories, if necessary, and returns the new id.
      *
-     * @param string $namePath A / separated path of category names.
-     * @param bool $autoCreateCategories
-     * @param string $categoryNamePathSeparator
+     * @param  string $namePath                  A / separated path of category names.
+     * @param  bool   $autoCreateCategories
+     * @param  string $categoryNamePathSeparator
      * @return array
      */
     public function importCategoryPath(string $namePath, bool $autoCreateCategories, string $categoryNamePathSeparator): array
@@ -214,8 +230,8 @@ class CategoryImporter
     }
 
     /**
-     * @param int $parentId
-     * @param string $categoryName
+     * @param  int    $parentId
+     * @param  string $categoryName
      * @return int|null
      */
     protected function getChildCategoryId(int $parentId, string $categoryName)
@@ -223,7 +239,8 @@ class CategoryImporter
         $categoryEntityTable = $this->metaData->categoryEntityTable;
         $nameAttributeId = $this->metaData->categoryAttributeMap['name'];
 
-        $childCategoryId = $this->db->fetchSingleCell("
+        $childCategoryId = $this->db->fetchSingleCell(
+            "
             SELECT E.`entity_id`
             FROM `{$categoryEntityTable}` E
             INNER JOIN `{$categoryEntityTable}_varchar` A ON A.`entity_id` = E.`entity_id` AND A.`attribute_id` = ? AND A.`store_id` = 0 
@@ -232,14 +249,15 @@ class CategoryImporter
             $nameAttributeId,
             $parentId,
             $categoryName
-        ]);
+            ]
+        );
 
         return is_null($childCategoryId) ? null : (int)$childCategoryId;
     }
 
     /**
-     * @param int[] $idPath
-     * @param string $categoryName
+     * @param  int[]  $idPath
+     * @param  string $categoryName
      * @return int
      */
     protected function importChildCategory(array $idPath, string $categoryName): int
@@ -254,26 +272,31 @@ class CategoryImporter
         $parentPath = implode(self::CATEGORY_ID_PATH_SEPARATOR, $idPath);
 
         // update parent data
-        $this->db->execute("
+        $this->db->execute(
+            "
             UPDATE {$categoryEntityTable} 
                 SET `children_count` = `children_count` + 1
             WHERE `entity_id` = ?
         ", [
             $parentId
-        ]);
+            ]
+        );
 
-        $position = $this->db->fetchSingleCell("
+        $position = $this->db->fetchSingleCell(
+            "
             SELECT MAX(`position`)
             FROM `{$categoryEntityTable}`
             WHERE `path` LIKE ? AND level = ?
         ", [
             "{$parentPath}/%",
             $childLevel
-        ]);
+            ]
+        );
         $nextPosition = is_null($position) ? 1 : $position + 1;
 
         // write child data
-        $this->db->execute("
+        $this->db->execute(
+            "
             INSERT INTO `{$categoryEntityTable}`
             SET    
                 `attribute_set_id` = ?, 
@@ -286,14 +309,16 @@ class CategoryImporter
             $parentId,
             $nextPosition,
             $childLevel
-        ]);
+            ]
+        );
 
         $categoryId = $this->db->getLastInsertId();
 
         // add path that contains the new id
         $childPath = $parentPath . self::CATEGORY_ID_PATH_SEPARATOR . $categoryId;
 
-        $this->db->execute("
+        $this->db->execute(
+            "
             UPDATE `{$categoryEntityTable}`
             SET 
                 `path` = ?
@@ -301,7 +326,8 @@ class CategoryImporter
         ", [
             $childPath,
             $categoryId
-        ]);
+            ]
+        );
 
         if (count($idPath) >= 2) {
 
@@ -321,7 +347,8 @@ class CategoryImporter
             foreach ($this->metaData->storeViewMap as $storeViewId) {
                 $suffix = $this->metaData->categoryUrlSuffixes[$storeViewId];
                 $requestPath = $urlPath . $suffix;
-                $this->db->execute("
+                $this->db->execute(
+                    "
                 INSERT INTO `{$urlRewriteTable}`
                 SET    
                     `entity_type` = 'category', 
@@ -338,7 +365,8 @@ class CategoryImporter
                     $requestPath,
                     $targetPath,
                     $storeViewId
-                ]);
+                    ]
+                );
             }
 
             $this->importEavAttribute($categoryId, 'url_key', $urlKey, EavAttributeInfo::TYPE_VARCHAR, 0);
@@ -370,7 +398,8 @@ class CategoryImporter
     {
         $attributeId = $this->metaData->categoryAttributeMap['url_path'];
 
-        $urlPath = $this->db->fetchSingleCell("
+        $urlPath = $this->db->fetchSingleCell(
+            "
             SELECT `value`
             FROM `{$this->metaData->categoryEntityTable}_varchar`
             WHERE 
@@ -380,7 +409,8 @@ class CategoryImporter
         ", [
             $parentId,
             $attributeId
-        ]);
+            ]
+        );
 
         return $urlPath;
     }
@@ -395,7 +425,8 @@ class CategoryImporter
 
         $attributeId = $this->metaData->categoryAttributeMap[$attributeCode];
 
-        $this->db->execute("
+        $this->db->execute(
+            "
             INSERT INTO `{$categoryEntityTable}_{$dataType}`
             SET
                 `entity_id` = ?,
@@ -407,6 +438,7 @@ class CategoryImporter
             $attributeId,
             $storeId,
             $value
-        ]);
+            ]
+        );
     }
 }

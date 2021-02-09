@@ -42,10 +42,10 @@ class ProcessCommand extends Command
     private $helper;
 
     /**
-     * @param   ProcessFactory          $processFactory
-     * @param   ProcessResourceFactory  $processResourceFactory
-     * @param   Helper                  $helper
-     * @param   string|null             $name
+     * @param ProcessFactory         $processFactory
+     * @param ProcessResourceFactory $processResourceFactory
+     * @param Helper                 $helper
+     * @param string|null            $name
      */
     public function __construct(
         ProcessFactory $processFactory,

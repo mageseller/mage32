@@ -7,37 +7,59 @@ namespace Mageseller\ProductImport\Api\Data;
  */
 class CustomOption
 {
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $type;
 
-    /** @var bool */
+    /**
+     * @var bool 
+     */
     protected $required;
 
-    /** @var string|null */
+    /**
+     * @var string|null 
+     */
     protected $sku;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $maxCharacters;
 
-    /** @var string|null */
+    /**
+     * @var string|null 
+     */
     protected $fileExtensions;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $imageSizeX;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $imageSizeY;
 
-    /** @var string[] */
+    /**
+     * @var string[] 
+     */
     protected $valueSkus;
 
-    /** @var int|null */
+    /**
+     * @var int|null 
+     */
     protected $optionId;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected static $keyGen = 0;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $uniqueKey;
 
     public function __construct(string $type, bool $required, $sku, int $maxCharacters, $fileExtensions, int $imageSizeX, int $imageSizeY, array $valueSkus)
@@ -146,11 +168,11 @@ class CustomOption
     }
 
     /**
-     * @param string $sku
-     * @param bool $required
-     * @param string $fileExtensions For example: "jpg jpeg"
-     * @param int $maxWidth Number of pixels (0 = no limit)
-     * @param int $maxHeight Number of pixels (0 = no limit)
+     * @param  string $sku
+     * @param  bool   $required
+     * @param  string $fileExtensions For example: "jpg jpeg"
+     * @param  int    $maxWidth       Number of pixels (0 = no limit)
+     * @param  int    $maxHeight      Number of pixels (0 = no limit)
      * @return CustomOption
      */
     public static function createCustomOptionFile($sku, bool $required, string $fileExtensions, int $maxWidth = 0, int $maxHeight = 0)

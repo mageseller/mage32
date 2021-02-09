@@ -80,7 +80,8 @@ class InstallData implements InstallDataInterface
 
         $customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);
 
-        $customerSetup->addAttribute(\Magento\Customer\Model\Customer::ENTITY, 'drive_fx_customer_id', [
+        $customerSetup->addAttribute(
+            \Magento\Customer\Model\Customer::ENTITY, 'drive_fx_customer_id', [
             'type' => 'varchar',
             'label' => 'Drive Fx Customer Id',
             'input' => 'text',
@@ -90,13 +91,16 @@ class InstallData implements InstallDataInterface
             'position' => 333,
             'system' => false,
             'backend' => ''
-        ]);
+            ]
+        );
 
         $attribute = $customerSetup->getEavConfig()->getAttribute('customer', 'drive_fx_customer_id')
-            ->addData(['used_in_forms' => [
+            ->addData(
+                ['used_in_forms' => [
                 'adminhtml_customer'
-            ]
-            ]);
+                ]
+                ]
+            );
         $attribute->save();
 
         $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);

@@ -12,7 +12,7 @@ class GroupedValidator
 {
     /**
      * @param GroupedProduct $product
-     * @param Product[] $batchProducts
+     * @param Product[]      $batchProducts
      */
     public function validate(GroupedProduct $product, array $batchProducts)
     {

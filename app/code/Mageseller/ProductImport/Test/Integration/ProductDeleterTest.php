@@ -21,21 +21,29 @@ class ProductDeleterTest extends \Magento\TestFramework\TestCase\AbstractControl
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var Magento2DbConnection $db */
+        /**
+ * @var Magento2DbConnection $db 
+*/
         $db = $objectManager->get(Magento2DbConnection::class);
 
         $factory = $objectManager->get(ImporterFactory::class);
         $config = new ImportConfig();
 
-        /** @var Importer $importer */
+        /**
+ * @var Importer $importer 
+*/
         $importer = $factory->createImporter($config);
 
-        /** @var ProductDeleter $deleter */
+        /**
+ * @var ProductDeleter $deleter 
+*/
         $deleter = $objectManager->get(ProductDeleter::class);
 
-        $productCount = $db->fetchSingleCell("
+        $productCount = $db->fetchSingleCell(
+            "
             SELECT COUNT(*) FROM catalog_product_entity
-        ");
+        "
+        );
 
         // add product
         $product = new SimpleProduct("one-day-fly " . uniqid());
@@ -49,9 +57,11 @@ class ProductDeleterTest extends \Magento\TestFramework\TestCase\AbstractControl
         $this->assertEquals([], $product->getErrors());
 
         // check count
-        $newProductCount = $db->fetchSingleCell("
+        $newProductCount = $db->fetchSingleCell(
+            "
             SELECT COUNT(*) FROM catalog_product_entity
-        ");
+        "
+        );
 
         $this->assertEquals($productCount + 1, $newProductCount);
 
@@ -60,9 +70,11 @@ class ProductDeleterTest extends \Magento\TestFramework\TestCase\AbstractControl
         $deleter->deleteProductsByIds([$product->id]);
 
         // check count
-        $newProductCount = $db->fetchSingleCell("
+        $newProductCount = $db->fetchSingleCell(
+            "
             SELECT COUNT(*) FROM catalog_product_entity
-        ");
+        "
+        );
 
         $this->assertEquals($productCount, $newProductCount);
 
@@ -74,9 +86,11 @@ class ProductDeleterTest extends \Magento\TestFramework\TestCase\AbstractControl
         $this->assertEquals([], $product->getErrors());
 
         // check count
-        $newProductCount = $db->fetchSingleCell("
+        $newProductCount = $db->fetchSingleCell(
+            "
             SELECT COUNT(*) FROM catalog_product_entity
-        ");
+        "
+        );
 
         $this->assertEquals($productCount + 1, $newProductCount);
 
@@ -85,9 +99,11 @@ class ProductDeleterTest extends \Magento\TestFramework\TestCase\AbstractControl
         $deleter->deleteProductsBySkus([$product->getSku()]);
 
         // check count
-        $newProductCount = $db->fetchSingleCell("
+        $newProductCount = $db->fetchSingleCell(
+            "
             SELECT COUNT(*) FROM catalog_product_entity
-        ");
+        "
+        );
 
         $this->assertEquals($productCount, $newProductCount);
     }

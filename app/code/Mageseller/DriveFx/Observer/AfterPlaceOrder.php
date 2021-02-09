@@ -38,8 +38,9 @@ class AfterPlaceOrder implements ObserverInterface
 
     /**
      * AfterPlaceOrder constructor.
-     * @param Order $order
-     * @param Data $helper
+     *
+     * @param Order     $order
+     * @param Data      $helper
      * @param ApiHelper $helper
      */
     public function __construct(Order $order, Data $helper, ApiHelper $apiHelper)
@@ -52,7 +53,7 @@ class AfterPlaceOrder implements ObserverInterface
     /**
      * Execute observer
      *
-     * @param Observer $observer
+     * @param  Observer $observer
      * @return void
      */
     public function execute(Observer $observer)

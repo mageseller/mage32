@@ -7,7 +7,7 @@ use Magento\Framework\Model\AbstractModel;
 /**
  * Backend model for shipping table rates CSV importing
  *
- * @author      Magento Core Team <core@magentocommerce.com>
+ * @author Magento Core Team <core@magentocommerce.com>
  */
 class ImportCategory extends \Magento\Framework\App\Config\Value
 {
@@ -17,14 +17,14 @@ class ImportCategory extends \Magento\Framework\App\Config\Value
     private $ingrammicroHelper;
 
     /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $config
-     * @param \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList
-     * @param \Mageseller\IngrammicroImport\Helper\Ingrammicro $ingrammicroHelper
+     * @param \Magento\Framework\Model\Context                             $context
+     * @param \Magento\Framework\Registry                                  $registry
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface           $config
+     * @param \Magento\Framework\App\Cache\TypeListInterface               $cacheTypeList
+     * @param \Mageseller\IngrammicroImport\Helper\Ingrammicro             $ingrammicroHelper
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
-     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
-     * @param array $data
+     * @param \Magento\Framework\Data\Collection\AbstractDb|null           $resourceCollection
+     * @param array                                                        $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,

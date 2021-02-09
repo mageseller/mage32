@@ -13,29 +13,33 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 namespace Mageseller\Customization\Block\Adminhtml\Attribute\Edit;
 
 /**
  * Class Devices
+ *
  * @package Mageseller\Customization\Block\Adminhtml\Attribute\Edit
  */
 class Devices extends \Magento\Backend\Block\Widget\Form\Generic
 {
-    /** @var \Magento\Cms\Model\Wysiwyg\Config  */
+    /**
+     * @var \Magento\Cms\Model\Wysiwyg\Config  
+     */
     protected $_wysiwygConfig;
 
     /**
      * Devices constructor.
+     *
      * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Framework\Data\FormFactory $formFactory
-    * @param \Magento\Cms\Model\Wysiwyg\Config $wysiwygConfig
-     * @param array $data
+     * @param \Magento\Framework\Registry             $registry
+     * @param \Magento\Framework\Data\FormFactory     $formFactory
+     * @param \Magento\Cms\Model\Wysiwyg\Config       $wysiwygConfig
+     * @param array                                   $data
      */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
@@ -52,13 +56,14 @@ class Devices extends \Magento\Backend\Block\Widget\Form\Generic
     /**
      * Adding product form elements for editing attribute
      *
-     * @return $this
+     * @return                                      $this
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
     protected function _prepareForm()
     {
         $data = $this->getOptionData();
-        $form = $this->_formFactory->create([
+        $form = $this->_formFactory->create(
+            [
             'data' => [
                 'id'            => 'devices_attribute_save',
                 'action'        => $this->getUrl('devices/attribute/save', ['id' => $data['customization_id'] ?? ""]),
@@ -66,7 +71,8 @@ class Devices extends \Magento\Backend\Block\Widget\Form\Generic
                 'use_container' => true,
                 'enctype'       => 'multipart/form-data'
             ]
-        ]);
+            ]
+        );
 
         $mainfieldset = $form->addFieldset(
             'devices_fieldset',

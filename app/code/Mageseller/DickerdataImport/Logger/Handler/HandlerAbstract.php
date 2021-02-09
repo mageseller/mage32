@@ -19,7 +19,7 @@ class HandlerAbstract extends Base
      * Set default filePath for DickerdataImport logs folder
      *
      * @param DriverInterface $filesystem
-     * @param null|string $filePath
+     * @param null|string     $filePath
      */
     public function __construct(DriverInterface $filesystem, $filePath = 'var/log/dickerdataimport/') //@codingStandardsIgnoreLine
     {

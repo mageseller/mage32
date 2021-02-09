@@ -23,22 +23,34 @@ use Exception;
  */
 class ProductTypeChanger
 {
-    /**  @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var ConfigurableStorage */
+    /**
+     * @var ConfigurableStorage 
+     */
     protected $configurableStorage;
 
-    /** @var GroupedStorage */
+    /**
+     * @var GroupedStorage 
+     */
     protected $groupedStorage;
 
-    /** @var BundleStorage */
+    /**
+     * @var BundleStorage 
+     */
     protected $bundleStorage;
 
-    /** @var DownloadableStorage */
+    /**
+     * @var DownloadableStorage 
+     */
     protected $downloadableStorage;
 
     public function __construct(
@@ -47,8 +59,8 @@ class ProductTypeChanger
         ConfigurableStorage $configurableStorage,
         GroupedStorage $groupedStorage,
         BundleStorage $bundleStorage,
-        DownloadableStorage $downloadableStorage)
-    {
+        DownloadableStorage $downloadableStorage
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
         $this->groupedStorage = $groupedStorage;
@@ -58,7 +70,7 @@ class ProductTypeChanger
     }
 
     /**
-     * @param Product[] $updatedProducts
+     * @param Product[]    $updatedProducts
      * @param ImportConfig $config
      */
     public function checkTypeChanges(array $updatedProducts, ImportConfig $config)
@@ -69,11 +81,13 @@ class ProductTypeChanger
 
         $productIds = array_column($updatedProducts, 'id');
 
-        $oldTypes = $this->db->fetchMap("
+        $oldTypes = $this->db->fetchMap(
+            "
             SELECT `entity_id`, `type_id`
             FROM `" . $this->metaData->productEntityTable . "`
             WHERE `entity_id` IN (" . $this->db->getMarks($productIds) . ")
-        ", $productIds);
+        ", $productIds
+        );
 
         foreach ($updatedProducts as $product) {
 
@@ -90,8 +104,8 @@ class ProductTypeChanger
     }
 
     /**
-     * @param Product $product
-     * @param string $oldType
+     * @param Product      $product
+     * @param string       $oldType
      * @param ImportConfig $config
      */
     protected function checkTypeChangeAllowed(Product $product, string $oldType, ImportConfig $config)
@@ -109,12 +123,15 @@ class ProductTypeChanger
         }
 
         if ($config->productTypeChange === ImportConfig::PRODUCT_TYPE_CHANGE_NON_DESTRUCTIVE) {
-            if (in_array($oldType, [
+            if (in_array(
+                $oldType, [
                 GroupedProduct::TYPE_GROUPED,
                 BundleProduct::TYPE_BUNDLE,
                 ConfigurableProduct::TYPE_CONFIGURABLE,
                 DownloadableProduct::TYPE_DOWNLOADABLE
-            ])) {
+                ]
+            )
+            ) {
                 $product->addError("Type conversion losing data from {$oldType} to {$newType} is not allowed");
                 return;
             }
@@ -132,7 +149,7 @@ class ProductTypeChanger
     }
 
     /**
-     * @param Product[] $updatedProducts
+     * @param  Product[] $updatedProducts
      * @throws Exception
      */
     public function performTypeChanges(array $updatedProducts)
@@ -155,32 +172,32 @@ class ProductTypeChanger
 
             // remove data from the old type
             switch ($oldType) {
-                case SimpleProduct::TYPE_SIMPLE:
-                case VirtualProduct::TYPE_VIRTUAL:
-                    break;
-                case DownloadableProduct::TYPE_DOWNLOADABLE:
-                    $this->downloadableStorage->removeLinksAndSamples([$product]);
-                    break;
-                case GroupedProduct::TYPE_GROUPED:
-                    $this->groupedStorage->removeLinkedProducts([$product]);
-                    break;
-                case BundleProduct::TYPE_BUNDLE:
-                    $this->bundleStorage->removeOptions([$product]);
-                    break;
-                case ConfigurableProduct::TYPE_CONFIGURABLE:
-                    $this->configurableStorage->removeLinkedVariants([$product]);
-                    break;
-                default:
-                    throw new Exception("Type conversion from {$oldType} to {$newType} is not supported");
+            case SimpleProduct::TYPE_SIMPLE:
+            case VirtualProduct::TYPE_VIRTUAL:
+                break;
+            case DownloadableProduct::TYPE_DOWNLOADABLE:
+                $this->downloadableStorage->removeLinksAndSamples([$product]);
+                break;
+            case GroupedProduct::TYPE_GROUPED:
+                $this->groupedStorage->removeLinkedProducts([$product]);
+                break;
+            case BundleProduct::TYPE_BUNDLE:
+                $this->bundleStorage->removeOptions([$product]);
+                break;
+            case ConfigurableProduct::TYPE_CONFIGURABLE:
+                $this->configurableStorage->removeLinkedVariants([$product]);
+                break;
+            default:
+                throw new Exception("Type conversion from {$oldType} to {$newType} is not supported");
             }
 
             // prepare for the new type
             switch ($newType) {
-                case VirtualProduct::TYPE_VIRTUAL:
-                    foreach ($product->getStoreViews() as $storeView) {
-                        $storeView->setWeight(null);
-                    }
-                    break;
+            case VirtualProduct::TYPE_VIRTUAL:
+                foreach ($product->getStoreViews() as $storeView) {
+                    $storeView->setWeight(null);
+                }
+                break;
             }
         }
     }

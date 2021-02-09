@@ -7,16 +7,24 @@ namespace Mageseller\ProductImport\Model\Data;
  */
 class ImageGalleryInformation
 {
-    /** @var Image */
+    /**
+     * @var Image 
+     */
     protected $image;
 
-    /**@var string */
+    /**
+     * @var string 
+     */
     protected $label;
 
-    /** @var int Position in product gallery (1, 2, 3, ...) */
+    /**
+     * @var int Position in product gallery (1, 2, 3, ...) 
+     */
     protected $position;
 
-    /** @var bool Show on product page */
+    /**
+     * @var bool Show on product page 
+     */
     protected $enabled;
 
     public function __construct(Image $image, string $label, int $position, bool $enabled)

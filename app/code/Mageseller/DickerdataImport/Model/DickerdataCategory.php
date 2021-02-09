@@ -24,13 +24,13 @@ class DickerdataCategory extends \Magento\Framework\Model\AbstractModel
     protected $_eventPrefix = 'mageseller_dickerdataimport_dickerdatacategory';
 
     /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param DickerdataCategoryInterfaceFactory $dickerdatacategoryDataFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param \Mageseller\DickerdataImport\Model\ResourceModel\DickerdataCategory $resource
+     * @param \Magento\Framework\Model\Context                                               $context
+     * @param \Magento\Framework\Registry                                                    $registry
+     * @param DickerdataCategoryInterfaceFactory                                             $dickerdatacategoryDataFactory
+     * @param DataObjectHelper                                                               $dataObjectHelper
+     * @param \Mageseller\DickerdataImport\Model\ResourceModel\DickerdataCategory            $resource
      * @param \Mageseller\DickerdataImport\Model\ResourceModel\DickerdataCategory\Collection $resourceCollection
-     * @param array $data
+     * @param array                                                                          $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -48,6 +48,7 @@ class DickerdataCategory extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Retrieve dickerdatacategory model with dickerdatacategory data
+     *
      * @return DickerdataCategoryInterface
      */
     public function getDataModel()

@@ -19,8 +19,8 @@ class Process
     protected $processResourceFactory;
 
     /**
-     * @param   ProcessFactory          $processFactory
-     * @param   ProcessResourceFactory  $processResourceFactory
+     * @param ProcessFactory         $processFactory
+     * @param ProcessResourceFactory $processResourceFactory
      */
     public function __construct(
         ProcessFactory $processFactory,
@@ -33,11 +33,13 @@ class Process
     /**
      * Imports products from CM51 into Magento from specified process
      *
-     * @param   \DateTime   $since
+     * @param \DateTime $since
      */
     public function runApi($since)
     {
-        /** @var ProcessModel $process */
+        /**
+ * @var ProcessModel $process 
+*/
         $process = $this->processFactory->create()
             ->setType('Xit products import')
             ->setStatus(ProcessModel::STATUS_PENDING)

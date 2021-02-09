@@ -19,10 +19,14 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class ProductEntityStorage
 {
-    /**  @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(Magento2DbConnection $db, MetaData $metaData)
@@ -34,7 +38,7 @@ class ProductEntityStorage
     /**
      * Returns an sku => id map for all existing skus.
      *
-     * @param string[] $skus
+     * @param  string[] $skus
      * @return array
      */
     public function getExistingSkus(array $skus)
@@ -43,17 +47,19 @@ class ProductEntityStorage
             return [];
         }
 
-        return $this->db->fetchMap("
+        return $this->db->fetchMap(
+            "
             SELECT `sku`, `entity_id` 
             FROM `{$this->metaData->productEntityTable}`
             WHERE BINARY `sku` IN (" . $this->db->getMarks($skus) . ")
-        ", array_values($skus));
+        ", array_values($skus)
+        );
     }
 
     /**
      * Returns an sku => id map for all existing products.
      *
-     * @param Product[] $products
+     * @param  Product[] $products
      * @return array
      */
     public function getExistingProductIds(array $products)
@@ -70,44 +76,46 @@ class ProductEntityStorage
     /**
      * Use this function to create a Product object for an existing product when its type is not given in the import.
      *
-     * @param string $sku
+     * @param  string $sku
      * @return BundleProduct|ConfigurableProduct|DownloadableProduct|GroupedProduct|SimpleProduct|VirtualProduct|false
      */
     public function getExistingProductBySku(string $sku)
     {
-        $type = $this->db->fetchSingleCell("
+        $type = $this->db->fetchSingleCell(
+            "
             SELECT `type_id`
             FROM {$this->metaData->productEntityTable}
             WHERE BINARY `sku` = ?
         ", [
             $sku
-        ]);
+            ]
+        );
 
         if (!$type) {
             return false;
         }
 
         switch ($type) {
-            case SimpleProduct::TYPE_SIMPLE:
-                $product = new SimpleProduct($sku);
-                break;
-            case VirtualProduct::TYPE_VIRTUAL:
-                $product = new VirtualProduct($sku);
-                break;
-            case DownloadableProduct::TYPE_DOWNLOADABLE:
-                $product = new DownloadableProduct($sku);
-                break;
-            case GroupedProduct::TYPE_GROUPED:
-                $product = new GroupedProduct($sku);
-                break;
-            case ConfigurableProduct::TYPE_CONFIGURABLE:
-                $product = new ConfigurableProduct($sku);
-                break;
-            case BundleProduct::TYPE_BUNDLE:
-                $product = new BundleProduct($sku);
-                break;
-            default:
-                die('Unknown product type: ' . $type);
+        case SimpleProduct::TYPE_SIMPLE:
+            $product = new SimpleProduct($sku);
+            break;
+        case VirtualProduct::TYPE_VIRTUAL:
+            $product = new VirtualProduct($sku);
+            break;
+        case DownloadableProduct::TYPE_DOWNLOADABLE:
+            $product = new DownloadableProduct($sku);
+            break;
+        case GroupedProduct::TYPE_GROUPED:
+            $product = new GroupedProduct($sku);
+            break;
+        case ConfigurableProduct::TYPE_CONFIGURABLE:
+            $product = new ConfigurableProduct($sku);
+            break;
+        case BundleProduct::TYPE_BUNDLE:
+            $product = new BundleProduct($sku);
+            break;
+        default:
+            die('Unknown product type: ' . $type);
         }
 
         return $product;
@@ -116,18 +124,20 @@ class ProductEntityStorage
     /**
      * Use this function to create a Product object for an existing product when its type is not given in the import.
      *
-     * @param int $id
+     * @param  int $id
      * @return BundleProduct|ConfigurableProduct|DownloadableProduct|GroupedProduct|SimpleProduct|VirtualProduct|false
      */
     public function getExistingProductById(int $id)
     {
-        $row = $this->db->fetchRow("
+        $row = $this->db->fetchRow(
+            "
             SELECT `type_id`, `sku`
             FROM {$this->metaData->productEntityTable}
             WHERE `entity_id` = ?
         ", [
             $id
-        ]);
+            ]
+        );
 
         if (!$row) {
             return false;
@@ -137,26 +147,26 @@ class ProductEntityStorage
         $sku = $row['sku'];
 
         switch ($type) {
-            case SimpleProduct::TYPE_SIMPLE:
-                $product = new SimpleProduct($sku);
-                break;
-            case VirtualProduct::TYPE_VIRTUAL:
-                $product = new VirtualProduct($sku);
-                break;
-            case DownloadableProduct::TYPE_DOWNLOADABLE:
-                $product = new DownloadableProduct($sku);
-                break;
-            case GroupedProduct::TYPE_GROUPED:
-                $product = new GroupedProduct($sku);
-                break;
-            case ConfigurableProduct::TYPE_CONFIGURABLE:
-                $product = new ConfigurableProduct($sku);
-                break;
-            case BundleProduct::TYPE_BUNDLE:
-                $product = new BundleProduct($sku);
-                break;
-            default:
-                die('Unknown product type: ' . $type);
+        case SimpleProduct::TYPE_SIMPLE:
+            $product = new SimpleProduct($sku);
+            break;
+        case VirtualProduct::TYPE_VIRTUAL:
+            $product = new VirtualProduct($sku);
+            break;
+        case DownloadableProduct::TYPE_DOWNLOADABLE:
+            $product = new DownloadableProduct($sku);
+            break;
+        case GroupedProduct::TYPE_GROUPED:
+            $product = new GroupedProduct($sku);
+            break;
+        case ConfigurableProduct::TYPE_CONFIGURABLE:
+            $product = new ConfigurableProduct($sku);
+            break;
+        case BundleProduct::TYPE_BUNDLE:
+            $product = new BundleProduct($sku);
+            break;
+        default:
+            die('Unknown product type: ' . $type);
         }
 
         $product->id = $id;
@@ -186,11 +196,13 @@ class ProductEntityStorage
             return;
         }
 
-        $exists = $this->db->fetchMap("
+        $exists = $this->db->fetchMap(
+            "
             SELECT `entity_id`, `entity_id`
             FROM {$this->metaData->productEntityTable}
             WHERE `entity_id` IN (" . $this->db->getMarks($productIds) . ")
-        ", $productIds);
+        ", $productIds
+        );
 
         foreach ($productsWithId as $product) {
             if (!array_key_exists($product->id, $exists)) {
@@ -228,15 +240,19 @@ class ProductEntityStorage
 
         if (count($vals) > 0) {
 
-            $this->db->insertMultiple($this->metaData->productEntityTable, ['attribute_set_id', 'type_id', 'sku', 'has_options', 'required_options'], $vals,
-                Magento2DbConnection::_1_KB);
+            $this->db->insertMultiple(
+                $this->metaData->productEntityTable, ['attribute_set_id', 'type_id', 'sku', 'has_options', 'required_options'], $vals,
+                Magento2DbConnection::_1_KB
+            );
 
             // store the new ids with the products
-            $sku2id = $this->db->fetchMap("
+            $sku2id = $this->db->fetchMap(
+                "
                 SELECT `sku`, `entity_id` 
                 FROM `{$this->metaData->productEntityTable}` 
                 WHERE BINARY `sku` IN (" . $this->db->getMarks($skus) . ")
-            ", array_values($skus));
+            ", array_values($skus)
+            );
 
             foreach ($products as $product) {
                 $product->id = $sku2id[$product->getSku()];
@@ -256,14 +272,16 @@ class ProductEntityStorage
         $dateTime = date('Y-m-d H:i:s');
         $productIds = array_column($products, 'id');
 
-        $existingValues = $this->db->fetchGrouped("
+        $existingValues = $this->db->fetchGrouped(
+            "
             SELECT
                 `entity_id`, `has_options`, `required_options`, `attribute_set_id`
             FROM {$this->metaData->productEntityTable}
             WHERE `entity_id` IN (" . $this->db->getMarks($productIds) . ")     
         ", $productIds, [
             'entity_id'
-        ]);
+            ]
+        );
 
         $attributeSetUpdates = [];
 
@@ -288,12 +306,13 @@ class ProductEntityStorage
             ['entity_id', 'type_id', 'sku', 'attribute_set_id', 'updated_at', 'has_options', 'required_options'],
             $attributeSetUpdates,
             Magento2DbConnection::_1_KB,
-            "`sku` = VALUES(`sku`), `type_id` = VALUES(`type_id`), `attribute_set_id` = VALUES(`attribute_set_id`), `updated_at`= VALUES(`updated_at`), `has_options` = VALUES(`has_options`), `required_options` = VALUES(`required_options`)");
+            "`sku` = VALUES(`sku`), `type_id` = VALUES(`type_id`), `attribute_set_id` = VALUES(`attribute_set_id`), `updated_at`= VALUES(`updated_at`), `has_options` = VALUES(`has_options`), `required_options` = VALUES(`required_options`)"
+        );
     }
 
     /**
      * @param ProductStoreView[] $storeViews
-     * @param string $eavAttribute
+     * @param string             $eavAttribute
      */
     public function insertEavAttribute(array $storeViews, string $eavAttribute)
     {
@@ -316,12 +335,14 @@ class ProductEntityStorage
             $values[] = $storeView->getAttribute($eavAttribute);
         }
 
-        $this->db->insertMultipleWithUpdate($tableName, ['entity_id', 'attribute_id', 'store_id', 'value'], $values,
-            $magnitude, "`value` = VALUES(`value`)");
+        $this->db->insertMultipleWithUpdate(
+            $tableName, ['entity_id', 'attribute_id', 'store_id', 'value'], $values,
+            $magnitude, "`value` = VALUES(`value`)"
+        );
     }
 
     /**
-     * @param array $storeViews
+     * @param array  $storeViews
      * @param string $eavAttribute
      */
     public function removeEavAttribute(array $storeViews, string $eavAttribute)
@@ -331,14 +352,16 @@ class ProductEntityStorage
         $attributeId = $attributeInfo->attributeId;
 
         foreach ($storeViews as $storeView) {
-            $this->db->execute("
+            $this->db->execute(
+                "
                 DELETE FROM `" . $tableName . "`
                 WHERE `entity_id` = ? AND `attribute_id` = ? AND `store_id` = ?
             ", [
                 $storeView->parent->id,
                 $attributeId,
                 $storeView->getStoreViewId()
-            ]);
+                ]
+            );
         }
     }
 
@@ -347,16 +370,19 @@ class ProductEntityStorage
      */
     public function removeOldCategoryIds(array $products)
     {
-        if (empty($products)) { return; }
+        if (empty($products)) { return; 
+        }
 
         $productIds = array_column($products, 'id');
 
         // load existing links
-        $rows = $this->db->fetchAllAssoc("
+        $rows = $this->db->fetchAllAssoc(
+            "
             SELECT `category_id`, `product_id`
             FROM `" . $this->metaData->categoryProductTable . "`
             WHERE `product_id` IN (" . implode(',', $productIds) . ")
-        ");
+        "
+        );
 
         // collect existing links
         $toBeRemoved = [];
@@ -380,13 +406,15 @@ class ProductEntityStorage
         // delete links one by one (there won't be many)
         foreach ($toBeRemoved as $productId => $categoryIds) {
             foreach ($categoryIds as $categoryId => $true) {
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     DELETE FROM `" . $this->metaData->categoryProductTable . "`
                     WHERE `product_id` = ? AND `category_id` = ?
                 ", [
                     $productId,
                     $categoryId
-                ]);
+                    ]
+                );
             }
         }
     }
@@ -400,7 +428,8 @@ class ProductEntityStorage
 
         foreach ($products as $product) {
             $categoryIds = $product->getCategoryIds();
-            if ($categoryIds === null) { continue; }
+            if ($categoryIds === null) { continue; 
+            }
             foreach ($categoryIds as $categoryId) {
                 $values[] = $categoryId;
                 $values[] = $product->id;

@@ -9,13 +9,19 @@ class ConfigurableProduct extends Product
 {
     const TYPE_CONFIGURABLE = 'configurable';
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     protected $superAttributeCodes = null;
 
-    /** @var string[] */
+    /**
+     * @var string[] 
+     */
     protected $variantSkus = null;
 
-    /** @var int[] */
+    /**
+     * @var int[] 
+     */
     protected $variantIds = null;
 
     /**

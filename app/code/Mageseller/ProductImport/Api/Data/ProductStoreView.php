@@ -69,38 +69,59 @@ class ProductStoreView
 
     /**
      * For internal use only; not for application use
-     * @var  Product
+     *
+     * @var Product
      */
     public $parent;
 
-    /** @var  int|null */
+    /**
+     * @var int|null 
+     */
     protected $store_view_id;
 
-    /** @var ImageGalleryInformation[] */
+    /**
+     * @var ImageGalleryInformation[] 
+     */
     protected $imageGalleryInformation = [];
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     protected $imageRoles = [];
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     protected $attributes = [];
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     protected $unresolvedSelects = [];
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     protected $unresolvedMultipleSelects = [];
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     protected $unresolvedAttributes = [];
 
-    /** @var CustomOptionTitle[] */
+    /**
+     * @var CustomOptionTitle[] 
+     */
     protected $customOptionTitles = [];
 
-    /** @var CustomOptionPrice[] */
+    /**
+     * @var CustomOptionPrice[] 
+     */
     protected $customOptionPrices = [];
 
-    /** @var CustomOptionValue[][] */
+    /**
+     * @var CustomOptionValue[][] 
+     */
     protected $customOptionValues = [];
 
     public function setName(string $name = null)
@@ -328,7 +349,7 @@ class ProductStoreView
      * Set the value of a user defined attribute.
      * Apply trim() to $value before calling this function, if necessary.
      *
-     * @param string $attributeCode
+     * @param string      $attributeCode
      * @param string|null $value
      */
     public function setCustomAttribute(string $attributeCode, string $value = null)
@@ -338,7 +359,7 @@ class ProductStoreView
     }
 
     /**
-     * @param $attributeCode
+     * @param  $attributeCode
      * @return mixed|null|
      */
     public function getAttribute($attributeCode)
@@ -380,6 +401,7 @@ class ProductStoreView
 
     /**
      * Removes an attribute from the import (not from the database).
+     *
      * @param string $name
      */
     public function removeAttribute(string $name)
@@ -388,10 +410,10 @@ class ProductStoreView
     }
 
     /**
-     * @param Image $image Should be an image retrieved from $product->addImage() on the same product.
-     * @param string $label Will be used as alt-tag on the product page
-     * @param int $position Gallery position (1, 2, 3, ...)
-     * @param bool $enabled Show on product page?
+     * @param Image  $image    Should be an image retrieved from $product->addImage() on the same product.
+     * @param string $label    Will be used as alt-tag on the product page
+     * @param int    $position Gallery position (1, 2, 3, ...)
+     * @param bool   $enabled  Show on product page?
      */
     public function setImageGalleryInformation(Image $image, string $label, int $position, bool $enabled)
     {
@@ -406,7 +428,7 @@ class ProductStoreView
     /**
      * Choose a "role" (image, small_image, thumbnail, swatch_image) for the image. Use one of this class' constants.
      *
-     * @param Image $image Should be an image retrieved from $product->addImage() on the same product.
+     * @param Image  $image         Should be an image retrieved from $product->addImage() on the same product.
      * @param string $attributeCode A media_image attribute (use one of the class constants above, or a custom attribute code)
      */
     public function setImageRole(Image $image, string $attributeCode)
@@ -424,7 +446,7 @@ class ProductStoreView
 
     /**
      * @param string $attributeCode
-     * @param string $option The admin name of the attribute option
+     * @param string $option        The admin name of the attribute option
      */
     public function setSelectAttribute(string $attributeCode, string $option = null)
     {
@@ -438,7 +460,7 @@ class ProductStoreView
 
     /**
      * @param string $attributeCode
-     * @param array $options The admin names of the attribute options
+     * @param array  $options       The admin names of the attribute options
      */
     public function setMultipleSelectAttribute(string $attributeCode, array $options = null)
     {
@@ -452,7 +474,7 @@ class ProductStoreView
 
     /**
      * @param CustomOption $customOption
-     * @param string $title
+     * @param string       $title
      */
     public function setCustomOptionTitle(CustomOption $customOption, string $title)
     {
@@ -461,8 +483,8 @@ class ProductStoreView
 
     /**
      * @param CustomOption $customOption
-     * @param string $price
-     * @param string $priceType
+     * @param string       $price
+     * @param string       $priceType
      */
     public function setCustomOptionPrice(CustomOption $customOption, string $price, string $priceType)
     {
@@ -470,7 +492,7 @@ class ProductStoreView
     }
 
     /**
-     * @param CustomOption $customOption
+     * @param CustomOption        $customOption
      * @param CustomOptionValue[] $values
      */
     public function setCustomOptionValues(CustomOption $customOption, array $values)
@@ -495,7 +517,7 @@ class ProductStoreView
     }
 
     /**
-     * @param CustomOption $customOption
+     * @param  CustomOption $customOption
      * @return CustomOptionValue[]
      */
     public function getCustomOptionValues(CustomOption $customOption): array

@@ -10,7 +10,9 @@ class Index extends AbstractProcessAction
      */
     public function execute()
     {
-        /** @var \Magento\Backend\Model\View\Result\Page $page */
+        /**
+ * @var \Magento\Backend\Model\View\Result\Page $page 
+*/
         $page = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
         $page->setActiveMenu('Mageseller_Process::process');
         $page->getConfig()->getTitle()->prepend(__('Process List'));

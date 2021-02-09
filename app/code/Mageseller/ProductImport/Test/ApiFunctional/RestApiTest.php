@@ -1,4 +1,6 @@
-<?php /** @noinspection ALL */
+<?php /**
+       * @noinspection ALL 
+       */
 
 namespace Mageseller\ProductImport\Test\ApiFunctional;
 
@@ -15,7 +17,7 @@ class RestApiTest extends \PHPUnit\Framework\TestCase
     public static function setUpBeforeClass(): void
     {
         // include Magento
-        require_once __DIR__ . '/../../../../../index.php';
+        include_once __DIR__ . '/../../../../../index.php';
 
         \Magento\Framework\App\ObjectManager::getInstance();
     }
@@ -32,7 +34,7 @@ class RestApiTest extends \PHPUnit\Framework\TestCase
         // remove phphar section that is added in test
         $baseUrl = preg_replace('#/(ide-)?phpunit[^/]+#', '', $baseUrl);
 
-#var_dump($baseUrl);
+        // var_dump($baseUrl);
 
         $userData = array("username" => self::TEST_ADMIN_USER_USERNAME, "password" => self::TEST_ADMIN_USER_PASSWORD);
         $ch = curl_init($baseUrl . "rest/V1/integration/admin/token");
@@ -42,25 +44,27 @@ class RestApiTest extends \PHPUnit\Framework\TestCase
         curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json", "Content-Length: " . strlen(json_encode($userData))));
         $token = curl_exec($ch);
 
-#echo $token;exit;
-#$token = '"pic5s5uqe2mx4yfdr03bv6p977ki6vnx"';
+        // echo $token;exit;
+        // $token = '"pic5s5uqe2mx4yfdr03bv6p977ki6vnx"';
 
         $content = file_get_contents(__DIR__ . '/../../doc/example/a-basic-product.xml');
 
         $ch = curl_init($baseUrl . "rest/V1/mageseller/products?dry-run=1");
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        curl_setopt(
+            $ch, CURLOPT_HTTPHEADER, [
             'Authorization: Bearer ' . json_decode($token),
             'Accept: text/xml',
             'Content-Type: text/xml',
             "Content-Length: " . strlen($content),
-        ]);
+            ]
+        );
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $response = curl_exec($ch);
 
-#echo($response);exit;
+        // echo($response);exit;
 
         $xml = new SimpleXMLElement($response);
 

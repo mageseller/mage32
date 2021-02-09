@@ -9,10 +9,14 @@ class DownloadableProduct extends SimpleProduct
 {
     const TYPE_DOWNLOADABLE = 'downloadable';
 
-    /** @var DownloadLink[]|null */
+    /**
+     * @var DownloadLink[]|null 
+     */
     protected $downloadLinks = null;
 
-    /** @var DownloadSample[]|null */
+    /**
+     * @var DownloadSample[]|null 
+     */
     protected $downloadSamples = null;
 
     public function getType()
@@ -31,7 +35,7 @@ class DownloadableProduct extends SimpleProduct
     }
 
     /**
-     * @param string $storeViewCode
+     * @param  string $storeViewCode
      * @return DownloadableProductStoreView
      */
     public function storeView(string $storeViewCode)

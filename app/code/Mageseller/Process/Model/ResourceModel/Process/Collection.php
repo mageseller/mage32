@@ -22,7 +22,9 @@ class Collection extends AbstractCollection
      */
     protected function _afterLoad()
     {
-        /** @var Process $item */
+        /**
+ * @var Process $item 
+*/
         foreach ($this->_items as $item) {
             $this->getResource()->unserializeFields($item);
         }
@@ -33,7 +35,7 @@ class Collection extends AbstractCollection
     /**
      * Adds API Type filter to current collection
      *
-     * @return  $this
+     * @return $this
      */
     public function addApiTypeFilter()
     {
@@ -43,7 +45,7 @@ class Collection extends AbstractCollection
     /**
      * Adds completed status filter to current collection
      *
-     * @return  $this
+     * @return $this
      */
     public function addCompletedFilter()
     {
@@ -53,8 +55,8 @@ class Collection extends AbstractCollection
     /**
      * Excludes processes that have the same hash as the given ones
      *
-     * @param   string|array    $hash
-     * @return  $this
+     * @param  string|array $hash
+     * @return $this
      */
     public function addExcludeHashFilter($hash)
     {
@@ -72,7 +74,7 @@ class Collection extends AbstractCollection
     /**
      * Adds idle status filter to current collection
      *
-     * @return  $this
+     * @return $this
      */
     public function addIdleFilter()
     {
@@ -82,7 +84,7 @@ class Collection extends AbstractCollection
     /**
      * Adds pending status filter to current collection
      *
-     * @return  $this
+     * @return $this
      */
     public function addPendingFilter()
     {
@@ -92,7 +94,7 @@ class Collection extends AbstractCollection
     /**
      * Adds processing status filter to current collection
      *
-     * @return  $this
+     * @return $this
      */
     public function addProcessingFilter()
     {
@@ -102,7 +104,7 @@ class Collection extends AbstractCollection
     /**
      * Adds processing status filter to current collection for mirakl_status field
      *
-     * @return  $this
+     * @return $this
      */
     public function addMagesellerProcessingFilter()
     {
@@ -112,7 +114,7 @@ class Collection extends AbstractCollection
     /**
      * Adds pending status filter to current collection for mirakl_status field
      *
-     * @return  $this
+     * @return $this
      */
     public function addMagesellerPendingFilter()
     {
@@ -120,8 +122,8 @@ class Collection extends AbstractCollection
     }
 
     /**
-     * @param   string  $status
-     * @return  $this
+     * @param  string $status
+     * @return $this
      */
     public function addStatusFilter($status)
     {

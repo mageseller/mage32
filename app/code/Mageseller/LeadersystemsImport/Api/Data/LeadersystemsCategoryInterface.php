@@ -19,39 +19,45 @@ interface LeadersystemsCategoryInterface extends \Magento\Framework\Api\Extensib
 
     /**
      * Get leadersystemscategory_id
+     *
      * @return string|null
      */
     public function getLeadersystemscategoryId();
 
     /**
      * Set leadersystemscategory_id
-     * @param string $leadersystemscategoryId
+     *
+     * @param  string $leadersystemscategoryId
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface
      */
     public function setLeadersystemscategoryId($leadersystemscategoryId);
 
     /**
      * Get name
+     *
      * @return string|null
      */
     public function getName();
 
     /**
      * Set name
-     * @param string $name
+     *
+     * @param  string $name
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface
      */
     public function setName($name);
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryExtensionInterface|null
      */
     public function getExtensionAttributes();
 
     /**
      * Set an extension attributes object.
-     * @param \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryExtensionInterface $extensionAttributes
+     *
+     * @param  \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

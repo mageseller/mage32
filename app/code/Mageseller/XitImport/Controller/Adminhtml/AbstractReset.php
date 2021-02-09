@@ -21,8 +21,8 @@ abstract class AbstractReset extends Action
     protected $connectorConfig;
 
     /**
-     * @param   Context         $context
-     * @param   ConnectorConfig $connectorConfig
+     * @param Context         $context
+     * @param ConnectorConfig $connectorConfig
      */
     public function __construct(
         Context $context,

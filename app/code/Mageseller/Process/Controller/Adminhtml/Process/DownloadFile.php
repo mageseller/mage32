@@ -26,7 +26,7 @@ class DownloadFile extends AbstractProcessAction
 
         $this->getResponse()->setHttpResponseCode(200)
             ->setHeader('Pragma', 'public', true)
-            ->setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0',true)
+            ->setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0', true)
             ->setHeader('Content-type', 'application/octet-stream', true)
             ->setHeader('Content-Length', filesize($file))
             ->setHeader('Content-Disposition', 'attachment; filename=' . $fileName);

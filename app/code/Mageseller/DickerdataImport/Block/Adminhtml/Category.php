@@ -17,10 +17,10 @@ class Category extends Template
     private $dickerdataCategoryFactory;
 
     /**
-     * @param Template\Context $context
-     * @param CollectionFactory $categoryCollectionFactory
+     * @param Template\Context          $context
+     * @param CollectionFactory         $categoryCollectionFactory
      * @param DickerdataCategoryFactory $dickerdataCategoryFactory
-     * @param array $data
+     * @param array                     $data
      */
     public function __construct(
         Template\Context $context,

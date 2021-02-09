@@ -12,10 +12,14 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class LinkedProductStorage
 {
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(Magento2DbConnection $db, MetaData $metaData)
@@ -45,7 +49,7 @@ class LinkedProductStorage
     }
 
     /**
-     * @param string $linkType
+     * @param string    $linkType
      * @param Product[] $products
      */
     protected function removeProductLinks(string $linkType, array $products)
@@ -57,7 +61,7 @@ class LinkedProductStorage
     }
 
     /**
-     * @param string $linkType
+     * @param string    $linkType
      * @param Product[] $products
      */
     protected function insertProductLinks(string $linkType, array $products)
@@ -75,7 +79,8 @@ class LinkedProductStorage
             $position = 1;
             foreach ($linkedIds as $linkedId) {
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO `{$this->metaData->linkTable}`
                     SET 
                         `product_id` = ?,
@@ -85,11 +90,13 @@ class LinkedProductStorage
                     $product->id,
                     $linkedId,
                     $linkInfo->typeId
-                ]);
+                    ]
+                );
 
                 $linkId = $this->db->getLastInsertId();
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO `{$this->metaData->linkAttributeIntTable}`
                     SET
                         `product_link_attribute_id` = ?,
@@ -99,7 +106,8 @@ class LinkedProductStorage
                     $linkInfo->positionAttributeId,
                     $linkId,
                     $position
-                ]);
+                    ]
+                );
 
                 $position++;
             }

@@ -24,19 +24,19 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
      */
     private $pageSettings;
     /**
-     * @param \Magento\Payment\Helper\Data $paymentData
-     * @param \Magento\Framework\Stdlib\StringUtils $string
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Sales\Model\Order\Pdf\Config $pdfConfig
-     * @param \Magento\Sales\Model\Order\Pdf\Total\Factory $pdfTotalFactory
-     * @param \Magento\Sales\Model\Order\Pdf\ItemsFactory $pdfItemsFactory
+     * @param \Magento\Payment\Helper\Data                         $paymentData
+     * @param \Magento\Framework\Stdlib\StringUtils                $string
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface   $scopeConfig
+     * @param \Magento\Framework\Filesystem                        $filesystem
+     * @param \Magento\Sales\Model\Order\Pdf\Config                $pdfConfig
+     * @param \Magento\Sales\Model\Order\Pdf\Total\Factory         $pdfTotalFactory
+     * @param \Magento\Sales\Model\Order\Pdf\ItemsFactory          $pdfItemsFactory
      * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate
-     * @param \Magento\Framework\Translate\Inline\StateInterface $inlineTranslation
-     * @param \Magento\Sales\Model\Order\Address\Renderer $addressRenderer
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Framework\Locale\ResolverInterface $localeResolver
-     * @param array $data
+     * @param \Magento\Framework\Translate\Inline\StateInterface   $inlineTranslation
+     * @param \Magento\Sales\Model\Order\Address\Renderer          $addressRenderer
+     * @param \Magento\Store\Model\StoreManagerInterface           $storeManager
+     * @param \Magento\Framework\Locale\ResolverInterface          $localeResolver
+     * @param array                                                $data
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
@@ -75,7 +75,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Return PDF document
      *
-     * @param array|Collection $invoices
+     * @param  array|Collection $invoices
      * @return \Zend_Pdf
      */
     public function getPdf($invoices = [])
@@ -206,7 +206,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Insert totals to pdf page
      *
-     * @param  \Zend_Pdf_Page $page
+     * @param  \Zend_Pdf_Page                     $page
      * @param  \Magento\Sales\Model\AbstractModel $source
      * @return \Zend_Pdf_Page
      */
@@ -249,8 +249,8 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Set font as bold
      *
-     * @param \Zend_Pdf_Page $object
-     * @param int $size
+     * @param  \Zend_Pdf_Page $object
+     * @param  int            $size
      * @return \Zend_Pdf_Resource_Font
      */
     protected function _setFontBold($object, $size = 7)
@@ -265,7 +265,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Create new page and assign to PDF object
      *
-     * @param array $settings
+     * @param  array $settings
      * @return \Zend_Pdf_Page
      */
     public function newPage(array $settings = [])
@@ -283,7 +283,7 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Draw header for item table
      *
-     * @param \Zend_Pdf_Page $page
+     * @param  \Zend_Pdf_Page $page
      * @return void
      */
     protected function _drawHeader(\Zend_Pdf_Page $page)
@@ -320,8 +320,8 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Set font as regular
      *
-     * @param \Zend_Pdf_Page $object
-     * @param int $size
+     * @param  \Zend_Pdf_Page $object
+     * @param  int            $size
      * @return \Zend_Pdf_Resource_Font
      */
     protected function _setFontRegular($object, $size = 7)
@@ -383,10 +383,10 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Insert order to pdf page
      *
-     * @param \Zend_Pdf_Page &$page
-     * @param \Magento\Sales\Model\Order $obj
-     * @param bool $putOrderId
-     * @return void
+     * @param                                         \Zend_Pdf_Page             &$page
+     * @param                                         \Magento\Sales\Model\Order $obj
+     * @param                                         bool                       $putOrderId
+     * @return                                        void
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
@@ -660,8 +660,8 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Insert title and number for concrete document type
      *
-     * @param \Zend_Pdf_Page $page
-     * @param string $text
+     * @param  \Zend_Pdf_Page $page
+     * @param  string         $text
      * @return void
      */
     public function insertDocumentNumber(\Zend_Pdf_Page $page, $text)
@@ -782,8 +782,8 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Set font as italic
      *
-     * @param \Zend_Pdf_Page $object
-     * @param int $size
+     * @param  \Zend_Pdf_Page $object
+     * @param  int            $size
      * @return \Zend_Pdf_Resource_Font
      */
     protected function _setFontItalic($object, $size = 7)
@@ -798,8 +798,8 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Set font as bold italic
      *
-     * @param \Zend_Pdf_Page $object
-     * @param int $size
+     * @param  \Zend_Pdf_Page $object
+     * @param  int            $size
      * @return \Zend_Pdf_Resource_Font
      */
     protected function _setFontBoldItalic($object, $size = 7)
@@ -918,11 +918,11 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
      * align        string; text align (also see feed parameter), optional left, right
      * height       int;line spacing (default 10)
      *
-     * @param  \Zend_Pdf_Page $page
-     * @param  array $draw
-     * @param  array $pageSettings
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @return \Zend_Pdf_Page
+     * @param                                         \Zend_Pdf_Page $page
+     * @param                                         array          $draw
+     * @param                                         array          $pageSettings
+     * @throws                                        \Magento\Framework\Exception\LocalizedException
+     * @return                                        \Zend_Pdf_Page
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
@@ -973,10 +973,10 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Correct lines.
      *
-     * @param array $lines
-     * @param \Zend_Pdf_Page $page
-     * @param int $height
-     * @throws \Zend_Pdf_Exception
+     * @param                                        array          $lines
+     * @param                                        \Zend_Pdf_Page $page
+     * @param                                        int            $height
+     * @throws                                       \Zend_Pdf_Exception
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function correctLines($lines, $page, $height) :void
@@ -991,18 +991,18 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
                 } else {
                     $fontStyle = empty($column['font']) ? 'regular' : $column['font'];
                     switch ($fontStyle) {
-                        case 'bold':
-                            $font = $this->_setFontBold($page, $fontSize);
-                            break;
-                        case 'italic':
-                            $font = $this->_setFontItalic($page, $fontSize);
-                            break;
-                        case 'italic bold':
-                            $font = $this->_setFontBoldItalic($page, $fontSize);
-                            break;
-                        default:
-                            $font = $this->_setFontRegular($page, $fontSize);
-                            break;
+                    case 'bold':
+                        $font = $this->_setFontBold($page, $fontSize);
+                        break;
+                    case 'italic':
+                        $font = $this->_setFontItalic($page, $fontSize);
+                        break;
+                    case 'italic bold':
+                        $font = $this->_setFontBoldItalic($page, $fontSize);
+                        break;
+                    default:
+                        $font = $this->_setFontRegular($page, $fontSize);
+                        break;
                     }
                 }
 
@@ -1020,12 +1020,12 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
     /**
      * Correct text.
      *
-     * @param array $column
-     * @param int $height
-     * @param \Zend_Pdf_Resource_Font $font
-     * @param \Zend_Pdf_Page $page
-     * @throws \Zend_Pdf_Exception
-     * @return int
+     * @param                                        array                   $column
+     * @param                                        int                     $height
+     * @param                                        \Zend_Pdf_Resource_Font $font
+     * @param                                        \Zend_Pdf_Page          $page
+     * @throws                                       \Zend_Pdf_Exception
+     * @return                                       int
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function correctText($column, $height, $font, $page) :int
@@ -1042,20 +1042,20 @@ class Invoice extends \Magento\Sales\Model\Order\Pdf\Invoice
             $textAlign = empty($column['align']) ? 'left' : $column['align'];
             $width = empty($column['width']) ? 0 : $column['width'];
             switch ($textAlign) {
-                case 'right':
-                    if ($width) {
-                        $feed = $this->getAlignRight($part, $feed, $width, $font, $fontSize);
-                    } else {
-                        $feed = $feed - $this->widthForStringUsingFontSize($part, $font, $fontSize);
-                    }
-                    break;
-                case 'center':
-                    if ($width) {
-                        $feed = $this->getAlignCenter($part, $feed, $width, $font, $fontSize);
-                    }
-                    break;
-                default:
-                    break;
+            case 'right':
+                if ($width) {
+                    $feed = $this->getAlignRight($part, $feed, $width, $font, $fontSize);
+                } else {
+                    $feed = $feed - $this->widthForStringUsingFontSize($part, $font, $fontSize);
+                }
+                break;
+            case 'center':
+                if ($width) {
+                    $feed = $this->getAlignCenter($part, $feed, $width, $font, $fontSize);
+                }
+                break;
+            default:
+                break;
             }
             $page->drawText($part, $feed, $this->y - $top, 'UTF-8');
             $top += $lineSpacing;

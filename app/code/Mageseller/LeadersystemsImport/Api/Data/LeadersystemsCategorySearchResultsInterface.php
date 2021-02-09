@@ -16,13 +16,15 @@ interface LeadersystemsCategorySearchResultsInterface extends \Magento\Framework
 
     /**
      * Get LeadersystemsCategory list.
+     *
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface[]
      */
     public function getItems();
 
     /**
      * Set name list.
-     * @param \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface[] $items
+     *
+     * @param  \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface[] $items
      * @return $this
      */
     public function setItems(array $items);

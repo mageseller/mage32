@@ -31,12 +31,14 @@ class Process extends AbstractDb
     /**
      * Perform actions before object save
      *
-     * @param   AbstractModel   $object
-     * @return  $this
+     * @param  AbstractModel $object
+     * @return $this
      */
     protected function _beforeSave(AbstractModel $object)
     {
-        /** @var \Mageseller\Process\Model\Process $object */
+        /**
+ * @var \Mageseller\Process\Model\Process $object 
+*/
         if (!$object->getHash()) {
             $object->setHash(md5($object->getType() . ' ' . $object->getName()));
         }
@@ -55,8 +57,8 @@ class Process extends AbstractDb
     /**
      * Deletes specified processes from database
      *
-     * @param   array   $ids
-     * @return  bool|int
+     * @param  array $ids
+     * @return bool|int
      */
     public function deleteIds(array $ids)
     {
@@ -70,9 +72,9 @@ class Process extends AbstractDb
     /**
      * Mark expired processes execution as TIMEOUT according to specified delay in minutes
      *
-     * @param   int $delay
-     * @return  int $result
-     * @throws  \Exception
+     * @param  int $delay
+     * @return int $result
+     * @throws \Exception
      */
     public function markAsTimeout($delay)
     {
@@ -82,11 +84,13 @@ class Process extends AbstractDb
         }
 
         $now = date('Y-m-d H:i:s');
-        $timestampDiffExpr = new \Zend_Db_Expr(sprintf(
-            "TIMESTAMPDIFF(MINUTE, created_at, '%s') > %d",
-            $now,
-            $delay
-        ));
+        $timestampDiffExpr = new \Zend_Db_Expr(
+            sprintf(
+                "TIMESTAMPDIFF(MINUTE, created_at, '%s') > %d",
+                $now,
+                $delay
+            )
+        );
 
         $result = $this->getConnection()->update(
             $this->getMainTable(),
@@ -106,8 +110,8 @@ class Process extends AbstractDb
     /**
      * Overrides this in order to not unset object that calls __destruct() otherwise
      *
-     * @param   AbstractModel   $object
-     * @return  array
+     * @param  AbstractModel $object
+     * @return array
      */
     protected function prepareDataForUpdate($object)
     {

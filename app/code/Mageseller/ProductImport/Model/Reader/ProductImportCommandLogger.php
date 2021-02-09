@@ -11,16 +11,24 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ProductImportCommandLogger implements ProductImportLogger
 {
-    /** @var OutputInterface */
+    /**
+     * @var OutputInterface 
+     */
     protected $output;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $failedProductCount = 0;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $okProductCount = 0;
 
-    /** @var bool */
+    /**
+     * @var bool 
+     */
     protected $errorOccurred = false;
 
     public function __construct(OutputInterface $output)

@@ -42,12 +42,12 @@ class Data extends AbstractHelper
     protected $objectManager;
 
     /**
-     * @param   Context                     $context
-     * @param   StoreManagerInterface       $storeManager
-     * @param   FilterManager               $filterManager
-     * @param   ProductCollectionFactory    $productCollectionFactory
-     * @param   ConfigurableFactory         $typeConfigurableFactory
-     * @param   ObjectManagerInterface      $objectManager
+     * @param Context                  $context
+     * @param StoreManagerInterface    $storeManager
+     * @param FilterManager            $filterManager
+     * @param ProductCollectionFactory $productCollectionFactory
+     * @param ConfigurableFactory      $typeConfigurableFactory
+     * @param ObjectManagerInterface   $objectManager
      */
     public function __construct(
         Context $context,
@@ -68,10 +68,10 @@ class Data extends AbstractHelper
     /**
      * Adds a query parameter to specified URL
      *
-     * @param   string  $url
-     * @param   string  $param
-     * @param   string  $value
-     * @return  string
+     * @param  string $url
+     * @param  string $param
+     * @param  string $value
+     * @return string
      */
     public function addQueryParamToUrl($url, $param, $value)
     {
@@ -89,8 +89,8 @@ class Data extends AbstractHelper
     /**
      * Builds URL string from specified pieces
      *
-     * @param   array   $pieces
-     * @return  string
+     * @param  array $pieces
+     * @return string
      */
     public function buildUrl(array $pieces)
     {
@@ -108,10 +108,10 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param   \DateTime    $date
-     * @param   int         $format
-     * @param   bool        $showTime
-     * @return  string
+     * @param  \DateTime $date
+     * @param  int       $format
+     * @param  bool      $showTime
+     * @return string
      */
     public function formatDateTime(\DateTime $date, $format = \IntlDateFormatter::MEDIUM, $showTime = true)
     {
@@ -125,8 +125,8 @@ class Data extends AbstractHelper
     /**
      * Format specified duration (in seconds) into human readable duration
      *
-     * @param   int|\DateInterval    $duration
-     * @return  string
+     * @param  int|\DateInterval $duration
+     * @return string
      */
     public function formatDuration($duration)
     {
@@ -168,9 +168,9 @@ class Data extends AbstractHelper
     /**
      * Formats given size (in bytes) into an easy readable size
      *
-     * @param   int     $size
-     * @param   string  $separator
-     * @return  string
+     * @param  int    $size
+     * @param  string $separator
+     * @return string
      */
     public function formatSize($size, $separator = ' ')
     {
@@ -183,8 +183,8 @@ class Data extends AbstractHelper
     /**
      * Returns base media URL for specified store
      *
-     * @param   mixed   $store
-     * @return  string
+     * @param  mixed $store
+     * @return string
      */
     public function getBaseMediaUrl($store = null)
     {
@@ -194,8 +194,8 @@ class Data extends AbstractHelper
     /**
      * Returns base URL for specified store
      *
-     * @param   mixed   $store
-     * @return  string
+     * @param  mixed $store
+     * @return string
      */
     public function getBaseUrl($store = null)
     {
@@ -205,8 +205,8 @@ class Data extends AbstractHelper
     /**
      * Formats given date into an easy readable date
      *
-     * @param   string|\DateTime    $date
-     * @return  string
+     * @param  string|\DateTime $date
+     * @return string
      */
     public function getFullDate($date)
     {
@@ -218,7 +218,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @return  TimezoneInterface
+     * @return TimezoneInterface
      */
     public function getTimezone()
     {
@@ -228,9 +228,9 @@ class Data extends AbstractHelper
     /**
      * Returns number of seconds between now and given date, formatted into readable duration if needed
      *
-     * @param   mixed   $date
-     * @param   bool    $toDuration
-     * @return  int|string
+     * @param  mixed $date
+     * @param  bool  $toDuration
+     * @return int|string
      */
     public function getMoment($date, $toDuration = true)
     {
@@ -245,8 +245,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param   Product $product
-     * @return  Product|null
+     * @param  Product $product
+     * @return Product|null
      */
     public function getParentProduct(Product $product)
     {
@@ -259,7 +259,9 @@ class Data extends AbstractHelper
 
             // Get first parent product if possible
             if ($collection->count()) {
-                /** @var Product $parent */
+                /**
+ * @var Product $parent 
+*/
                 $parent = $collection->getFirstItem();
                 $parent->setStoreId(0);
             }
@@ -269,8 +271,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param   mixed   $store
-     * @return  Store
+     * @param  mixed $store
+     * @return Store
      */
     public function getStore($store = null)
     {
@@ -282,8 +284,8 @@ class Data extends AbstractHelper
     /**
      * Checks if specified attribute is using options or not
      *
-     * @param   AbstractAttribute   $attribute
-     * @return  bool
+     * @param  AbstractAttribute $attribute
+     * @return bool
      */
     public function isAttributeUsingOptions(AbstractAttribute $attribute)
     {
@@ -296,7 +298,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public static function isEnterprise()
     {
@@ -307,17 +309,19 @@ class Data extends AbstractHelper
      * Truncates a string to a certain length if necessary, appending the $etc string.
      * $remainder will contain the string that has been replaced with $etc.
      *
-     * @param   string  $value
-     * @param   int     $length
-     * @param   string  $etc
-     * @param   string  $remainder
-     * @param   bool    $breakWords
-     * @return  string
+     * @param  string $value
+     * @param  int    $length
+     * @param  string $etc
+     * @param  string $remainder
+     * @param  bool   $breakWords
+     * @return string
      */
     public function truncate($value, $length = 80, $etc = '...', &$remainder = '', $breakWords = true)
     {
-        return $this->filterManager->truncate($value, [
+        return $this->filterManager->truncate(
+            $value, [
             'length' => $length, 'etc' => $etc, 'remainder' => $remainder, 'breakWords' => $breakWords
-        ]);
+            ]
+        );
     }
 }

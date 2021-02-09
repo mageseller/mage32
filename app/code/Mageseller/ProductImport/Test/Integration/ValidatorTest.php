@@ -19,14 +19,18 @@ use IntlChar;
  */
 class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
 {
-    /** @var  ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     private static $factory;
 
     public static function setUpBeforeClass(): void
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         self::$factory = $objectManager->get(ImporterFactory::class);
     }
 
@@ -34,7 +38,9 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var Validator $validator */
+        /**
+ * @var Validator $validator 
+*/
         $validator = $objectManager->get(Validator::class);
 
         $tests = [
@@ -173,7 +179,9 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         $factory = $objectManager->get(ImporterFactory::class);
         $config = new ImportConfig();
 
@@ -206,7 +214,9 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         $factory = $objectManager->get(ImporterFactory::class);
         $config = new ImportConfig();
 
@@ -246,7 +256,9 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
 
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var Validator $validator */
+        /**
+ * @var Validator $validator 
+*/
         $validator = $objectManager->get(Validator::class);
 
         $product = new SimpleProduct('validator-product-import');
@@ -261,17 +273,21 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
         $product->global()->setImageRole($image, 'name');
 
         $validator->validate($product);
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             "Image role attribute does not exist: not-an-attribute",
             "Image role attribute input type is not media image: name"
-        ], $product->getErrors());
+            ], $product->getErrors()
+        );
     }
 
     public function testStockItemValidation()
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var Validator $validator */
+        /**
+ * @var Validator $validator 
+*/
         $validator = $objectManager->get(Validator::class);
 
         $tests = [
@@ -307,7 +323,9 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ConfigurableValidator $configurableValidator */
+        /**
+ * @var ConfigurableValidator $configurableValidator 
+*/
         $configurableValidator = $objectManager->get(ConfigurableValidator::class);
 
         // ----
@@ -320,10 +338,12 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
 
         $configurableValidator->validate($configurable, []);
 
-        $this->assertSame([
+        $this->assertSame(
+            [
             "specify the super attributes with setSuperAttributeCodes()",
             "specify the variants with setVariantSkus()"
-        ], $configurable->getErrors());
+            ], $configurable->getErrors()
+        );
     }
 
     public function testTierPrices()
@@ -339,7 +359,9 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
 
         $product->setTierPrices([[10, 12.95, "Not Logged In", "Clothing"], [20, 12.75, "Not Logged In", "Clothing"]]);
 
-        /** @var Validator $validator */
+        /**
+ * @var Validator $validator 
+*/
         $validator = $objectManager->get(Validator::class);
 
         $validator->validate($product);
@@ -358,17 +380,23 @@ class ValidatorTest extends \Magento\TestFramework\TestCase\AbstractController
         $global->setName("Big Blue Box");
         $global->setPrice("123.00");
 
-        $product->setCustomOptions([
+        $product->setCustomOptions(
+            [
             $color = CustomOption::createCustomOptionDropDown(true, ["red", "green", "blue"]),
-        ]);
+            ]
+        );
 
         $product->global()->setCustomOptionTitle($color, "Color");
-        $product->global()->setCustomOptionValues($color, [
+        $product->global()->setCustomOptionValues(
+            $color, [
             new CustomOptionValue("0.10", ProductStoreView::PRICE_TYPE_FIXED, 'Red'),
             new CustomOptionValue("0.15", ProductStoreView::PRICE_TYPE_FIXED, 'Green')
-        ]);
+            ]
+        );
 
-        /** @var Validator $validator */
+        /**
+ * @var Validator $validator 
+*/
         $validator = $objectManager->get(Validator::class);
 
         $validator->validate($product);

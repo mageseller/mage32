@@ -52,17 +52,17 @@ class LeadersystemsCategoryRepository implements LeadersystemsCategoryRepository
     protected $extensibleDataObjectConverter;
 
     /**
-     * @param ResourceLeadersystemsCategory $resource
-     * @param LeadersystemsCategoryFactory $leadersystemsCategoryFactory
-     * @param LeadersystemsCategoryInterfaceFactory $dataLeadersystemsCategoryFactory
-     * @param LeadersystemsCategoryCollectionFactory $leadersystemsCategoryCollectionFactory
+     * @param ResourceLeadersystemsCategory                      $resource
+     * @param LeadersystemsCategoryFactory                       $leadersystemsCategoryFactory
+     * @param LeadersystemsCategoryInterfaceFactory              $dataLeadersystemsCategoryFactory
+     * @param LeadersystemsCategoryCollectionFactory             $leadersystemsCategoryCollectionFactory
      * @param LeadersystemsCategorySearchResultsInterfaceFactory $searchResultsFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param DataObjectProcessor $dataObjectProcessor
-     * @param StoreManagerInterface $storeManager
-     * @param CollectionProcessorInterface $collectionProcessor
-     * @param JoinProcessorInterface $extensionAttributesJoinProcessor
-     * @param ExtensibleDataObjectConverter $extensibleDataObjectConverter
+     * @param DataObjectHelper                                   $dataObjectHelper
+     * @param DataObjectProcessor                                $dataObjectProcessor
+     * @param StoreManagerInterface                              $storeManager
+     * @param CollectionProcessorInterface                       $collectionProcessor
+     * @param JoinProcessorInterface                             $extensionAttributesJoinProcessor
+     * @param ExtensibleDataObjectConverter                      $extensibleDataObjectConverter
      */
     public function __construct(
         ResourceLeadersystemsCategory $resource,
@@ -112,10 +112,12 @@ class LeadersystemsCategoryRepository implements LeadersystemsCategoryRepository
         try {
             $this->resource->save($leadersystemsCategoryModel);
         } catch (\Exception $exception) {
-            throw new CouldNotSaveException(__(
-                'Could not save the leadersystemsCategory: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotSaveException(
+                __(
+                    'Could not save the leadersystemsCategory: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return $leadersystemsCategoryModel->getDataModel();
     }
@@ -172,10 +174,12 @@ class LeadersystemsCategoryRepository implements LeadersystemsCategoryRepository
             $this->resource->load($leadersystemsCategoryModel, $leadersystemsCategory->getLeadersystemscategoryId());
             $this->resource->delete($leadersystemsCategoryModel);
         } catch (\Exception $exception) {
-            throw new CouldNotDeleteException(__(
-                'Could not delete the LeadersystemsCategory: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotDeleteException(
+                __(
+                    'Could not delete the LeadersystemsCategory: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return true;
     }

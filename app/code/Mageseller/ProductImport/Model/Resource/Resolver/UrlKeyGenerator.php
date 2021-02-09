@@ -16,13 +16,19 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class UrlKeyGenerator
 {
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var NameToUrlKeyConverter */
+    /**
+     * @var NameToUrlKeyConverter 
+     */
     protected $nameToUrlKeyConverter;
 
-    /** @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
     public function __construct(Magento2DbConnection $db, MetaData $metaData, NameToUrlKeyConverter $nameToUrlKeyConverter)
@@ -34,8 +40,8 @@ class UrlKeyGenerator
 
     /**
      * @param Product[] $products
-     * @param string $urlKeyScheme
-     * @param string $duplicateUrlKeyStrategy
+     * @param string    $urlKeyScheme
+     * @param string    $duplicateUrlKeyStrategy
      */
     public function resolveAndValidateUrlKeys(array $products, string $urlKeyScheme, string $duplicateUrlKeyStrategy)
     {
@@ -85,9 +91,9 @@ class UrlKeyGenerator
     /**
      * Checks if the product already has a url key and if its basic part matches the url key schema
      *
-     * @param int|null $productId
-     * @param ProductStoreView $storeView
-     * @param $urlKeyScheme
+     * @param  int|null         $productId
+     * @param  ProductStoreView $storeView
+     * @param  $urlKeyScheme
      * @return false|string
      */
     protected function getAcceptableExistingUrlKey($productId, ProductStoreView $storeView, $urlKeyScheme)
@@ -110,10 +116,10 @@ class UrlKeyGenerator
     }
 
     /**
-     * @param ProductStoreView $storeView
-     * @param string $urlKeyScheme
-     * @param string $duplicateUrlKeyStrategy
-     * @param array $newUrlKeys
+     * @param  ProductStoreView $storeView
+     * @param  string           $urlKeyScheme
+     * @param  string           $duplicateUrlKeyStrategy
+     * @param  array            $newUrlKeys
      * @return string|null
      */
     protected function generateUrlKey(ProductStoreView $storeView, string $urlKeyScheme, string $duplicateUrlKeyStrategy, array $newUrlKeys)
@@ -132,8 +138,8 @@ class UrlKeyGenerator
     }
 
     /**
-     * @param ProductStoreView $storeView
-     * @param string $urlKeyScheme
+     * @param  ProductStoreView $storeView
+     * @param  string           $urlKeyScheme
      * @return null|string
      */
     protected function getBasicGeneratedUrlKey(ProductStoreView $storeView, string $urlKeyScheme)
@@ -184,9 +190,9 @@ class UrlKeyGenerator
     }
 
     /**
-     * @param string $urlKey
-     * @param int $storeViewId
-     * @param array $newUrlKeys
+     * @param  string $urlKey
+     * @param  int    $storeViewId
+     * @param  array  $newUrlKeys
      * @return bool
      */
     protected function urlKeyExists(string $urlKey, int $storeViewId, array $newUrlKeys)
@@ -197,9 +203,9 @@ class UrlKeyGenerator
     }
 
     /**
-     * @param string $urlKey
-     * @param int $storeViewId
-     * @param array $newUrlKeys
+     * @param  string $urlKey
+     * @param  int    $storeViewId
+     * @param  array  $newUrlKeys
      * @return array
      */
     protected function findUrlKeyProductId(string $urlKey, int $storeViewId, array $newUrlKeys)
@@ -217,15 +223,16 @@ class UrlKeyGenerator
     }
 
     /**
-     * @param string $urlKey
-     * @param int $storeViewId
+     * @param  string $urlKey
+     * @param  int    $storeViewId
      * @return null|string
      */
     protected function getUrlKeyProductId(string $urlKey, int $storeViewId)
     {
         $attributeId = $this->metaData->productEavAttributeInfo['url_key']->attributeId;
 
-        $result = $this->db->fetchSingleCell("
+        $result = $this->db->fetchSingleCell(
+            "
             SELECT `entity_id`
             FROM `{$this->metaData->productEntityTable}_varchar`
             WHERE 
@@ -236,21 +243,23 @@ class UrlKeyGenerator
             $attributeId,
             $storeViewId,
             $urlKey
-        ]);
+            ]
+        );
 
         return $result;
     }
 
     /**
-     * @param string $productId
-     * @param int $storeViewId
+     * @param  string $productId
+     * @param  int    $storeViewId
      * @return null|string
      */
     protected function getProductUrlKey(string $productId, int $storeViewId)
     {
         $attributeId = $this->metaData->productEavAttributeInfo['url_key']->attributeId;
 
-        $result = $this->db->fetchSingleCell("
+        $result = $this->db->fetchSingleCell(
+            "
             SELECT `value`
             FROM `{$this->metaData->productEntityTable}_varchar`
             WHERE 
@@ -261,7 +270,8 @@ class UrlKeyGenerator
             $attributeId,
             $storeViewId,
             $productId
-        ]);
+            ]
+        );
 
         return $result;
     }

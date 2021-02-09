@@ -24,9 +24,9 @@ class Config extends AbstractHelper
     protected $storeManager;
 
     /**
-     * @param   Context                 $context
-     * @param   MagentoConfig           $configuration
-     * @param   StoreManagerInterface   $storeManager
+     * @param Context               $context
+     * @param MagentoConfig         $configuration
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Context $context,
@@ -38,7 +38,7 @@ class Config extends AbstractHelper
         $this->storeManager = $storeManager;
     }
     /**
-     * @return  int
+     * @return int
      */
     public function getCurrentStoreId()
     {
@@ -46,7 +46,7 @@ class Config extends AbstractHelper
     }
 
     /**
-     * @return  int
+     * @return int
      */
     public function getCurrentWebsiteId()
     {
@@ -56,9 +56,9 @@ class Config extends AbstractHelper
     /**
      * Returns a config flag
      *
-     * @param   string  $path
-     * @param   mixed   $store
-     * @return  bool
+     * @param  string $path
+     * @param  mixed  $store
+     * @return bool
      */
     public function getFlag($path, $store = null)
     {
@@ -68,8 +68,8 @@ class Config extends AbstractHelper
     /**
      * Returns store locale
      *
-     * @param   mixed   $store
-     * @return  string
+     * @param  mixed $store
+     * @return string
      */
     public function getLocale($store = null)
     {
@@ -79,8 +79,8 @@ class Config extends AbstractHelper
     /**
      * Get tax class id specified for shipping tax estimation
      *
-     * @param   mixed   $store
-     * @return  int
+     * @param  mixed $store
+     * @return int
      */
     public function getShippingTaxClass($store = null)
     {
@@ -90,10 +90,10 @@ class Config extends AbstractHelper
     /**
      * Reads the configuration directly from the database
      *
-     * @param   string  $path
-     * @param   string  $scope
-     * @param   int     $scopeId
-     * @return  string|false
+     * @param  string $path
+     * @param  string $scope
+     * @param  int    $scopeId
+     * @return string|false
      */
     public function getRawValue($path, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0)
     {
@@ -111,9 +111,9 @@ class Config extends AbstractHelper
     /**
      * Returns a config value
      *
-     * @param   string  $path
-     * @param   mixed   $store
-     * @return  mixed
+     * @param  string $path
+     * @param  mixed  $store
+     * @return mixed
      */
     public function getValue($path, $store = null)
     {
@@ -123,8 +123,8 @@ class Config extends AbstractHelper
     /**
      * Returns store name if defined
      *
-     * @param   mixed   $store
-     * @return  string
+     * @param  mixed $store
+     * @return string
      */
     public function getStoreName($store = null)
     {
@@ -132,7 +132,7 @@ class Config extends AbstractHelper
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isSingleStoreMode()
     {
@@ -142,10 +142,10 @@ class Config extends AbstractHelper
     /**
      * Set a config value
      *
-     * @param   string  $path
-     * @param   string  $value
-     * @param   string  $scope
-     * @param   int     $scopeId
+     * @param string $path
+     * @param string $value
+     * @param string $scope
+     * @param int    $scopeId
      */
     public function setValue($path, $value, $scope = 'default', $scopeId = 0)
     {
@@ -155,7 +155,7 @@ class Config extends AbstractHelper
     /**
      * Returns allowed max file size (in MB) for process files that can be viewed directly in browser
      *
-     * @return  int
+     * @return int
      */
     public function getShowFileMaxSize()
     {
@@ -165,7 +165,7 @@ class Config extends AbstractHelper
     /**
      * Returns delay in minutes after which a process has to be automatically cancelled (blank = no timeout).
      *
-     * @return  int
+     * @return int
      */
     public function getTimeoutDelay()
     {
@@ -176,7 +176,7 @@ class Config extends AbstractHelper
      * Returns true if processes can be executed automatically
      * through an AJAX request in Magento admin, false otherwise.
      *
-     * @return  bool
+     * @return bool
      */
     public function isAutoAsyncExecution()
     {

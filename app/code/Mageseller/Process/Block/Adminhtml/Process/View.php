@@ -14,9 +14,9 @@ class View extends Container
     protected $coreRegistry;
 
     /**
-     * @param   Context     $context
-     * @param   Registry    $registry
-     * @param   array       $data
+     * @param Context  $context
+     * @param Registry $registry
+     * @param array    $data
      */
     public function __construct(
         Context $context,
@@ -48,31 +48,37 @@ class View extends Container
 
         if ($process && $process->canCheckMagesellerStatus()) {
             $confirmText = $this->escapeJsQuote(__('Are you sure?'));
-            $this->addButton('check_mirakl_status', [
+            $this->addButton(
+                'check_mirakl_status', [
                 'label'   => __('Check Mageseller Status'),
                 'onclick' => "confirmSetLocation('{$confirmText}', '{$this->getCheckMagesellerStatusUrl()}')",
-            ]);
+                ]
+            );
         }
 
         if (!$process) {
             $this->removeButton('delete');
         } elseif ($process->canRun()) {
             $confirmText = $this->escapeJsQuote(__('Are you sure?'));
-            $this->addButton('run', [
+            $this->addButton(
+                'run', [
                 'label'   => __('Run'),
                 'onclick' => "confirmSetLocation('{$confirmText}', '{$this->getRunUrl()}')",
-            ]);
+                ]
+            );
         } elseif ($process->canStop()) {
             $confirmText = $this->escapeJsQuote(__('Are you sure?'));
-            $this->addButton('stop', [
+            $this->addButton(
+                'stop', [
                 'label'   => __('Stop'),
                 'onclick' => "confirmSetLocation('{$confirmText}', '{$this->getStopUrl()}')",
-            ]);
+                ]
+            );
         }
     }
 
     /**
-     * @return  Process
+     * @return Process
      */
     public function getProcess()
     {
@@ -80,7 +86,7 @@ class View extends Container
     }
 
     /**
-     * @return  string
+     * @return string
      */
     public function getRunUrl()
     {
@@ -88,7 +94,7 @@ class View extends Container
     }
 
     /**
-     * @return  string
+     * @return string
      */
     public function getStopUrl()
     {
@@ -96,7 +102,7 @@ class View extends Container
     }
 
     /**
-     * @return  string
+     * @return string
      */
     public function getCheckMagesellerStatusUrl()
     {

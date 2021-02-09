@@ -12,16 +12,20 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class ConfigurableStorage
 {
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(
         Magento2DbConnection $db,
-        MetaData $metaData)
-    {
+        MetaData $metaData
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
     }
@@ -66,22 +70,26 @@ class ConfigurableStorage
         foreach ($products as $product) {
             foreach ($product->getSuperAttributeCodes() as $i => $attributeCode) {
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO {$this->metaData->superAttributeTable}
                     SET product_id = ?, attribute_id = ?, position = ?
                 ", [
                     $product->id,
                     $this->metaData->productEavAttributeInfo[$attributeCode]->attributeId,
                     $i
-                ]);
+                    ]
+                );
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO {$this->metaData->superAttributeLabelTable}
                     SET product_super_attribute_id = ?, store_id = 0, use_default = 0, value = ?
                 ", [
                     $this->db->getLastInsertId(),
                     ucwords(str_replace('_', ' ', $attributeCode))
-                ]);
+                    ]
+                );
             }
         }
     }
@@ -107,11 +115,13 @@ class ConfigurableStorage
 
         $configurableIds = array_column($products, 'id');
 
-        $rows = $this->db->fetchAllNonAssoc("
+        $rows = $this->db->fetchAllNonAssoc(
+            "
             SELECT parent_id, product_id 
             FROM {$this->metaData->superLinkTable}
             WHERE parent_id in (" . $this->db->getMarks($configurableIds) . ")
-        ", $configurableIds);
+        ", $configurableIds
+        );
 
         $existingVariantIds = [];
 
@@ -134,23 +144,27 @@ class ConfigurableStorage
             // don't bother compounding queries; addition and removal of variants is rare
 
             foreach ($added as $variantId) {
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO {$this->metaData->superLinkTable} 
                     SET product_id = ?, parent_id = ?
                 ", [
                     $variantId,
                     $configurableId
-                ]);
+                    ]
+                );
             }
 
             foreach ($removed as $variantId) {
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     DELETE FROM {$this->metaData->superLinkTable} 
                     WHERE product_id = ? AND parent_id = ?
                 ", [
                     $variantId,
                     $configurableId
-                ]);
+                    ]
+                );
             }
         }
     }
@@ -166,11 +180,13 @@ class ConfigurableStorage
 
         $configurableIds = array_column($products, 'id');
 
-        $rows = $this->db->fetchAllNonAssoc("
+        $rows = $this->db->fetchAllNonAssoc(
+            "
             SELECT parent_id, child_id 
             FROM {$this->metaData->relationTable}
             WHERE parent_id in (" . $this->db->getMarks($configurableIds) . ")
-        ", $configurableIds);
+        ", $configurableIds
+        );
 
         $existingVariantIds = [];
 
@@ -193,23 +209,27 @@ class ConfigurableStorage
             // don't bother compounding queries; addition and removal of variants is rare
 
             foreach ($added as $variantId) {
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO {$this->metaData->relationTable} 
                     SET child_id = ?, parent_id = ?
                 ", [
                     $variantId,
                     $configurableId
-                ]);
+                    ]
+                );
             }
 
             foreach ($removed as $variantId) {
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     DELETE FROM {$this->metaData->relationTable} 
                     WHERE child_id = ? AND parent_id = ?
                 ", [
                     $variantId,
                     $configurableId
-                ]);
+                    ]
+                );
             }
         }
     }

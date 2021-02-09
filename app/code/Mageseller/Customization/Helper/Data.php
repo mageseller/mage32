@@ -13,10 +13,10 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 
 namespace Mageseller\Customization\Helper;
@@ -35,6 +35,7 @@ use Mageseller\Customization\Model\DevicesFactory;
 
 /**
  * Class Data
+ *
  * @package Mageseller\Osc\Helper
  */
 class Data extends AbstractHelper
@@ -124,11 +125,11 @@ class Data extends AbstractHelper
     protected $_devicesCollection;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Magento\Framework\App\Helper\Context      $context
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
-     * @param \Magento\Framework\Filter\TranslitUrl $translitUrl
-     * @param \Magento\Framework\Filter\FilterManager $filter
+     * @param \Magento\Framework\ObjectManagerInterface  $objectManager
+     * @param \Magento\Framework\Filter\TranslitUrl      $translitUrl
+     * @param \Magento\Framework\Filter\FilterManager    $filter
      */
     public function __construct(
         Context $context,
@@ -149,7 +150,7 @@ class Data extends AbstractHelper
     /**
      * Is enable module on frontend
      *
-     * @param null $store
+     * @param  null $store
      * @return bool
      */
     public function isEnabled($store = null)
@@ -168,7 +169,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $position
+     * @param  $position
      * @return bool
      */
     public function canShowDevicesLink($position)
@@ -183,7 +184,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param null $devices
+     * @param  null $devices
      * @return string
      */
     public function getDevicesUrl($devices = null)
@@ -195,7 +196,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $devices
+     * @param  $devices
      * @return string
      */
     public function processKey($devices)
@@ -212,7 +213,7 @@ class Data extends AbstractHelper
     /**
      * Format URL key from name or defined key
      *
-     * @param string $str
+     * @param  string $str
      * @return string
      */
     public function formatUrlKey($str)
@@ -221,7 +222,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $devices
+     * @param  $devices
      * @return string
      */
     public function getDevicesImageUrl($devices)
@@ -252,8 +253,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $devices
-     * @param bool|false $short
+     * @param  $devices
+     * @param  bool|false $short
      * @return mixed
      */
     public function getDevicesDescription($devices, $short = false)
@@ -265,10 +266,11 @@ class Data extends AbstractHelper
         return $devices->getDescription() ?: '';
     }
 
-    /************************ General Configuration *************************
+    /************************
+     * General Configuration *************************
      *
-     * @param      $code
-     * @param null $store
+     * @param  $code
+     * @param  null $store
      * @return mixed
      */
     public function getGeneralConfig($code = '', $store = null)
@@ -279,15 +281,15 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param null $store
+     * @param  null $store
      * @return mixed
      */
     public function getAttributeCode($store = null)
     {
-        //		if ($store == null)
-        //		{
-        //			$store = '0';
-        //		}
+        //        if ($store == null)
+        //        {
+        //            $store = '0';
+        //        }
         return $this->getGeneralConfig('attribute', $store);
     }
 
@@ -295,7 +297,7 @@ class Data extends AbstractHelper
      * Get route name for devices.
      * If empty, default 'devices' will be used
      *
-     * @param null $store
+     * @param  null $store
      * @return string
      */
     public function getRoute($store = null)
@@ -308,7 +310,7 @@ class Data extends AbstractHelper
     /**
      * Retrieve category rewrite suffix for store
      *
-     * @param int $storeId
+     * @param  int $storeId
      * @return string
      */
     public function getUrlSuffix($storeId = null)
@@ -320,10 +322,11 @@ class Data extends AbstractHelper
         );
     }
 
-    /************************ Devices Configuration *************************
+    /************************
+     * Devices Configuration *************************
      *
-     * @param      $code
-     * @param null $store
+     * @param  $code
+     * @param  null $store
      * @return mixed
      */
     public function getDevicesConfig($code = '', $store = null)
@@ -334,8 +337,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param string $group
-     * @param null $store
+     * @param  string $group
+     * @param  null   $store
      * @return array
      */
     public function getImageSize($group = '', $store = null)
@@ -345,10 +348,11 @@ class Data extends AbstractHelper
         return explode('x', $imageSize);
     }
 
-    /************************ Feature Devices Configuration *************************
+    /************************
+     * Feature Devices Configuration *************************
      *
-     * @param      $code
-     * @param null $store
+     * @param  $code
+     * @param  null $store
      * @return mixed
      */
     public function getFeatureConfig($code = '', $store = null)
@@ -359,7 +363,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param null $store
+     * @param  null $store
      * @return mixed
      */
     public function enableFeature($store = null)
@@ -367,10 +371,11 @@ class Data extends AbstractHelper
         return $this->getSearchConfig('enable', $store);
     }
 
-    /************************ Search Devices Configuration *************************
+    /************************
+     * Search Devices Configuration *************************
      *
-     * @param      $code
-     * @param null $store
+     * @param  $code
+     * @param  null $store
      * @return mixed
      */
     public function getSearchConfig($code = '', $store = null)
@@ -381,7 +386,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param null $store
+     * @param  null $store
      * @return mixed
      */
     public function enableSearch($store = null)
@@ -389,10 +394,11 @@ class Data extends AbstractHelper
         return $this->getSearchConfig('enable', $store);
     }
 
-    /************************ Devices View Configuration *************************
+    /************************
+     * Devices View Configuration *************************
      *
-     * @param      $code
-     * @param null $store
+     * @param  $code
+     * @param  null $store
      * @return mixed
      */
     public function getDevicesDetailConfig($code = '', $store = null)
@@ -425,8 +431,9 @@ class Data extends AbstractHelper
 
     /**
      * generate url_key for devices category
-     * @param $name
-     * @param $count
+     *
+     * @param  $name
+     * @param  $count
      * @return string
      */
     public function generateUrlKey($name, $count)
@@ -445,7 +452,8 @@ class Data extends AbstractHelper
 
     /**
      * replace vietnamese characters to english characters
-     * @param $str
+     *
+     * @param  $str
      * @return mixed|string
      */
     public function strReplace($str)
@@ -463,7 +471,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param null $cat
+     * @param  null $cat
      * @return string
      */
     public function getCatUrl($cat = null)
@@ -476,8 +484,8 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param $routePath
-     * @param $routeSize
+     * @param  $routePath
+     * @param  $routeSize
      * @return bool
      */
     public function isDevicesRoute($routePath, $routeSize)
@@ -514,16 +522,16 @@ class Data extends AbstractHelper
         $devices = $this->_devicesFactory->create();
         switch ($type) {
             //Get Devices List by Category
-            case self::CATEGORY:
-                $list = $devices->getDevicesCollection(null, ['main_table.option_id' => ['in' => $ids]]);
-                break;
+        case self::CATEGORY:
+            $list = $devices->getDevicesCollection(null, ['main_table.option_id' => ['in' => $ids]]);
+            break;
             //Get Devices List Filtered by Devices First Char
-            case self::BRAND_FIRST_CHAR:
-                $list = $devices->getDevicesCollection(null, ['main_table.option_id' => ['in' => $ids]], "IF(tsv.value_id > 0, tsv.value, tdv.value) LIKE '" . $char . "%'");
-                break;
-            default:
+        case self::BRAND_FIRST_CHAR:
+            $list = $devices->getDevicesCollection(null, ['main_table.option_id' => ['in' => $ids]], "IF(tsv.value_id > 0, tsv.value, tdv.value) LIKE '" . $char . "%'");
+            break;
+        default:
             //Get Devices List
-                $list = $devices->getDevicesCollection();
+            $list = $devices->getDevicesCollection();
         }
 
         return $list;
@@ -535,7 +543,7 @@ class Data extends AbstractHelper
     /**
      * Get class for mixitup filter
      *
-     * @param $devices
+     * @param  $devices
      * @return string
      */
 
@@ -558,7 +566,7 @@ class Data extends AbstractHelper
     }
     /**
      * @param $field
-     * @param null $scopeValue
+     * @param null   $scopeValue
      * @param string $scopeType
      *
      * @return array|mixed
@@ -566,7 +574,9 @@ class Data extends AbstractHelper
     public function getConfigValue($field, $scopeValue = null, $scopeType = ScopeInterface::SCOPE_STORE)
     {
         if ($scopeValue === null && !$this->isArea()) {
-            /** @var Config $backendConfig */
+            /**
+ * @var Config $backendConfig 
+*/
             if (!$this->backendConfig) {
                 $this->backendConfig = $this->objectManager->get(\Magento\Backend\App\ConfigInterface::class);
             }
@@ -584,7 +594,9 @@ class Data extends AbstractHelper
     public function isArea($area = Area::AREA_FRONTEND)
     {
         if (!isset($this->isArea[$area])) {
-            /** @var State $state */
+            /**
+ * @var State $state 
+*/
             $state = $this->objectManager->get(\Magento\Framework\App\State::class);
 
             try {

@@ -12,17 +12,20 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class ProductDeleter
 {
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
     public function __construct(
         MetaData $metaData,
         Magento2DbConnection $db
-    )
-    {
+    ) {
         $this->metaData = $metaData;
         $this->db = $db;
     }
@@ -35,9 +38,11 @@ class ProductDeleter
         $this->db->deleteMultiple($this->metaData->productEntityTable, "entity_id", $ids);
 
         foreach ($this->metaData->getNonGlobalStoreViewIds() as $storeViewId) {
-            $this->db->deleteMultipleWithWhere($this->metaData->urlRewriteTable, "entity_id", $ids, "
+            $this->db->deleteMultipleWithWhere(
+                $this->metaData->urlRewriteTable, "entity_id", $ids, "
                 `store_id` = {$storeViewId} AND `entity_type` = 'product'
-            ");
+            "
+            );
         }
     }
 
@@ -50,9 +55,11 @@ class ProductDeleter
             return;
         }
 
-        $ids = $this->db->fetchSingleColumn("
+        $ids = $this->db->fetchSingleColumn(
+            "
             SELECT `entity_id` FROM " . $this->metaData->productEntityTable . " WHERE BINARY `sku` IN (" . $this->db->getMarks($skus) . ")
-        ", $skus);
+        ", $skus
+        );
 
         $this->deleteProductsByIds($ids);
     }

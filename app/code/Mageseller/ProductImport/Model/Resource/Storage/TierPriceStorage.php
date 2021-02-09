@@ -12,16 +12,20 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class TierPriceStorage
 {
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(
         Magento2DbConnection $db,
-        MetaData $metaData)
-    {
+        MetaData $metaData
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
     }
@@ -46,7 +50,7 @@ class TierPriceStorage
     }
 
     /**
-     * @param Product[] $products
+     * @param  Product[] $products
      * @return array
      */
     protected function findProductsWithDeletableTierPrices(array $products)
@@ -58,11 +62,13 @@ class TierPriceStorage
         $productIds = array_column($products, 'id');
 
         // count the number of stored tier prices per product
-        $counts = $this->db->fetchMap("
+        $counts = $this->db->fetchMap(
+            "
             SELECT `entity_id`, COUNT(*) FROM `{$this->metaData->tierPriceTable}`
             WHERE `entity_id` IN (" . $this->db->getMarks($productIds) . ")
             GROUP BY `entity_id`
-        ", $productIds);
+        ", $productIds
+        );
 
         // the products whose outdated tier prices must be removed from the database
         $resultProducts = [];
@@ -126,8 +132,10 @@ class TierPriceStorage
             $fields[] = 'percentage_value';
         }
 
-        $this->db->insertMultipleWithUpdate($this->metaData->tierPriceTable,
-            $fields, $values,Magento2DbConnection::_1_KB, "`value` = VALUES(`value`)");
+        $this->db->insertMultipleWithUpdate(
+            $this->metaData->tierPriceTable,
+            $fields, $values, Magento2DbConnection::_1_KB, "`value` = VALUES(`value`)"
+        );
     }
 
     /**
@@ -142,14 +150,17 @@ class TierPriceStorage
         $productIds = array_column($products, 'id');
 
         // collect tier prices that are stored in the database
-        $storedTierPriceData = $this->db->fetchAllAssoc("
+        $storedTierPriceData = $this->db->fetchAllAssoc(
+            "
             SELECT `value_id`, `entity_id`, `all_groups`, `customer_group_id`, `qty`, `value`, `website_id`
             FROM `{$this->metaData->tierPriceTable}`
             WHERE `entity_id` IN (" . $this->db->getMarks($productIds) . ")
-        ", $productIds);
+        ", $productIds
+        );
 
         foreach ($storedTierPriceData as &$storedTierPriceDatum) {
-            $storedTierPriceDatum['serialized'] = sprintf("%s %s %s %s %s %s",
+            $storedTierPriceDatum['serialized'] = sprintf(
+                "%s %s %s %s %s %s",
                 $storedTierPriceDatum['entity_id'],
                 (int)$storedTierPriceDatum['all_groups'],
                 (int)$storedTierPriceDatum['customer_group_id'],
@@ -163,7 +174,8 @@ class TierPriceStorage
         $activeTierPriceData = [];
         foreach ($products as $product) {
             foreach ($product->getTierPrices() as $tierPrice) {
-                $serialized = sprintf("%s %s %s %s %s %s",
+                $serialized = sprintf(
+                    "%s %s %s %s %s %s",
                     $product->id,
                     (int)($tierPrice->getCustomerGroupId() === null),
                     (int)$tierPrice->getCustomerGroupId(),

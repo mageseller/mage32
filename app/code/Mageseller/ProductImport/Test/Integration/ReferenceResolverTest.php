@@ -13,14 +13,18 @@ use Mageseller\ProductImport\Model\Resource\Resolver\ReferenceResolver;
  */
 class ReferenceResolverTest extends \Magento\TestFramework\TestCase\AbstractController
 {
-    /** @var  ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     private static $factory;
 
     public static function setUpBeforeClass(): void
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         self::$factory = $objectManager->get(ImporterFactory::class);
     }
 
@@ -33,7 +37,9 @@ class ReferenceResolverTest extends \Magento\TestFramework\TestCase\AbstractCont
 
         $config = new ImportConfig();
 
-        /** @var ReferenceResolver $resolver */
+        /**
+ * @var ReferenceResolver $resolver 
+*/
         $resolver = $objectManager->get(ReferenceResolver::class);
 
         $tests = [
@@ -103,7 +109,9 @@ class ReferenceResolverTest extends \Magento\TestFramework\TestCase\AbstractCont
 
         $config = new ImportConfig();
 
-        /** @var ReferenceResolver $resolver */
+        /**
+ * @var ReferenceResolver $resolver 
+*/
         $resolver = $objectManager->get(ReferenceResolver::class);
 
         $tests = [

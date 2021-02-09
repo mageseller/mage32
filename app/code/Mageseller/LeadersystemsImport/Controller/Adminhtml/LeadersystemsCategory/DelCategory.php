@@ -13,7 +13,9 @@ use Mageseller\LeadersystemsImport\Helper\Leadersystems;
 
 class DelCategory extends Action
 {
-    /** @var  Page */
+    /**
+     * @var Page 
+     */
     protected $resultPageFactory;
     protected $helper;
     protected $_registry;
@@ -30,13 +32,15 @@ class DelCategory extends Action
      */
     private $eavAtrributeUpdateHelper;
 
-    /**      *
-     * @param Context $context
-     * @param PageFactory $resultPageFactory
-     * @param Leadersystems $helper
-     * @param EavAtrributeUpdateHelper $eavAtrributeUpdateHelper
+    /**
+     * *
+     *
+     * @param Context                     $context
+     * @param PageFactory                 $resultPageFactory
+     * @param Leadersystems               $helper
+     * @param EavAtrributeUpdateHelper    $eavAtrributeUpdateHelper
      * @param EavAttributeDataWithoutLoad $attributeDataWithoutLoad
-     * @param array $data
+     * @param array                       $data
      */
     public function __construct(
         Context $context,

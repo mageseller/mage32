@@ -9,13 +9,19 @@ use Mageseller\ProductImport\Helper\Decimal;
  */
 class GroupedProductMember
 {
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $sku;
 
-    /** @var string A 12.4 decimal number */
+    /**
+     * @var string A 12.4 decimal number 
+     */
     protected $defaultQuantity;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $productId;
 
     public function __construct(string $sku, string $defaultQuantity)

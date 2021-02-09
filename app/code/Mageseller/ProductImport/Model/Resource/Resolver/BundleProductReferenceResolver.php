@@ -11,18 +11,20 @@ use Mageseller\ProductImport\Model\Resource\Storage\ProductEntityStorage;
  */
 class BundleProductReferenceResolver
 {
-    /** @var ProductEntityStorage */
+    /**
+     * @var ProductEntityStorage 
+     */
     protected $productEntityStorage;
 
     public function __construct(
-        ProductEntityStorage $productEntityStorage)
-    {
+        ProductEntityStorage $productEntityStorage
+    ) {
         $this->productEntityStorage = $productEntityStorage;
     }
 
     /**
-     * @param BundleProduct[] $products
-     * @param ImportConfig $config
+     * @param  BundleProduct[] $products
+     * @param  ImportConfig    $config
      * @throws \Exception
      */
     public function resolveIds(array $products)

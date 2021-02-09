@@ -9,32 +9,44 @@ use Mageseller\ProductImport\Helper\Decimal;
  */
 class TierPrice
 {
-    /** @var string A 12.4 decimal */
+    /**
+     * @var string A 12.4 decimal 
+     */
     protected $quantity;
 
-    /** @var string A 12.4 decimal */
+    /**
+     * @var string A 12.4 decimal 
+     */
     protected $value;
 
-    /** @var string|null Null means: all customer groups */
+    /**
+     * @var string|null Null means: all customer groups 
+     */
     protected $customerGroupName;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $customerGroupId = null;
 
-    /** @var string|null Null means: all websites */
+    /**
+     * @var string|null Null means: all websites 
+     */
     protected $websiteCode;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $websiteId = null;
 
     /**
      * TierPrice constructor.
      *
-     * @param string $quantity
-     * @param string $value
+     * @param string      $quantity
+     * @param string      $value
      * @param string|null $customerGroupName The name (code) of a customer group. Null means: all customer groups
-     * @param string|null $websiteCode The code of the website. Null means: all websites
-     * @param string $percentageValue Since Magento 2.2
+     * @param string|null $websiteCode       The code of the website. Null means: all websites
+     * @param string      $percentageValue   Since Magento 2.2
      */
     public function __construct(string $quantity, string $value, string $customerGroupName = null, string $websiteCode = null, string $percentageValue = null)
     {
@@ -63,6 +75,7 @@ class TierPrice
 
     /**
      * Since Magento 2.2
+     *
      * @return string|null
      */
     public function getPercentageValue()

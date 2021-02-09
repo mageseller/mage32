@@ -12,13 +12,19 @@ class LinkInfo
     const CROSS_SELL = 'cross_sell';
     const SUPER = 'super';
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $typeId;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $positionAttributeId;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $defaultQuantityAttributeId;
 
     public function __construct(int $typeId, int $positionAttributeId, int $defaultQuantityAttributeId = null)

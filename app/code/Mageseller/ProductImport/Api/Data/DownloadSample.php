@@ -7,13 +7,19 @@ namespace Mageseller\ProductImport\Api\Data;
  */
 class DownloadSample
 {
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $fileOrUrl;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $id = null;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $temporaryStoragePathSample;
 
     public function __construct(string $fileOrUrl)

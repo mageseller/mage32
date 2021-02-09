@@ -12,11 +12,13 @@ trait RedirectRefererTrait
     /**
      * Redirect to referer
      *
-     * @return  \Magento\Framework\Controller\ResultInterface
+     * @return \Magento\Framework\Controller\ResultInterface
      */
     public function redirectReferer()
     {
-        /** @var \Magento\Framework\Controller\Result\Redirect $resultRedirect */
+        /**
+ * @var \Magento\Framework\Controller\Result\Redirect $resultRedirect 
+*/
         $resultRedirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
         $resultRedirect->setUrl($this->_redirect->getRefererUrl());
 

@@ -18,7 +18,8 @@ interface IngrammicroCategoryRepositoryInterface
 
     /**
      * Save IngrammicroCategory
-     * @param \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface $ingrammicroCategory
+     *
+     * @param  \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface $ingrammicroCategory
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -28,7 +29,8 @@ interface IngrammicroCategoryRepositoryInterface
 
     /**
      * Retrieve IngrammicroCategory
-     * @param string $ingrammicrocategoryId
+     *
+     * @param  string $ingrammicrocategoryId
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -36,7 +38,8 @@ interface IngrammicroCategoryRepositoryInterface
 
     /**
      * Retrieve IngrammicroCategory matching the specified criteria.
-     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
+     *
+     * @param  \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategorySearchResultsInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -46,7 +49,8 @@ interface IngrammicroCategoryRepositoryInterface
 
     /**
      * Delete IngrammicroCategory
-     * @param \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface $ingrammicroCategory
+     *
+     * @param  \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface $ingrammicroCategory
      * @return bool true on success
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -56,7 +60,8 @@ interface IngrammicroCategoryRepositoryInterface
 
     /**
      * Delete IngrammicroCategory by ID
-     * @param string $ingrammicrocategoryId
+     *
+     * @param  string $ingrammicrocategoryId
      * @return bool true on success
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\LocalizedException

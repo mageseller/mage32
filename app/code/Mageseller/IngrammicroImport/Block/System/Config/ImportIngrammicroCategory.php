@@ -17,7 +17,7 @@ class ImportIngrammicroCategory extends \Magento\Config\Block\System\Config\Form
 
     /**
      * @param \Magento\Backend\Block\Template\Context $context
-     * @param array $data
+     * @param array                                   $data
      */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,

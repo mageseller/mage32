@@ -12,18 +12,20 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class ConfigurableValidator
 {
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(
-        MetaData $metaData)
-    {
+        MetaData $metaData
+    ) {
         $this->metaData = $metaData;
     }
 
     /**
      * @param ConfigurableProduct $product
-     * @param Product[] $batchProducts
+     * @param Product[]           $batchProducts
      */
     public function validate(ConfigurableProduct $product, array $batchProducts)
     {

@@ -52,6 +52,7 @@ class Dickerdata extends AbstractHelper
     const SEPERATOR = " ---|--- ";
     /**
      * /**
+     *
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
@@ -63,7 +64,6 @@ class Dickerdata extends AbstractHelper
     protected $_dirReader;
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     *
      */
     protected $scopeConfig;
     /**
@@ -138,25 +138,25 @@ class Dickerdata extends AbstractHelper
     private $attributeFactory;
 
     /**
-     * @param Context $context
-     * @param Filesystem $filesystem
-     * @param Filesystem\DirectoryList $dirReader
-     * @param File $fileFactory
-     * @param DateTime $dateTime
-     * @param MessageManagerInterface $messageManager
-     * @param ResourceConnection $resourceConnection
-     * @param MagentoConfig $configuration
-     * @param AttributeCollectionFactory $attributeFactory
-     * @param Config $eavConfig
-     * @param StoreManagerInterface $storeManager
-     * @param CategoryFactory $categoryFactory
-     * @param ProductCollectionFactory $productCollectionFactory
-     * @param CollectionFactory $categoryCollectionFactory
-     * @param DickerdataImport $dickerdataimportLogger
-     * @param DickerdataCategoryFactory $dickerdataCategoryFactory
-     * @param ProductHelper $dickerdataProductHelper
-     * @param ImageHelper $dickerdataImageHelper
-     * @param ProcessResourceFactory $processResourceFactory
+     * @param  Context                    $context
+     * @param  Filesystem                 $filesystem
+     * @param  Filesystem\DirectoryList   $dirReader
+     * @param  File                       $fileFactory
+     * @param  DateTime                   $dateTime
+     * @param  MessageManagerInterface    $messageManager
+     * @param  ResourceConnection         $resourceConnection
+     * @param  MagentoConfig              $configuration
+     * @param  AttributeCollectionFactory $attributeFactory
+     * @param  Config                     $eavConfig
+     * @param  StoreManagerInterface      $storeManager
+     * @param  CategoryFactory            $categoryFactory
+     * @param  ProductCollectionFactory   $productCollectionFactory
+     * @param  CollectionFactory          $categoryCollectionFactory
+     * @param  DickerdataImport           $dickerdataimportLogger
+     * @param  DickerdataCategoryFactory  $dickerdataCategoryFactory
+     * @param  ProductHelper              $dickerdataProductHelper
+     * @param  ImageHelper                $dickerdataImageHelper
+     * @param  ProcessResourceFactory     $processResourceFactory
      * @throws FileSystemException
      */
     public function __construct(
@@ -202,7 +202,7 @@ class Dickerdata extends AbstractHelper
         $this->dickerdataImageHelper = $dickerdataImageHelper;
     }
     /**
-     * @return  int
+     * @return int
      */
     public function getCurrentStoreId()
     {
@@ -210,7 +210,7 @@ class Dickerdata extends AbstractHelper
     }
 
     /**
-     * @return  int
+     * @return int
      */
     public function getCurrentWebsiteId()
     {
@@ -220,9 +220,9 @@ class Dickerdata extends AbstractHelper
     /**
      * Returns a config flag
      *
-     * @param   string  $path
-     * @param   mixed   $store
-     * @return  bool
+     * @param  string $path
+     * @param  mixed  $store
+     * @return bool
      */
     public function getFlag($path, $store = null)
     {
@@ -232,8 +232,8 @@ class Dickerdata extends AbstractHelper
     /**
      * Returns store locale
      *
-     * @param   mixed   $store
-     * @return  string
+     * @param  mixed $store
+     * @return string
      */
     public function getLocale($store = null)
     {
@@ -260,8 +260,8 @@ class Dickerdata extends AbstractHelper
     /**
      * Get tax class id specified for shipping tax estimation
      *
-     * @param   mixed   $store
-     * @return  int
+     * @param  mixed $store
+     * @return int
      */
     public function getShippingTaxClass($store = null)
     {
@@ -271,10 +271,10 @@ class Dickerdata extends AbstractHelper
     /**
      * Reads the configuration directly from the database
      *
-     * @param   string  $path
-     * @param   string  $scope
-     * @param   int     $scopeId
-     * @return  string|false
+     * @param  string $path
+     * @param  string $scope
+     * @param  int    $scopeId
+     * @return string|false
      */
     public function getRawValue($path, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0)
     {
@@ -292,9 +292,9 @@ class Dickerdata extends AbstractHelper
     /**
      * Returns a config value
      *
-     * @param   string  $path
-     * @param   mixed   $store
-     * @return  mixed
+     * @param  string $path
+     * @param  mixed  $store
+     * @return mixed
      */
     public function getValue($path, $store = null)
     {
@@ -304,8 +304,8 @@ class Dickerdata extends AbstractHelper
     /**
      * Returns store name if defined
      *
-     * @param   mixed   $store
-     * @return  string
+     * @param  mixed $store
+     * @return string
      */
     public function getStoreName($store = null)
     {
@@ -313,16 +313,16 @@ class Dickerdata extends AbstractHelper
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isSingleStoreMode()
     {
         return $this->storeManager->hasSingleStore();
     }
     /**
-     * @param   string  $entity
-     * @param   mixed   $store
-     * @return  \DateTime|null
+     * @param  string $entity
+     * @param  mixed  $store
+     * @return \DateTime|null
      */
     public function getSyncDate($entity, $store = null)
     {
@@ -339,7 +339,7 @@ class Dickerdata extends AbstractHelper
     }
 
     /**
-     * @return  $this
+     * @return $this
      */
     protected function resetConfig()
     {
@@ -349,8 +349,8 @@ class Dickerdata extends AbstractHelper
     }
 
     /**
-     * @param   string  $entity
-     * @return  $this
+     * @param  string $entity
+     * @return $this
      */
     public function resetSyncDate($entity)
     {
@@ -360,9 +360,9 @@ class Dickerdata extends AbstractHelper
     }
 
     /**
-     * @param   string  $entity
-     * @param   string  $time
-     * @return  $this
+     * @param  string $entity
+     * @param  string $time
+     * @return $this
      */
     public function setSyncDate($entity, $time = 'now')
     {
@@ -374,10 +374,10 @@ class Dickerdata extends AbstractHelper
     /**
      * Set a config value
      *
-     * @param   string  $path
-     * @param   string  $value
-     * @param   string  $scope
-     * @param   int     $scopeId
+     * @param string $path
+     * @param string $value
+     * @param string $scope
+     * @param int    $scopeId
      */
     public function setValue($path, $value, $scope = 'default', $scopeId = 0)
     {
@@ -392,8 +392,8 @@ class Dickerdata extends AbstractHelper
     }
 
     /**
-     * @param $value
-     * @param string $scope
+     * @param  $value
+     * @param  string $scope
      * @return mixed
      */
     public function getConfig($value, $scope = ScopeInterface::SCOPE_STORE)
@@ -481,13 +481,15 @@ class Dickerdata extends AbstractHelper
 
         /*Adding category names start*/
 
-        $allCategories = array_map(function ($v) {
-            $names = explode(self::SEPERATOR, $v);
-            return $names[0] ? [
+        $allCategories = array_map(
+            function ($v) {
+                $names = explode(self::SEPERATOR, $v);
+                return $names[0] ? [
                 'name' => $names[0],
                 'parent_name' => $names[1]
-            ] : [];
-        }, array_keys($categoriesWithParents));
+                ] : [];
+            }, array_keys($categoriesWithParents)
+        );
         $allCategories = array_filter($allCategories);
         $collection = $this->dickerdataCategoryFactory->create()->getCollection();
         $collection->insertOnDuplicate($allCategories);
@@ -582,9 +584,11 @@ class Dickerdata extends AbstractHelper
 
     public function parseObject($value)
     {
-        return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
-            return !is_array($value) && $value !== '';
-        }) : $value : [];
+        return isset($value) ? is_object($value) ? array_filter(
+            json_decode(json_encode($value), true), function ($value) {
+                return !is_array($value) && $value !== '';
+            }
+        ) : $value : [];
     }
 
     public function parseValue($value)
@@ -699,12 +703,14 @@ class Dickerdata extends AbstractHelper
                 'eav.attribute_id = main_table.attribute_id',
                 ['attribute_name' => 'frontend_label']
             )
-            ->columns([
+            ->columns(
+                [
                 'id' => 'dickerdatacategory_id',
                 'name' => 'name',
                 'parent_id' => 'parent_id',
                 'attribute_id' => 'attribute_id',
-            ]);
+                ]
+            );
 
         $categoryWithParents = $connection->fetchAll($select);
         $tree = $this->buildTreeFromArray($categoryWithParents);

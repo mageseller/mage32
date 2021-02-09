@@ -10,7 +10,8 @@ class Status extends AbstractColumn
      */
     public function decorate($value, $row, $column, $isExport)
     {
-        if (!$value) return '';
+        if (!$value) { return '';
+        }
 
         $isMageseller = strstr($column->getId(), 'mageseller') === false ? false : true;
 
@@ -18,7 +19,7 @@ class Status extends AbstractColumn
     }
 
     /**
-     * @return  array
+     * @return array
      */
     public function getOptions()
     {

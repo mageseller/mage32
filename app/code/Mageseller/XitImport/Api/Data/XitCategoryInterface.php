@@ -19,39 +19,45 @@ interface XitCategoryInterface extends \Magento\Framework\Api\ExtensibleDataInte
 
     /**
      * Get xitcategory_id
+     *
      * @return string|null
      */
     public function getXitcategoryId();
 
     /**
      * Set xitcategory_id
-     * @param string $xitcategoryId
+     *
+     * @param  string $xitcategoryId
      * @return \Mageseller\XitImport\Api\Data\XitCategoryInterface
      */
     public function setXitcategoryId($xitcategoryId);
 
     /**
      * Get name
+     *
      * @return string|null
      */
     public function getName();
 
     /**
      * Set name
-     * @param string $name
+     *
+     * @param  string $name
      * @return \Mageseller\XitImport\Api\Data\XitCategoryInterface
      */
     public function setName($name);
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Mageseller\XitImport\Api\Data\XitCategoryExtensionInterface|null
      */
     public function getExtensionAttributes();
 
     /**
      * Set an extension attributes object.
-     * @param \Mageseller\XitImport\Api\Data\XitCategoryExtensionInterface $extensionAttributes
+     *
+     * @param  \Mageseller\XitImport\Api\Data\XitCategoryExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

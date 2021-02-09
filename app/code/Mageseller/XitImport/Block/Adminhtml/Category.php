@@ -17,10 +17,10 @@ class Category extends Template
     private $xitCategoryFactory;
 
     /**
-     * @param Template\Context $context
-     * @param CollectionFactory $categoryCollectionFactory
+     * @param Template\Context   $context
+     * @param CollectionFactory  $categoryCollectionFactory
      * @param XitCategoryFactory $xitCategoryFactory
-     * @param array $data
+     * @param array              $data
      */
     public function __construct(
         Template\Context $context,

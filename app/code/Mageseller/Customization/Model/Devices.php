@@ -13,10 +13,10 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 namespace Mageseller\Customization\Model;
 
@@ -26,6 +26,7 @@ use Mageseller\Customization\Helper\Data as Helper;
 
 /**
  * Class Devices
+ *
  * @package Mageseller\Customization\Model
  */
 class Devices extends \Magento\Framework\Model\AbstractModel
@@ -73,15 +74,16 @@ class Devices extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Devices constructor.
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Eav\Model\Config $eavConfig
-     * @param \Mageseller\Customization\Helper\Data $helper
+     *
+     * @param \Magento\Framework\Model\Context                                           $context
+     * @param \Magento\Framework\Registry                                                $registry
+     * @param \Magento\Eav\Model\Config                                                  $eavConfig
+     * @param \Mageseller\Customization\Helper\Data                                      $helper
      * @param \Magento\Eav\Model\ResourceModel\Entity\Attribute\Option\CollectionFactory $attrOptionCollectionFactory
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
-     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
-     * @param array $data
+     * @param \Magento\Store\Model\StoreManagerInterface                                 $storeManager
+     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null               $resource
+     * @param \Magento\Framework\Data\Collection\AbstractDb|null                         $resourceCollection
+     * @param array                                                                      $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -123,8 +125,8 @@ class Devices extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * @param null $storeId
-     * @param array $conditions
+     * @param  null  $storeId
+     * @param  array $conditions
      * @return mixed
      */
     public function getDevicesCollection($storeId = null, $conditions = [], $sqlString = null)
@@ -171,8 +173,8 @@ class Devices extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * @param $optionId
-     * @param null $store
+     * @param  $optionId
+     * @param  null     $store
      * @return mixed
      */
     public function loadByOption($optionId, $store = null)

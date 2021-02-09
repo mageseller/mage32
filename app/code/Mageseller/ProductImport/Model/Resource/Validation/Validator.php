@@ -22,25 +22,39 @@ class Validator
     const SKU_MAX_LENGTH = 64;
     const DATE_PATTERN = '/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$/';
 
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var ImageValidator */
+    /**
+     * @var ImageValidator 
+     */
     protected $imageValidator;
 
-    /** @var CustomOptionsValidator */
+    /**
+     * @var CustomOptionsValidator 
+     */
     protected $customOptionsValidator;
 
-    /** @var WeeeValidator */
+    /**
+     * @var WeeeValidator 
+     */
     protected $weeeValidator;
 
-    /** @var ConfigurableValidator */
+    /**
+     * @var ConfigurableValidator 
+     */
     protected $configurableValidator;
 
-    /** @var BundleValidator */
+    /**
+     * @var BundleValidator 
+     */
     protected $bundleValidator;
 
-    /** @var GroupedValidator */
+    /**
+     * @var GroupedValidator 
+     */
     protected $groupedValidator;
 
     public function __construct(
@@ -50,8 +64,8 @@ class Validator
         WeeeValidator $weeeValidator,
         ConfigurableValidator $configurableValidator,
         BundleValidator $bundleValidator,
-        GroupedValidator $groupedValidator)
-    {
+        GroupedValidator $groupedValidator
+    ) {
         $this->metaData = $metaData;
         $this->imageValidator = $imageValidator;
         $this->customOptionsValidator = $customOptionsValidator;
@@ -178,35 +192,35 @@ class Validator
                 // validate value
 
                 switch ($info->backendType) {
-                    case EavAttributeInfo::TYPE_VARCHAR:
-                        if (mb_strlen($value) > 255) {
-                            $product->addError($eavAttribute . " has " . mb_strlen($value) . " characters (max 255)");
+                case EavAttributeInfo::TYPE_VARCHAR:
+                    if (mb_strlen($value) > 255) {
+                        $product->addError($eavAttribute . " has " . mb_strlen($value) . " characters (max 255)");
+                    }
+                    break;
+                case EavAttributeInfo::TYPE_TEXT:
+                    if (strlen($value) > 65536) {
+                        $product->addError($eavAttribute . " has " . strlen($value) . " bytes (max 65536)");
+                    }
+                    break;
+                case EavAttributeInfo::TYPE_DECIMAL:
+                    if (!preg_match(Decimal::$decimalEavPattern, $value)) {
+                        $product->addError($eavAttribute . " is not a decimal number with dot (" . $value . ")");
+                    } elseif ($value < 0.00) {
+                        if (in_array($eavAttribute, [ProductStoreView::ATTR_PRICE, ProductStoreView::ATTR_SPECIAL_PRICE, ProductStoreView::ATTR_COST, ProductStoreView::ATTR_WEIGHT, ProductStoreView::ATTR_MSRP])) {
+                            $product->addError($eavAttribute . " must be positive (" . $value . ")");
                         }
-                        break;
-                    case EavAttributeInfo::TYPE_TEXT:
-                        if (strlen($value) > 65536) {
-                            $product->addError($eavAttribute . " has " . strlen($value) . " bytes (max 65536)");
-                        }
-                        break;
-                    case EavAttributeInfo::TYPE_DECIMAL:
-                        if (!preg_match(Decimal::$decimalEavPattern, $value)) {
-                            $product->addError($eavAttribute . " is not a decimal number with dot (" . $value . ")");
-                        } elseif ($value < 0.00) {
-                            if (in_array($eavAttribute, [ProductStoreView::ATTR_PRICE, ProductStoreView::ATTR_SPECIAL_PRICE, ProductStoreView::ATTR_COST, ProductStoreView::ATTR_WEIGHT, ProductStoreView::ATTR_MSRP])) {
-                                $product->addError($eavAttribute . " must be positive (" . $value . ")");
-                            }
-                        }
-                        break;
-                    case EavAttributeInfo::TYPE_DATETIME:
-                        if (!preg_match(self::DATE_PATTERN, $value)) {
-                            $product->addError($eavAttribute . " is not a MySQL date or date time (" . $value . ")");
-                        }
-                        break;
-                    case EavAttributeInfo::TYPE_INTEGER:
-                        if (!preg_match('/^-?\d+$/', $value)) {
-                            $product->addError($eavAttribute . " is not an integer (" . $value . ")");
-                        }
-                        break;
+                    }
+                    break;
+                case EavAttributeInfo::TYPE_DATETIME:
+                    if (!preg_match(self::DATE_PATTERN, $value)) {
+                        $product->addError($eavAttribute . " is not a MySQL date or date time (" . $value . ")");
+                    }
+                    break;
+                case EavAttributeInfo::TYPE_INTEGER:
+                    if (!preg_match('/^-?\d+$/', $value)) {
+                        $product->addError($eavAttribute . " is not an integer (" . $value . ")");
+                    }
+                    break;
                 }
             }
         }
@@ -241,23 +255,29 @@ class Validator
     }
 
     /**
-     * @param Product $product
+     * @param Product   $product
      * @param Product[] $batchProducts
      */
     public function validateCompound(Product $product, array $batchProducts)
     {
         switch ($product->getType()) {
-            case ConfigurableProduct::TYPE_CONFIGURABLE:
-                /** @var ConfigurableProduct $product */
-                $this->configurableValidator->validate($product, $batchProducts);
-                break;
-            case GroupedProduct::TYPE_GROUPED:
-                /** @var GroupedProduct $product */
-                $this->groupedValidator->validate($product, $batchProducts);
-                break;
-            case BundleProduct::TYPE_BUNDLE:
-                /** @var BundleProduct $product */
-                $this->bundleValidator->validate($product, $batchProducts);
+        case ConfigurableProduct::TYPE_CONFIGURABLE:
+            /**
+ * @var ConfigurableProduct $product 
+*/
+            $this->configurableValidator->validate($product, $batchProducts);
+            break;
+        case GroupedProduct::TYPE_GROUPED:
+            /**
+ * @var GroupedProduct $product 
+*/
+            $this->groupedValidator->validate($product, $batchProducts);
+            break;
+        case BundleProduct::TYPE_BUNDLE:
+            /**
+ * @var BundleProduct $product 
+*/
+            $this->bundleValidator->validate($product, $batchProducts);
         }
     }
 }

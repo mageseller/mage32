@@ -10,13 +10,19 @@ use Mageseller\ProductImport\Helper\Decimal;
  */
 class DownloadLinkInformation
 {
-    /**  @var DownloadLink */
+    /**
+     * @var DownloadLink 
+     */
     protected $downloadLink;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $title;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $price;
 
     public function __construct(DownloadLink $downloadLink, string $title, string $price)

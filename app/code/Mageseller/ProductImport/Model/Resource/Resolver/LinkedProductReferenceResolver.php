@@ -12,10 +12,14 @@ use Mageseller\ProductImport\Model\Resource\Storage\ProductEntityStorage;
  */
 class LinkedProductReferenceResolver
 {
-    /**  @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var ProductEntityStorage */
+    /**
+     * @var ProductEntityStorage 
+     */
     protected $productEntityStorage;
 
     public function __construct(Magento2DbConnection $db, ProductEntityStorage $productEntityStorage)
@@ -59,15 +63,15 @@ class LinkedProductReferenceResolver
                 }
 
                 switch ($linkType) {
-                    case LinkInfo::RELATED:
-                        $product->setRelatedProductId($ids);
-                        break;
-                    case LinkInfo::UP_SELL:
-                        $product->setUpSellProductIds($ids);
-                        break;
-                    case LinkInfo::CROSS_SELL:
-                        $product->setCrossSellProductIds($ids);
-                        break;
+                case LinkInfo::RELATED:
+                    $product->setRelatedProductId($ids);
+                    break;
+                case LinkInfo::UP_SELL:
+                    $product->setUpSellProductIds($ids);
+                    break;
+                case LinkInfo::CROSS_SELL:
+                    $product->setCrossSellProductIds($ids);
+                    break;
                 }
             }
         }

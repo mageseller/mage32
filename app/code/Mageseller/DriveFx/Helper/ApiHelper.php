@@ -76,9 +76,10 @@ class ApiHelper extends AbstractHelper
 
     /**
      * Data constructor.
-     * @param Context $context
+     *
+     * @param Context       $context
      * @param DrivefxLogger $drivefxlogger
-     * @param Curl $curl
+     * @param Curl          $curl
      */
     public function __construct(
         Context $context,
@@ -99,8 +100,8 @@ class ApiHelper extends AbstractHelper
     }
 
     /**
-     * @param $value
-     * @param string $scope
+     * @param  $value
+     * @param  string $scope
      * @return mixed
      */
     public function getConfig($value, $scope = ScopeInterface::SCOPE_STORE)
@@ -135,10 +136,12 @@ class ApiHelper extends AbstractHelper
 
     public function getStockList()
     {
-        $response = $this->queryAsEntities($this->entity[self::PRODUCT], '', '', [
+        $response = $this->queryAsEntities(
+            $this->entity[self::PRODUCT], '', '', [
             'OrderItem' => 'familia',
             'OrderType' => 1
-        ]);
+            ]
+        );
         return $response['result'];
     }
 

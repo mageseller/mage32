@@ -39,6 +39,7 @@ class Ingrammicro extends AbstractHelper
     const SEPERATOR = " ---|--- ";
     /**
      * /**
+     *
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
@@ -50,7 +51,6 @@ class Ingrammicro extends AbstractHelper
     protected $_dirReader;
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     *
      */
     protected $scopeConfig;
     /**
@@ -92,7 +92,7 @@ class Ingrammicro extends AbstractHelper
     /**
      * Filesystem instance
      *
-     * @var \Magento\Framework\Filesystem
+     * @var   \Magento\Framework\Filesystem
      * @since 100.1.0
      */
     protected $filesystem;
@@ -109,21 +109,21 @@ class Ingrammicro extends AbstractHelper
     private $attributeFactory;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
-     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param MessageManagerInterface $messageManager
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param \Mageseller\IngrammicroImport\Logger\IngrammicroImport $ingrammicroimportLogger
-     * @param \Mageseller\IngrammicroImport\Model\IngrammicroCategoryFactory $ingrammicroCategoryFactory
-     * @param CollectionFactory $categoryCollectionFactory
-     * @param ResourceConnection $resourceConnection
-     * @param StoreManagerInterface $storeManager
-     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
-     * @param AttributeCollectionFactory $attributeFactory
-     * @param Config $eavConfig
+     * @param  \Magento\Framework\App\Helper\Context                          $context
+     * @param  \Magento\Framework\Filesystem                                  $filesystem
+     * @param  \Magento\Framework\Filesystem\DirectoryList                    $dirReader
+     * @param  \Magento\Framework\Filesystem\Io\File                          $fileFactory
+     * @param  \Magento\Framework\Stdlib\DateTime\DateTime                    $dateTime
+     * @param  MessageManagerInterface                                        $messageManager
+     * @param  \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param  \Mageseller\IngrammicroImport\Logger\IngrammicroImport         $ingrammicroimportLogger
+     * @param  \Mageseller\IngrammicroImport\Model\IngrammicroCategoryFactory $ingrammicroCategoryFactory
+     * @param  CollectionFactory                                              $categoryCollectionFactory
+     * @param  ResourceConnection                                             $resourceConnection
+     * @param  StoreManagerInterface                                          $storeManager
+     * @param  \Magento\Catalog\Model\CategoryFactory                         $categoryFactory
+     * @param  AttributeCollectionFactory                                     $attributeFactory
+     * @param  Config                                                         $eavConfig
      * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
@@ -187,8 +187,8 @@ class Ingrammicro extends AbstractHelper
     }
 
     /**
-     * @param $value
-     * @param string $scope
+     * @param  $value
+     * @param  string $scope
      * @return mixed
      */
     public function getConfig($value, $scope = ScopeInterface::SCOPE_STORE)
@@ -196,7 +196,7 @@ class Ingrammicro extends AbstractHelper
         return $this->scopeConfig->getValue($value, $scope);
     }
     /**
-     * @param string $filePath
+     * @param  string $filePath
      * @return \Magento\Framework\Filesystem\File\ReadInterface
      */
     private function getCsvFile($filePath)
@@ -400,6 +400,7 @@ class Ingrammicro extends AbstractHelper
     }
     /**
      * Set Remote Directory
+     *
      * @param string $dir
      */
     public function setRemoteDirectory($dir)
@@ -409,10 +410,11 @@ class Ingrammicro extends AbstractHelper
 
     /**
      * Connect to FTP
-     * @param $host
-     * @param $user
-     * @param $pass
-     * @param int $port
+     *
+     * @param  $host
+     * @param  $user
+     * @param  $pass
+     * @param  int  $port
      * @throws \Exception
      */
     public function ftpConnect($host, $user, $pass, $port=22)
@@ -422,8 +424,10 @@ class Ingrammicro extends AbstractHelper
             throw new Exception("Could not connect to $host on port $port.");
         }
         if (!\ssh2_auth_password($this->conn, $user, $pass)) {
-            throw new Exception("Could not authenticate with username $user " .
-                "and password *******.");
+            throw new Exception(
+                "Could not authenticate with username $user " .
+                "and password *******."
+            );
         }
         $this->sftp = \ssh2_sftp($this->conn);
         if (!$this->sftp) {
@@ -435,9 +439,9 @@ class Ingrammicro extends AbstractHelper
     /**
      * Download a file from the server
      *
-     * @param string $localFile
-     * @param string $remoteFile
-     * @param string $type
+     * @param  string $localFile
+     * @param  string $remoteFile
+     * @param  string $type
      * @return bool
      */
     public function downloadFileFromFtp($localFile, $remoteFile, $ftpRemoteDir, $type=FTP_BINARY)
@@ -460,7 +464,7 @@ class Ingrammicro extends AbstractHelper
     /**
      * Close the ftp connection
      *
-     * @param none
+     * @param  none
      * @return bool
      */
     public function ftpClose()
@@ -470,9 +474,11 @@ class Ingrammicro extends AbstractHelper
     }
     public function parseObject($value)
     {
-        return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
-            return !is_array($value) && $value !== '';
-        }) : $value : [];
+        return isset($value) ? is_object($value) ? array_filter(
+            json_decode(json_encode($value), true), function ($value) {
+                return !is_array($value) && $value !== '';
+            }
+        ) : $value : [];
     }
 
     public function parseValue($value)
@@ -614,17 +620,19 @@ class Ingrammicro extends AbstractHelper
     {
         $collection = $this->ingrammicroCategoryFactory->create()->getCollection();
         $select = $collection->getSelect()->reset(Select::COLUMNS)
-                    ->joinLeft(
-                        ['eav' => $this->resourceConnection->getTableName('eav_attribute')],
-                        'eav.attribute_id = main_table.attribute_id',
-                        ['attribute_name' => 'frontend_label']
-                    )
-                    ->columns([
+            ->joinLeft(
+                ['eav' => $this->resourceConnection->getTableName('eav_attribute')],
+                'eav.attribute_id = main_table.attribute_id',
+                ['attribute_name' => 'frontend_label']
+            )
+            ->columns(
+                [
                         'id' => 'ingrammicrocategory_id',
                         'name' => 'name',
                         'parent_id' => 'parent_id',
                         'attribute_id' => 'attribute_id'
-                    ]);
+                        ]
+            );
         $connection = $this->resourceConnection->getConnection();
         $categoryWithParents = $connection->fetchAll($select);
         $tree = $this->buildTreeFromArray($categoryWithParents);

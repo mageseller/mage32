@@ -12,20 +12,28 @@ use Mageseller\ProductImport\Api\ProductImportWebApiLoggerInterface;
  */
 class ProductImportWebApiLogger implements ProductImportLogger, ProductImportWebApiLoggerInterface
 {
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $output = "";
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $failedProductCount = 0;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $okProductCount = 0;
 
-    /** @var bool */
+    /**
+     * @var bool 
+     */
     protected $errorOccurred = false;
 
     /**
-     * @param Product $product
+     * @param  Product $product
      * @return void
      */
     public function productImported(Product $product)
@@ -43,7 +51,7 @@ class ProductImportWebApiLogger implements ProductImportLogger, ProductImportWeb
     }
 
     /**
-     * @param string $e
+     * @param  string $e
      * @return void
      */
     public function error(string $e)
@@ -54,7 +62,7 @@ class ProductImportWebApiLogger implements ProductImportLogger, ProductImportWeb
     }
 
     /**
-     * @param string $info
+     * @param  string $info
      * @return void
      */
     public function info(string $info)

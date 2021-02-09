@@ -7,25 +7,39 @@ namespace Mageseller\ProductImport\Api\Data;
  */
 class DownloadLink
 {
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $fileOrUrl;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $numberOfDownloads;
 
-    /**  @var bool */
+    /**
+     * @var bool 
+     */
     protected $isShareable;
 
-    /**  @var string */
+    /**
+     * @var string 
+     */
     protected $sampleFileOrUrl;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     protected $id = null;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $temporaryStoragePathLink;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $temporaryStoragePathSample;
 
     public function __construct(string $fileOrUrl, int $numberOfDownloads, bool $isShareable, string $sampleFileOrUrl = '')

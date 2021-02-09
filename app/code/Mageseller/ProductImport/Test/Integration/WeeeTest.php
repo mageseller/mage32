@@ -16,23 +16,33 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class WeeeTest extends \Magento\TestFramework\TestCase\AbstractController
 {
-    /** @var  ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     private static $factory;
 
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected static $db;
 
-    /** @var  Metadata */
+    /**
+     * @var Metadata 
+     */
     protected static $metadata;
 
     public static function setUpBeforeClass(): void
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         self::$factory = $objectManager->get(ImporterFactory::class);
 
-        /** @var Magento2DbConnection $db */
+        /**
+ * @var Magento2DbConnection $db 
+*/
         self::$db = $objectManager->get(Magento2DbConnection::class);
 
         self::$metadata = $objectManager->get(MetaData::class);
@@ -66,10 +76,12 @@ class WeeeTest extends \Magento\TestFramework\TestCase\AbstractController
         $global->setName("Weee there we go!");
         $global->setPrice('1.23');
 
-        $product1->setWeees([
+        $product1->setWeees(
+            [
             Weee::createWeee('NL', 5.0, 1, Weee::DEFAULT_STATE),
             Weee::createWeee('ES', 3.0, 1, Weee::DEFAULT_STATE)
-        ]);
+            ]
+        );
 
         $importer->importSimpleProduct($product1);
         $importer->flush();
@@ -96,34 +108,40 @@ class WeeeTest extends \Magento\TestFramework\TestCase\AbstractController
 
     protected function getWeeeTaxes($productId)
     {
-        return self::$db->fetchAllNonAssoc("
+        return self::$db->fetchAllNonAssoc(
+            "
             SELECT website_id, entity_id, country, value, state, attribute_id
             FROM " . self::$metadata->weeeTable . "
             WHERE entity_id = {$productId}
             ORDER BY value_id
-        ");
+        "
+        );
     }
 
     protected function createWeeeAttribute()
     {
         // create a multiple select attribute
-        self::$db->execute("
+        self::$db->execute(
+            "
             INSERT INTO " . self::$metadata->attributeTable . "
             SET
                 entity_type_id = " . self::$metadata->productEntityTypeId . ",
                 attribute_code = 'weee_importer',
                 frontend_input = 'weee',
                 backend_type = 'static'
-        ");
+        "
+        );
 
         $insertId = self::$db->getLastInsertId();
 
-        self::$db->execute("
+        self::$db->execute(
+            "
             INSERT INTO " . self::$metadata->catalogAttributeTable . "
             SET
                 attribute_id = " . $insertId . ",
                 is_global = 1
-        ");
+        "
+        );
 
         self::$metadata->productEavAttributeInfo['weee_importer'] = new EavAttributeInfo('weee_importer', $insertId, false, 'static', 'weee_tax', 'weee', 1);
 

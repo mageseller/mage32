@@ -17,7 +17,7 @@ class InlineEdit extends \Magento\Backend\App\Action
     protected $jsonFactory;
 
     /**
-     * @param \Magento\Backend\App\Action\Context $context
+     * @param \Magento\Backend\App\Action\Context              $context
      * @param \Magento\Framework\Controller\Result\JsonFactory $jsonFactory
      */
     public function __construct(
@@ -35,7 +35,9 @@ class InlineEdit extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-        /** @var \Magento\Framework\Controller\Result\Json $resultJson */
+        /**
+ * @var \Magento\Framework\Controller\Result\Json $resultJson 
+*/
         $resultJson = $this->jsonFactory->create();
         $error = false;
         $messages = [];
@@ -47,7 +49,9 @@ class InlineEdit extends \Magento\Backend\App\Action
                 $error = true;
             } else {
                 foreach (array_keys($postItems) as $modelid) {
-                    /** @var \Mageseller\DickerdataImport\Model\DickerdataCategory $model */
+                    /**
+ * @var \Mageseller\DickerdataImport\Model\DickerdataCategory $model 
+*/
                     $model = $this->_objectManager->create(\Mageseller\DickerdataImport\Model\DickerdataCategory::class)->load($modelid);
                     try {
                         $model->setData(array_merge($model->getData(), $postItems[$modelid]));
@@ -60,9 +64,11 @@ class InlineEdit extends \Magento\Backend\App\Action
             }
         }
         
-        return $resultJson->setData([
+        return $resultJson->setData(
+            [
             'messages' => $messages,
             'error' => $error
-        ]);
+            ]
+        );
     }
 }

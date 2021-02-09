@@ -9,10 +9,14 @@ use Mageseller\ProductImport\Api\Data\CustomOption;
  */
 class CustomOptionTitle
 {
-    /** @var CustomOption */
+    /**
+     * @var CustomOption 
+     */
     protected $customOption;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $title;
 
     public function __construct(CustomOption $customOption, string $title)

@@ -17,9 +17,11 @@ class InstallSchema implements InstallSchemaInterface
 
         $setup->getConnection()->dropTable($setup->getTable('mageseller_process'));
         $table = $setup->getConnection()->newTable($setup->getTable('mageseller_process'))
-            ->addColumn('id', Table::TYPE_INTEGER, null, [
+            ->addColumn(
+                'id', Table::TYPE_INTEGER, null, [
                 'identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true
-            ], 'Process Id')
+                ], 'Process Id'
+            )
             ->addColumn('type', Table::TYPE_TEXT, 100, ['nullable' => false], 'Type')
             ->addColumn('name', Table::TYPE_TEXT, 255, ['nullable' => false], 'Name')
             ->addColumn('status', Table::TYPE_TEXT, 50, ['nullable' => false, 'default'  => 'pending'], 'Status')

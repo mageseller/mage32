@@ -13,16 +13,17 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 
 namespace Mageseller\Customization\Block\Adminhtml\Category;
 
 /**
  * Class Grid
+ *
  * @package Mageseller\Customization\Block\Adminhtml\Category
  */
 class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
@@ -32,20 +33,25 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
      */
     protected $_collectionFactory;
 
-    /** @var \Magento\Config\Model\Config\Source\Enabledisable */
+    /**
+     * @var \Magento\Config\Model\Config\Source\Enabledisable 
+     */
     protected $_booleanOptions;
 
-    /** @var \Magento\Store\Model\System\Store */
+    /**
+     * @var \Magento\Store\Model\System\Store 
+     */
     protected $_systemStore;
 
     /**
      * Grid constructor.
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Backend\Helper\Data $backendHelper
-     * @param \Magento\Config\Model\Config\Source\Enabledisable $booleanOptions
-     * @param \Magento\Store\Model\System\Store $systemStore
+     *
+     * @param \Magento\Backend\Block\Template\Context                           $context
+     * @param \Magento\Backend\Helper\Data                                      $backendHelper
+     * @param \Magento\Config\Model\Config\Source\Enabledisable                 $booleanOptions
+     * @param \Magento\Store\Model\System\Store                                 $systemStore
      * @param \Mageseller\Customization\Model\ResourceModel\Category\Collection $collectionFactory
-     * @param array $data
+     * @param array                                                             $data
      */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
@@ -91,7 +97,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @return $this
+     * @return                                        $this
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     protected function _prepareColumns()
@@ -182,9 +188,9 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     /**
      * Filter store condition
      *
-     * @param \Magento\Framework\Data\Collection $collection
-     * @param \Magento\Framework\DataObject $column
-     * @return void
+     * @param                                         \Magento\Framework\Data\Collection $collection
+     * @param                                         \Magento\Framework\DataObject      $column
+     * @return                                        void
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function _filterStoreCondition($collection, \Magento\Framework\DataObject $column)
@@ -240,7 +246,7 @@ class Grid extends \Magento\Backend\Block\Widget\Grid\Extended
     }
 
     /**
-     * @param \Magento\Catalog\Model\Product|\Magento\Framework\Object $row
+     * @param  \Magento\Catalog\Model\Product|\Magento\Framework\Object $row
      * @return string
      */
     public function getRowUrl($row)

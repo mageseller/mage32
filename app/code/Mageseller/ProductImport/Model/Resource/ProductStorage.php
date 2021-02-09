@@ -33,61 +33,99 @@ use Mageseller\ProductImport\Model\Resource\Validation\Validator;
  */
 class ProductStorage
 {
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var Validator */
+    /**
+     * @var Validator 
+     */
     protected $validator;
 
-    /** @var  ReferenceResolver */
+    /**
+     * @var ReferenceResolver 
+     */
     protected $referenceResolver;
 
-    /** @var UrlKeyGenerator */
+    /**
+     * @var UrlKeyGenerator 
+     */
     protected $urlKeyGenerator;
 
-    /** @var UrlRewriteStorage */
+    /**
+     * @var UrlRewriteStorage 
+     */
     protected $urlRewriteStorage;
 
-    /** @var ImageStorage */
+    /**
+     * @var ImageStorage 
+     */
     protected $imageStorage;
 
-    /** @var LinkedProductStorage */
+    /**
+     * @var LinkedProductStorage 
+     */
     protected $linkedProductStorage;
 
-    /** @var ProductEntityStorage */
+    /**
+     * @var ProductEntityStorage 
+     */
     protected $productEntityStorage;
 
-    /** @var TierPriceStorage */
+    /**
+     * @var TierPriceStorage 
+     */
     protected $tierPriceStorage;
 
-    /** @var StockItemStorage */
+    /**
+     * @var StockItemStorage 
+     */
     protected $stockItemStorage;
 
-    /** @var SourceItemStorage */
+    /**
+     * @var SourceItemStorage 
+     */
     protected $sourceItemStorage;
 
-    /** @var CustomOptionStorage */
+    /**
+     * @var CustomOptionStorage 
+     */
     protected $customOptionStorage;
 
-    /** @var WeeeStorage */
+    /**
+     * @var WeeeStorage 
+     */
     protected $weeeStorage;
 
-    /** @var DownloadableStorage */
+    /**
+     * @var DownloadableStorage 
+     */
     protected $downloadableStorage;
 
-    /** @var ConfigurableStorage */
+    /**
+     * @var ConfigurableStorage 
+     */
     protected $configurableStorage;
 
-    /** @var BundleStorage */
+    /**
+     * @var BundleStorage 
+     */
     protected $bundleStorage;
 
-    /** @var GroupedStorage */
+    /**
+     * @var GroupedStorage 
+     */
     protected $groupedStorage;
 
-    /** @var ProductTypeChanger */
+    /**
+     * @var ProductTypeChanger 
+     */
     protected $productTypeChanger;
 
     public function __construct(
@@ -133,8 +171,8 @@ class ProductStorage
     }
 
     /**
-     * @param Product[] $products Sku-indexed products of various product types
-     * @param ImportConfig $config
+     * @param  Product[]    $products Sku-indexed products of various product types
+     * @param  ImportConfig $config
      * @throws Exception
      */
     public function storeProducts(array $products, ImportConfig $config)
@@ -169,8 +207,8 @@ class ProductStorage
      *
      * Returns all valid (error-free) products.
      *
-     * @param array $products
-     * @param ImportConfig $config
+     * @param  array        $products
+     * @param  ImportConfig $config
      * @return array
      * @throws Exception
      */
@@ -246,7 +284,7 @@ class ProductStorage
     }
 
     /**
-     * @param Product[] $products
+     * @param  Product[] $products
      * @return array
      */
     protected function assignProductIds(array $products)
@@ -271,8 +309,8 @@ class ProductStorage
     }
 
     /**
-     * @param Product[] $validProducts
-     * @param ImportConfig $config
+     * @param  Product[]    $validProducts
+     * @param  ImportConfig $config
      * @throws Exception
      */
     protected function saveProducts(array $validProducts, ImportConfig $config)
@@ -351,8 +389,8 @@ class ProductStorage
     }
 
     /**
-     * @param ImportConfig $config
-     * @param Product[] $products
+     * @param  ImportConfig $config
+     * @param  Product[]    $products
      * @return array
      */
     protected function separateUpsertsFromDeletes(array $products, ImportConfig $config): array

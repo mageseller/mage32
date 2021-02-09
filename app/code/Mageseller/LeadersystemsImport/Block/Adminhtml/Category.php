@@ -17,10 +17,10 @@ class Category extends Template
     private $leadersystemsCategoryFactory;
 
     /**
-     * @param Template\Context $context
-     * @param CollectionFactory $categoryCollectionFactory
+     * @param Template\Context             $context
+     * @param CollectionFactory            $categoryCollectionFactory
      * @param LeadersystemsCategoryFactory $leadersystemsCategoryFactory
-     * @param array $data
+     * @param array                        $data
      */
     public function __construct(
         Template\Context $context,

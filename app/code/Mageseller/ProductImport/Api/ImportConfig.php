@@ -134,12 +134,14 @@ class ImportConfig
     /**
      * Base directory the source images with relative paths
      * By default: relative to the location of the
+     *
      * @var string|null
      */
     public $imageSourceDir = null;
 
     /**
      * Base directory where images will be cached during import.
+     *
      * @var string
      */
     public $imageCacheDir = self::TEMP_PRODUCT_IMAGE_PATH;

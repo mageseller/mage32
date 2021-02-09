@@ -11,7 +11,8 @@ class File extends AbstractColumn
         $isMageseller = strstr($column->getId(), 'mirakl') === false ? false : true;
         $html = '';
         if ($fileSize = $row->getFileSizeFormatted('&nbsp;', $isMageseller)) {
-            $html = sprintf('<a href="%s">%s</a>&nbsp;(%s)',
+            $html = sprintf(
+                '<a href="%s">%s</a>&nbsp;(%s)',
                 $row->getDownloadFileUrl($isMageseller),
                 __('Download'),
                 $fileSize

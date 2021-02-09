@@ -26,6 +26,7 @@ class LeadersystemsCategoryImport extends Command
 
     /**
      * LeadersystemsCategoryImport constructor.
+     *
      * @param string|null $name
      */
     public function __construct(\Mageseller\LeadersystemsImport\Helper\Leadersystems $leadersystemsHelper, string $name = null)
@@ -55,10 +56,12 @@ class LeadersystemsCategoryImport extends Command
     {
         $this->setName("mageseller_leadersystemsimport:leadersystemscategoryimport");
         $this->setDescription("Category Import Leadersystems");
-        $this->setDefinition([
+        $this->setDefinition(
+            [
             new InputArgument(self::NAME_ARGUMENT, InputArgument::OPTIONAL, "Name"),
             new InputOption(self::NAME_OPTION, "-a", InputOption::VALUE_NONE, "Option functionality")
-        ]);
+            ]
+        );
         parent::configure();
     }
 }

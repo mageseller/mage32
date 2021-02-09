@@ -4,12 +4,12 @@ namespace Mageseller\IngrammicroImport\Block\Adminhtml\System\Config\Button;
 interface ButtonsRendererInterface
 {
     /**
-     * @return  string
+     * @return string
      */
     public function getButtonsHtml();
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function getDisabled();
 }

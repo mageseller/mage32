@@ -19,39 +19,45 @@ interface IngrammicroCategoryInterface extends \Magento\Framework\Api\Extensible
 
     /**
      * Get ingrammicrocategory_id
+     *
      * @return string|null
      */
     public function getIngrammicrocategoryId();
 
     /**
      * Set ingrammicrocategory_id
-     * @param string $ingrammicrocategoryId
+     *
+     * @param  string $ingrammicrocategoryId
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface
      */
     public function setIngrammicrocategoryId($ingrammicrocategoryId);
 
     /**
      * Get name
+     *
      * @return string|null
      */
     public function getName();
 
     /**
      * Set name
-     * @param string $name
+     *
+     * @param  string $name
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface
      */
     public function setName($name);
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryExtensionInterface|null
      */
     public function getExtensionAttributes();
 
     /**
      * Set an extension attributes object.
-     * @param \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryExtensionInterface $extensionAttributes
+     *
+     * @param  \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

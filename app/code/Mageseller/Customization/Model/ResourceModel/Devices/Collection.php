@@ -13,15 +13,16 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 namespace Mageseller\Customization\Model\ResourceModel\Devices;
 
 /**
  * Class Collection
+ *
  * @package Mageseller\Customization\Model\ResourceModel\Devices
  */
 class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
@@ -72,9 +73,9 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     }
 
     /**
-     * @param string $valueField
-     * @param string $labelField
-     * @param array $additional
+     * @param  string $valueField
+     * @param  string $labelField
+     * @param  array  $additional
      * @return array
      */
     protected function _toOptionArray($valueField = 'customization_id', $labelField = 'name', $additional = [])

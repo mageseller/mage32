@@ -8,15 +8,19 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
 
 class WeeeStorage
 {
-    /** @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     /**
      * @param Magento2DbConnection $db
-     * @param MetaData $metaData
+     * @param MetaData             $metaData
      */
     public function __construct(Magento2DbConnection $db, MetaData $metaData)
     {
@@ -50,7 +54,8 @@ class WeeeStorage
 
             foreach ($weees = $product->getWeees() as $i => $weee) {
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO `{$this->metaData->weeeTable}`
                     SET
                         `website_id` = ?,
@@ -66,7 +71,8 @@ class WeeeStorage
                     $weee->getValue(),
                     (int)$weee->getState(),
                     $this->metaData->weeeAttributeId
-                ]);
+                    ]
+                );
             }
         }
     }

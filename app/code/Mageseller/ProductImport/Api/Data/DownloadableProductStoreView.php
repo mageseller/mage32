@@ -14,10 +14,14 @@ class DownloadableProductStoreView extends ProductStoreView
     const ATTR_LINKS_TITLE = 'links_title';
     const ATTR_SAMPLES_TITLE = 'samples_title';
 
-    /** @var DownloadLinkInformation[] */
+    /**
+     * @var DownloadLinkInformation[] 
+     */
     protected $downloadLinkInformations;
 
-    /** @var DownloadSampleInformation[] */
+    /**
+     * @var DownloadSampleInformation[] 
+     */
     protected $downloadSampleInformations;
 
     /**

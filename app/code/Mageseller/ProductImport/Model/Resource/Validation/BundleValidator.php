@@ -15,7 +15,7 @@ class BundleValidator
 {
     /**
      * @param ConfigurableProduct $product
-     * @param Product[] $batchProducts
+     * @param Product[]           $batchProducts
      */
     public function validate(BundleProduct $product, array $batchProducts)
     {

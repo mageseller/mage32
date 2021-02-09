@@ -22,7 +22,7 @@ class LeadersystemsCategoryImport
     /**
      * Constructor
      *
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Psr\Log\LoggerInterface                             $logger
      * @param \Mageseller\LeadersystemsImport\Helper\Leadersystems $leadersystemsHelper
      */
     public function __construct(\Psr\Log\LoggerInterface $logger, \Mageseller\LeadersystemsImport\Helper\Leadersystems $leadersystemsHelper)

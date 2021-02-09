@@ -13,15 +13,16 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 namespace Mageseller\Customization\Controller\Adminhtml\Attribute;
 
 /**
  * Class Update
+ *
  * @package Mageseller\Customization\Controller\Adminhtml\Attribute
  */
 class Update extends \Magento\Backend\App\Action
@@ -57,13 +58,13 @@ class Update extends \Magento\Backend\App\Action
     protected $_storeManager;
 
     /**
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Magento\Framework\Json\Helper\Data $jsonHelper
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Magento\Backend\App\Action\Context                 $context
+     * @param \Magento\Framework\Json\Helper\Data                 $jsonHelper
+     * @param \Magento\Store\Model\StoreManagerInterface          $storeManager
      * @param \Magento\Catalog\Model\Product\Attribute\Repository $productRespository
-     * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
-     * @param \Mageseller\Customization\Helper\Data $devicesHelper
-     * @param \Mageseller\Customization\Model\DevicesFactory $devicesFactory
+     * @param \Magento\Framework\View\Result\PageFactory          $resultPageFactory
+     * @param \Mageseller\Customization\Helper\Data               $devicesHelper
+     * @param \Mageseller\Customization\Model\DevicesFactory      $devicesFactory
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
@@ -106,10 +107,12 @@ class Update extends \Magento\Backend\App\Action
         } else {
             $store = $this->getRequest()->getParam('store', 0);
             $devices = $this->_devicesFactory->create()->loadByOption($optionId, $store);
-           /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
+            /**
+ * @var \Magento\Backend\Model\View\Result\Page $resultPage 
+*/
             $resultPage     = $this->_resultPageFactory->create();
             $devicesData = $devices->getData();
-            if(!$devicesData){
+            if(!$devicesData) {
                 $devicesData['option_id'] = $optionId;
                 $devicesData['store_id'] = $store;
             }

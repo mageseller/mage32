@@ -10,13 +10,19 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class OptionResolver
 {
-    /** @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     protected $allOptionValues = [];
 
     public function __construct(
@@ -35,7 +41,8 @@ class OptionResolver
     protected function loadOptionValues(string $attributeCode)
     {
         if (!array_key_exists($attributeCode, $this->allOptionValues)) {
-            $this->allOptionValues[$attributeCode] = $this->db->fetchMap("
+            $this->allOptionValues[$attributeCode] = $this->db->fetchMap(
+                "
                 SELECT V.`value`, O.`option_id`
                 FROM {$this->metaData->attributeTable} A
                 INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
@@ -44,7 +51,8 @@ class OptionResolver
             ", [
                 $attributeCode,
                 $this->metaData->productEntityTypeId
-            ]);
+                ]
+            );
         }
     }
 
@@ -54,26 +62,30 @@ class OptionResolver
 
         $sortOrder = count($this->allOptionValues[$attributeCode]) + 1;
 
-        $this->db->execute("
+        $this->db->execute(
+            "
             INSERT INTO {$this->metaData->attributeOptionTable}
             SET attribute_id = ?, sort_order = ?
         ", [
             $attributeId,
             $sortOrder
-        ]);
+            ]
+        );
 
         $optionId = $this->db->getLastInsertId();
 
         // update cached values
         $this->allOptionValues[$attributeCode][$optionName] = $optionId;
 
-        $this->db->execute("
+        $this->db->execute(
+            "
             INSERT INTO {$this->metaData->attributeOptionValueTable}
             SET option_id = ?, store_id = 0, value = ?
         ", [
             $optionId,
             $optionName
-        ]);
+            ]
+        );
 
         return $optionId;
     }

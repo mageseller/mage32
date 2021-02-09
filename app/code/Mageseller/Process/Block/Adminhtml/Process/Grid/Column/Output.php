@@ -14,9 +14,11 @@ class Output extends AbstractColumn
             if (count($lines) === 6) {
                 $lines[5] = '...';
             }
-            array_walk($lines, function (&$line) {
-                $line = $this->truncate($line);
-            });
+            array_walk(
+                $lines, function (&$line) {
+                    $line = $this->truncate($line);
+                }
+            );
             $value = implode('<br/>', $lines);
         }
 
@@ -24,12 +26,12 @@ class Output extends AbstractColumn
     }
 
     /**
-     * @param   string  $value
-     * @param   int     $length
-     * @param   string  $etc
-     * @param   string  $remainder
-     * @param   bool    $breakWords
-     * @return  string
+     * @param  string $value
+     * @param  int    $length
+     * @param  string $etc
+     * @param  string $remainder
+     * @param  bool   $breakWords
+     * @return string
      */
     private function truncate($value, $length = 80, $etc = '...', &$remainder = '', $breakWords = true)
     {

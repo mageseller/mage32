@@ -12,8 +12,8 @@ class View extends AbstractProcessAction
     protected $coreRegistry;
 
     /**
-     * @param   Context     $context
-     * @param   Registry    $coreRegistry
+     * @param Context  $context
+     * @param Registry $coreRegistry
      */
     public function __construct(Context $context, Registry $coreRegistry)
     {

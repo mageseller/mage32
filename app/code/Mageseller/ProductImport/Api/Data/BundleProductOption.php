@@ -10,16 +10,24 @@ class BundleProductOption
     const PRICE_TYPE_FIXED = 0;
     const PRICE_TYPE_PERCENT = 1;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $inputType;
 
-    /** @var bool */
+    /**
+     * @var bool 
+     */
     protected $required;
 
-    /** @var BundleProductSelection[] */
+    /**
+     * @var BundleProductSelection[] 
+     */
     protected $selections = [];
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $id;
 
     public function __construct(string $inputType, bool $required)

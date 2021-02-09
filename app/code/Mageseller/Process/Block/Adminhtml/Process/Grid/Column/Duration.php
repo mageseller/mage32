@@ -12,9 +12,9 @@ class Duration extends AbstractColumn
     private $helper;
 
     /**
-     * @param   Context $context
-     * @param   Helper  $helper
-     * @param   array   $data
+     * @param Context $context
+     * @param Helper  $helper
+     * @param array   $data
      */
     public function __construct(Context $context, Helper $helper, array $data = [])
     {

@@ -22,29 +22,43 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class UrlKeyTest extends \Magento\TestFramework\TestCase\AbstractController
 {
-    /** @var  ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     private static $factory;
 
-    /** @var ProductRepositoryInterface $repository */
+    /**
+     * @var ProductRepositoryInterface $repository 
+     */
     private static $repository;
 
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected static $db;
 
-    /** @var  Metadata */
+    /**
+     * @var Metadata 
+     */
     protected static $metadata;
 
     public static function setUpBeforeClass(): void
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         self::$factory = $objectManager->get(ImporterFactory::class);
 
-        /** @var ProductRepositoryInterface $repository */
+        /**
+ * @var ProductRepositoryInterface $repository 
+*/
         self::$repository = $objectManager->get(ProductRepositoryInterface::class);
 
-        /** @var Magento2DbConnection $db */
+        /**
+ * @var Magento2DbConnection $db 
+*/
         self::$db = $objectManager->get(Magento2DbConnection::class);
 
         self::$metadata = $objectManager->get(MetaData::class);
@@ -54,7 +68,7 @@ class UrlKeyTest extends \Magento\TestFramework\TestCase\AbstractController
     }
 
     /**
-     * @param $sku
+     * @param  $sku
      * @return SimpleProduct
      */
     public function createProduct($sku)
@@ -175,7 +189,7 @@ class UrlKeyTest extends \Magento\TestFramework\TestCase\AbstractController
         $this->assertEquals('winter-woozling-product-import-2-c', $product3->storeView('default')->getUrlKey());
 
         // resave product
-//        $product2->global()->generateUrlKey();
+        //        $product2->global()->generateUrlKey();
         $importer->importSimpleProduct($product2);
 
         $importer->flush();

@@ -16,20 +16,21 @@ class XmlProductReader
 {
     const TAG_PRODUCT = 'product';
 
-    /** @var ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     protected $importerFactory;
 
     public function __construct(
         ImporterFactory $importerFactory
-    )
-    {
+    ) {
         $this->importerFactory = $importerFactory;
     }
 
     /**
-     * @param string $xmlPath
-     * @param ImportConfig $config
-     * @param bool $skipXsdValidation
+     * @param string              $xmlPath
+     * @param ImportConfig        $config
+     * @param bool                $skipXsdValidation
      * @param ProductImportLogger $output
      */
     public function import(string $xmlPath, ImportConfig $config, bool $skipXsdValidation, ProductImportLogger $output)
@@ -75,7 +76,7 @@ class XmlProductReader
     /**
      * See https://medium.com/@Sirolad/validating-xml-against-xsd-in-php-5607f725955a
      *
-     * @param string $xmlPath
+     * @param  string $xmlPath
      * @return array
      */
     protected function validateXmlFile(string $xmlPath)
@@ -87,7 +88,9 @@ class XmlProductReader
         $reader->setSchema(__DIR__ . '/product-import.xsd');
 
         // read all nodes
-        /** @noinspection PhpStatementHasEmptyBodyInspection */
+        /**
+ * @noinspection PhpStatementHasEmptyBodyInspection 
+*/
         while ($reader->read()) {
         }
 
@@ -108,8 +111,8 @@ class XmlProductReader
     }
 
     /**
-     * @param string $xmlPath
-     * @param Importer $importer
+     * @param  string   $xmlPath
+     * @param  Importer $importer
      * @throws Exception
      */
     protected function processFile(string $xmlPath, Importer $importer)

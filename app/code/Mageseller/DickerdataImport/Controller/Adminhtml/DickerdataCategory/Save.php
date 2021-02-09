@@ -18,7 +18,7 @@ class Save extends \Magento\Backend\App\Action
     protected $dataPersistor;
 
     /**
-     * @param \Magento\Backend\App\Action\Context $context
+     * @param \Magento\Backend\App\Action\Context                   $context
      * @param \Magento\Framework\App\Request\DataPersistorInterface $dataPersistor
      */
     public function __construct(
@@ -36,7 +36,9 @@ class Save extends \Magento\Backend\App\Action
      */
     public function execute()
     {
-        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
+        /**
+ * @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect 
+*/
         $resultRedirect = $this->resultRedirectFactory->create();
         $data = $this->getRequest()->getPostValue();
         if ($data) {

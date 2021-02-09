@@ -28,9 +28,9 @@ abstract class AbstractOutput implements OutputInterface
     abstract public function display($str);
 
     /**
-     * @param   CoreHelper      $coreHelper
-     * @param   Process         $process
-     * @param   LoggerInterface $logger
+     * @param CoreHelper      $coreHelper
+     * @param Process         $process
+     * @param LoggerInterface $logger
      */
     public function __construct(CoreHelper $coreHelper, Process $process, LoggerInterface $logger)
     {

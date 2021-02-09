@@ -13,10 +13,10 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 namespace Mageseller\Customization\Controller\Adminhtml\Attribute;
 
@@ -25,6 +25,7 @@ use Mageseller\Customization\Helper\Data as DevicesHelper;
 
 /**
  * Class Save
+ *
  * @package Mageseller\Customization\Controller\Adminhtml\Attribute
  */
 class Save extends \Magento\Backend\App\Action
@@ -50,12 +51,12 @@ class Save extends \Magento\Backend\App\Action
     protected $_resultPageFactory;
 
     /**
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Mageseller\Customization\Helper\Data $devicesHelper
-     * @param \Magento\Framework\Json\Helper\Data $jsonHelper
+     * @param \Magento\Backend\App\Action\Context            $context
+     * @param \Mageseller\Customization\Helper\Data          $devicesHelper
+     * @param \Magento\Framework\Json\Helper\Data            $jsonHelper
      * @param \Mageseller\Customization\Model\DevicesFactory $devicesFactory
-     * @param \Magento\Framework\Filesystem $fileSystem
-     * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
+     * @param \Magento\Framework\Filesystem                  $fileSystem
+     * @param \Magento\Framework\View\Result\PageFactory     $resultPageFactory
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
@@ -115,8 +116,8 @@ class Save extends \Magento\Backend\App\Action
     }
 
     /**
-     * @param $data
-     * @param $result
+     * @param  $data
+     * @param  $result
      * @return $this
      */
     protected function _uploadImage(&$data, &$result)

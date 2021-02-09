@@ -70,226 +70,370 @@ class MetaData
     const INVENTORY_SOURCE_ITEM = 'inventory_source_item';
     const INVENTORY_LOW_STOCK_NOTIFICATION_CONFIGURATION = 'inventory_low_stock_notification_configuration';
 
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $magentoVersion;
 
-    /** @var ValueSerializer */
+    /**
+     * @var ValueSerializer 
+     */
     public $valueSerializer;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $entityTypeTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $productEntityTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $weeeTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $categoryEntityTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $urlRewriteTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $urlRewriteProductCategoryTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $categoryProductTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $configDataTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $productWebsiteTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $mediaGalleryTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $mediaGalleryValueToEntityTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $mediaGalleryValueTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $stockItemTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $superAttributeTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $superAttributeLabelTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $superLinkTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $relationTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $attributeTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $catalogAttributeTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $attributeOptionTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $attributeOptionValueTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $attributeSetTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $storeTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $sourceTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $websiteTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $taxClassTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $customerGroupTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $linkTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $linkAttributeTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $linkAttributeIntTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $linkAttributeDecimalTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $linkTypeTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $tierPriceTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $downloadableLinkTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $downloadableLinkTitleTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $downloadableLinkPriceTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $downloadableSampleTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $downloadableSampleTitleTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $bundleOptionTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $bundleOptionValueTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $bundleSelectionTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $customOptionTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $customOptionPriceTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $customOptionTitleTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $customOptionTypePriceTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $customOptionTypeTitleTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $customOptionTypeValueTable;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $inventorySourceItem;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $inventoryLowStockNotificationConfiguration;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $defaultCategoryAttributeSetId;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $defaultProductAttributeSetId;
 
-    /** @var array Maps attribute set name to id */
+    /**
+     * @var array Maps attribute set name to id 
+     */
     public $productAttributeSetMap;
 
-    /** @var array Maps tax class name to id */
+    /**
+     * @var array Maps tax class name to id 
+     */
     public $taxClassMap;
 
-    /** @var array Maps store view code to id */
+    /**
+     * @var array Maps store view code to id 
+     */
     public $storeViewMap;
 
-    /** @var array Maps source code to source code */
+    /**
+     * @var array Maps source code to source code 
+     */
     public $sourceCodeMap;
 
-    /** @var array Maps store view id to website id */
+    /**
+     * @var array Maps store view id to website id 
+     */
     public $storeViewWebsiteMap;
 
-    /** @var  array Maps website code to id */
+    /**
+     * @var array Maps website code to id 
+     */
     public $websiteMap;
 
-    /** @var array Maps customer group name to id */
+    /**
+     * @var array Maps customer group name to id 
+     */
     public $customerGroupMap;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $productEntityTypeId;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $categoryEntityTypeId;
 
-    /** @var EavAttributeInfo[] */
+    /**
+     * @var EavAttributeInfo[] 
+     */
     public $productEavAttributeInfo;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $mediaGalleryAttributeId;
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     public $categoryAttributeMap;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $productUrlSuffixes;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $categoryUrlSuffixes;
 
-    /** @var bool Create 301 rewrite for older url_rewrite entries */
+    /**
+     * @var bool Create 301 rewrite for older url_rewrite entries 
+     */
     public $saveRewritesHistory;
 
-    /** @var LinkInfo[] */
+    /**
+     * @var LinkInfo[] 
+     */
     public $linkInfo;
 
-    /** @var int[] */
+    /**
+     * @var int[] 
+     */
     public $imageAttributeIds;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $weeeAttributeId;
 
     /**
      * MetaData constructor.
      *
-     * @param Magento2DbConnection $db
+     * @param  Magento2DbConnection $db
      * @throws Exception
      */
     public function __construct(Magento2DbConnection $db)
@@ -418,7 +562,8 @@ class MetaData
             '/"version": "([^\"]+)"/',
             file_get_contents(BP . '/vendor/magento/magento2-base/composer.json'),
             $matches
-        )) {
+        )
+        ) {
             $magentoVersion = $matches[1];
         } else {
             throw new Exception("Magento version could not be detected.");
@@ -492,7 +637,7 @@ class MetaData
         ",
             [
             $this->productEntityTypeId
-        ]
+            ]
         );
     }
 
@@ -508,6 +653,7 @@ class MetaData
 
     /**
      * Returns the ids of all store views, except global.
+     *
      * @return array
      */
     public function getNonGlobalStoreViewIds()
@@ -517,6 +663,7 @@ class MetaData
 
     /**
      * Returns the codes of all store views, except global.
+     *
      * @return array
      */
     public function getNonGlobalStoreViewCodes()
@@ -525,7 +672,7 @@ class MetaData
     }
 
     /**
-     * @param array $storeViewCodes
+     * @param  array $storeViewCodes
      * @return array
      * @throws Exception
      */
@@ -598,7 +745,7 @@ class MetaData
         ",
             [
             $this->categoryEntityTypeId
-        ]
+            ]
         );
     }
 
@@ -607,14 +754,16 @@ class MetaData
      */
     protected function getProductEavAttributeInfo()
     {
-        $rows = $this->db->fetchAllAssoc("
+        $rows = $this->db->fetchAllAssoc(
+            "
             SELECT A.`attribute_id`, A.`attribute_code`, A.`is_required`, A.`backend_type`, A.`frontend_input`, C.`is_global`
             FROM {$this->attributeTable} A
             INNER JOIN {$this->catalogAttributeTable} C ON C.`attribute_id` = A.`attribute_id`
             WHERE A.`entity_type_id` = ? AND A.backend_type != 'static'
          ", [
             $this->productEntityTypeId
-        ]);
+            ]
+        );
 
         $info = [];
         foreach ($rows as $row) {
@@ -647,27 +796,31 @@ class MetaData
      */
     protected function getWeeeAttributeId()
     {
-        return $this->db->fetchSingleCell("
+        return $this->db->fetchSingleCell(
+            "
             SELECT A.`attribute_id`
             FROM {$this->attributeTable} A
             INNER JOIN {$this->catalogAttributeTable} C ON C.`attribute_id` = A.`attribute_id`
             WHERE A.`entity_type_id` = ? AND A.frontend_input = 'weee'
          ", [
             $this->productEntityTypeId
-        ]);
+            ]
+        );
     }
 
     protected function getMediaGalleryAttributeId()
     {
         $attributeTable = $this->db->getFullTableName(self::ATTRIBUTE_TABLE);
 
-        return $this->db->fetchSingleCell("
+        return $this->db->fetchSingleCell(
+            "
             SELECT `attribute_id`
             FROM {$attributeTable}
             WHERE `entity_type_id` = ? AND attribute_code = 'media_gallery'
         ", [
             $this->productEntityTypeId
-        ]);
+            ]
+        );
     }
 
     protected function getProductUrlSuffixes()
@@ -688,7 +841,8 @@ class MetaData
         }
 
         // note: IFNULL will not do, because the suffix value may actually be null
-        $suffixes = $this->db->fetchMap("
+        $suffixes = $this->db->fetchMap(
+            "
             SELECT
                 s.`store_id`,
                 IF(cs.scope = 'stores', cs.value,
@@ -698,7 +852,8 @@ class MetaData
             LEFT JOIN `{$this->configDataTable}` cd ON cd.path = 'catalog/seo/product_url_suffix' AND cd.scope = 'default'
             LEFT JOIN `{$this->configDataTable}` cw ON cw.path = 'catalog/seo/product_url_suffix' AND cw.scope = 'websites' AND cw.scope_id = s.website_id
             LEFT JOIN `{$this->configDataTable}` cs ON cs.path = 'catalog/seo/product_url_suffix' AND cs.scope = 'stores' AND cs.scope_id = s.store_id
-        ", [$xmlDefault]);
+        ", [$xmlDefault]
+        );
 
         return $suffixes;
     }
@@ -721,7 +876,8 @@ class MetaData
         }
 
         // note: IFNULL will not do, because the suffix value may actually be null
-        $suffixes = $this->db->fetchMap("
+        $suffixes = $this->db->fetchMap(
+            "
             SELECT
                 s.`store_id`,
                 IF(cs.scope = 'stores', cs.value,
@@ -731,21 +887,24 @@ class MetaData
             LEFT JOIN `{$this->configDataTable}` cd ON cd.path = 'catalog/seo/category_url_suffix' AND cd.scope = 'default'
             LEFT JOIN `{$this->configDataTable}` cw ON cw.path = 'catalog/seo/category_url_suffix' AND cw.scope = 'websites' AND cw.scope_id = s.website_id
             LEFT JOIN `{$this->configDataTable}` cs ON cs.path = 'catalog/seo/category_url_suffix' AND cs.scope = 'stores' AND cs.scope_id = s.store_id
-        ", [$xmlDefault]);
+        ", [$xmlDefault]
+        );
 
         return $suffixes;
     }
 
     protected function getSaveRewritesHistory()
     {
-        $value = $this->db->fetchSingleCell("
+        $value = $this->db->fetchSingleCell(
+            "
             SELECT `value`
             FROM `{$this->configDataTable}`
             WHERE
                 `scope` = 'default' AND
                 `scope_id` = 0 AND
                 `path` = 'catalog/seo/save_rewrites_history'
-        ");
+        "
+        );
 
         return is_null($value) ? true : (bool)$value;
     }
@@ -756,57 +915,61 @@ class MetaData
         $linkRelationAttributeIdPosition = $linkUpSellAttributeIdPosition = $linkCrossSellAttributeIdPosition = null;
         $linkSuperAttributeIdPosition = $linkSuperAttributeIdDefaultQuantity = null;
 
-        $rows = $this->db->fetchAllAssoc("
+        $rows = $this->db->fetchAllAssoc(
+            "
             SELECT `code`, `link_type_id`
             FROM `{$this->linkTypeTable}`
-        ");
+        "
+        );
 
         foreach ($rows as $row) {
             switch ($row['code']) {
-                case 'relation':
-                    $linkTypeIdRelation = $row['link_type_id'];
-                    break;
-                case 'up_sell':
-                    $linkTypeIdUpSell = $row['link_type_id'];
-                    break;
-                case 'cross_sell':
-                    $linkTypeIdCrossSell = $row['link_type_id'];
-                    break;
-                case 'super':
-                    $linkTypeIdSuper = $row['link_type_id'];
-                    break;
+            case 'relation':
+                $linkTypeIdRelation = $row['link_type_id'];
+                break;
+            case 'up_sell':
+                $linkTypeIdUpSell = $row['link_type_id'];
+                break;
+            case 'cross_sell':
+                $linkTypeIdCrossSell = $row['link_type_id'];
+                break;
+            case 'super':
+                $linkTypeIdSuper = $row['link_type_id'];
+                break;
             }
         }
 
-        $rows = $this->db->fetchAllAssoc("
+        $rows = $this->db->fetchAllAssoc(
+            "
             SELECT `product_link_attribute_id`, `link_type_id`, `product_link_attribute_code`
             FROM `{$this->linkAttributeTable}`
-        ");
+        "
+        );
 
         foreach ($rows as $row) {
             switch ($row['product_link_attribute_code']) {
-                case 'position':
-                    switch ($row['link_type_id']) {
-                        case $linkTypeIdRelation:
-                            $linkRelationAttributeIdPosition = $row['product_link_attribute_id'];
-                            break;
-                        case $linkTypeIdUpSell:
-                            $linkUpSellAttributeIdPosition = $row['product_link_attribute_id'];
-                            break;
-                        case $linkTypeIdCrossSell:
-                            $linkCrossSellAttributeIdPosition = $row['product_link_attribute_id'];
-                            break;
-                        case $linkTypeIdSuper:
-                            $linkSuperAttributeIdPosition = $row['product_link_attribute_id'];
-                            break;
-                    }
+            case 'position':
+                switch ($row['link_type_id']) {
+                case $linkTypeIdRelation:
+                    $linkRelationAttributeIdPosition = $row['product_link_attribute_id'];
                     break;
-                case 'qty':
-                    switch ($row['link_type_id']) {
-                        case $linkTypeIdSuper:
-                            $linkSuperAttributeIdDefaultQuantity = $row['product_link_attribute_id'];
-                            break;
-                    }
+                case $linkTypeIdUpSell:
+                    $linkUpSellAttributeIdPosition = $row['product_link_attribute_id'];
+                    break;
+                case $linkTypeIdCrossSell:
+                    $linkCrossSellAttributeIdPosition = $row['product_link_attribute_id'];
+                    break;
+                case $linkTypeIdSuper:
+                    $linkSuperAttributeIdPosition = $row['product_link_attribute_id'];
+                    break;
+                }
+                break;
+            case 'qty':
+                switch ($row['link_type_id']) {
+                case $linkTypeIdSuper:
+                    $linkSuperAttributeIdDefaultQuantity = $row['product_link_attribute_id'];
+                    break;
+                }
 
             }
         }

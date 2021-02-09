@@ -32,7 +32,9 @@ abstract class AbstractButtons extends Field implements ButtonsRendererInterface
     {
         $html = '';
         foreach ($this->buttonsConfig as $buttonConfig) {
-            /** @var Button $button */
+            /**
+ * @var Button $button 
+*/
             $button = $this->getLayout()->createBlock(Button::class);
             $button->setLabel(__($buttonConfig['label']))
                 ->setClass($buttonConfig['class']);
@@ -71,7 +73,7 @@ abstract class AbstractButtons extends Field implements ButtonsRendererInterface
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function getDisabled()
     {
@@ -90,8 +92,8 @@ abstract class AbstractButtons extends Field implements ButtonsRendererInterface
     }
 
     /**
-     * @param   bool    $flag
-     * @return  $this
+     * @param  bool $flag
+     * @return $this
      */
     public function setDisabled($flag)
     {

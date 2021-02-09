@@ -11,16 +11,20 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class StockItemStorage
 {
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(
         Magento2DbConnection $db,
-        MetaData $metaData)
-    {
+        MetaData $metaData
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
     }

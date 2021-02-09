@@ -19,46 +19,74 @@ abstract class Product
     const WEBSITE_IDS = 'website_ids';
     const WEEE_ATTRIBUTE = 'weee';
 
-    /** @var  int */
+    /**
+     * @var int 
+     */
     public $id;
 
-    /** @var  int */
+    /**
+     * @var int 
+     */
     protected $attribute_set_id;
 
-    /** @var  string 64 character */
+    /**
+     * @var string 64 character 
+     */
     protected $sku;
 
-    /** @var int[]|null */
+    /**
+     * @var int[]|null 
+     */
     protected $category_ids = null;
 
-    /** @var array */
+    /**
+     * @var array 
+     */
     protected $website_ids = [];
 
-    /** @var ProductStoreView[] */
+    /**
+     * @var ProductStoreView[] 
+     */
     protected $storeViews = [];
 
-    /** @var ProductStockItem[] */
+    /**
+     * @var ProductStockItem[] 
+     */
     protected $stockItems = [];
 
-    /** @var SourceItem[] */
+    /**
+     * @var SourceItem[] 
+     */
     protected $sourceItems = [];
 
-    /** @var Image[] */
+    /**
+     * @var Image[] 
+     */
     protected $images = [];
 
-    /** @var string[][] */
+    /**
+     * @var string[][] 
+     */
     protected $linkedProductSkus = [];
 
-    /** @var int[][] */
+    /**
+     * @var int[][] 
+     */
     protected $linkedProductIds = [];
 
-    /** @var TierPrice[]|null An array of tier prices. null means: not used in this import */
+    /**
+     * @var TierPrice[]|null An array of tier prices. null means: not used in this import 
+     */
     protected $tierPrices = null;
 
-    /** @var Weee[]|null  */
+    /**
+     * @var Weee[]|null  
+     */
     protected $weees = null;
 
-    /** @var CustomOption[]|null */
+    /**
+     * @var CustomOption[]|null 
+     */
     protected $customOptions = null;
 
     /**
@@ -73,16 +101,24 @@ abstract class Product
     // importer data
     // =========================================
 
-    /** @var  array */
+    /**
+     * @var array 
+     */
     protected $errors = [];
 
-    /** @var bool */
+    /**
+     * @var bool 
+     */
     protected $placeholder = false;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $lineNumber = "";
 
-    /** @var string|null */
+    /**
+     * @var string|null 
+     */
     protected $storedType = null;
 
     public function __construct(string $sku)
@@ -119,12 +155,14 @@ abstract class Product
 
     /**
      * Used in catalog_product_entity table
+     *
      * @return string
      */
     public abstract function getType();
 
     /**
      * Used in catalog_product_entity table
+     *
      * @return bool|null
      */
     public function getHasOptions()
@@ -138,6 +176,7 @@ abstract class Product
 
     /**
      * Used in catalog_product_entity table
+     *
      * @return bool|null
      */
     public function getRequiredOptions()
@@ -156,7 +195,7 @@ abstract class Product
     }
 
     /**
-     * @param string $storeViewCode
+     * @param  string $storeViewCode
      * @return ProductStoreView
      */
     public function storeView(string $storeViewCode)
@@ -204,7 +243,7 @@ abstract class Product
     }
 
     /**
-     * @param string $sourceCode
+     * @param  string $sourceCode
      * @return SourceItem
      */
     public function sourceItem(string $sourceCode)
@@ -314,7 +353,7 @@ abstract class Product
     }
 
     /**
-     * @param string $imagePath Absolute path to JPEG or PNG image
+     * @param  string $imagePath Absolute path to JPEG or PNG image
      * @return Image
      */
     public function addImage(string $imagePath)
@@ -371,7 +410,7 @@ abstract class Product
      * Returns the ids of linked products of the given type
      * A return of null denotes that the user has not specified any links, and existing links should not be modified
      *
-     * @param string $linkType
+     * @param  string $linkType
      * @return int[]|null
      */
     public function getLinkedProductIds(string $linkType)

@@ -21,8 +21,8 @@ class Inventory
     protected $stockHelper;
 
     /**
-     * @param   ObjectManagerInterface  $objectManager
-     * @param   Stock                   $stockHelper
+     * @param ObjectManagerInterface $objectManager
+     * @param Stock                  $stockHelper
      */
     public function __construct(
         ObjectManagerInterface $objectManager,
@@ -44,7 +44,9 @@ class Inventory
         $sourceItems = [];
 
         foreach ($this->getSources() as $source) {
-            /** @var \Magento\InventoryApi\Api\Data\SourceItemInterface $sourceItem */
+            /**
+ * @var \Magento\InventoryApi\Api\Data\SourceItemInterface $sourceItem 
+*/
             $sourceItemFactory = $this->objectManager->get('Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory');
             $sourceItem = $sourceItemFactory->create();
             $sourceItem->setSku($product->getSku());
@@ -55,7 +57,9 @@ class Inventory
         }
 
         if (count($sourceItems) > 0) {
-            /** @var \Magento\InventoryApi\Api\SourceItemsSaveInterface $sourceItemsSave */
+            /**
+ * @var \Magento\InventoryApi\Api\SourceItemsSaveInterface $sourceItemsSave 
+*/
             $sourceItemsSave = $this->objectManager->get('Magento\InventoryApi\Api\SourceItemsSaveInterface');
             $sourceItemsSave->execute($sourceItems);
         }
@@ -66,7 +70,9 @@ class Inventory
      */
     protected function getSources()
     {
-        /** @var \Magento\InventoryApi\Api\SourceRepositoryInterface $sourceRepository */
+        /**
+ * @var \Magento\InventoryApi\Api\SourceRepositoryInterface $sourceRepository 
+*/
         $sourceRepository = $this->objectManager->get('Magento\InventoryApi\Api\SourceRepositoryInterface');
 
         return $sourceRepository->getList()->getItems();

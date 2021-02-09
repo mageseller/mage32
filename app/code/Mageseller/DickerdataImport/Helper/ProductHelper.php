@@ -47,6 +47,7 @@ class ProductHelper extends AbstractHelper
 
     /**
      * /**
+     *
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
@@ -61,7 +62,6 @@ class ProductHelper extends AbstractHelper
     protected $_dirReader;
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     *
      */
     protected $scopeConfig;
     /**
@@ -169,9 +169,13 @@ class ProductHelper extends AbstractHelper
      * @var \Mageseller\ProductImport\Api\ImporterFactory
      */
     private $importerFactory;
-    /**  @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
     private $existingDickerdataCategoryIds;
     private $existingSkus;
@@ -187,35 +191,35 @@ class ProductHelper extends AbstractHelper
     private $headers;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Store\Model\StoreManager $storeManager
-     * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
-     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param MessageManagerInterface $messageManager
-     * @param \Mageseller\DickerdataImport\Logger\DickerdataImport $dickerdataimportLogger
-     * @param \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory $dickerdataCategoryFactory
-     * @param CollectionFactory $categoryCollectionFactory
-     * @param ResourceConnection $resourceConnection
-     * @param Indexer $indexer
-     * @param ProcessResourceFactory $processResourceFactory
-     * @param ResourceConnection $resource
-     * @param EavConfig $eavConfig
-     * @param ProductFactory $productFactory
-     * @param ProductResourceFactory $productResourceFactory
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param InventoryHelper $inventoryHelper
-     * @param Url $urlHelper
-     * @param \Mageseller\ProductImport\Api\ImporterFactory $importerFactory
-     * @param \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
-     * @param \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
-     * @param \Magento\Catalog\Model\Indexer\Product\Price\Processor $priceIndexer
-     * @param \Magento\Catalog\Model\Indexer\Product\Eav\Processor $productEavIndexerProcessor
-     * @param Magento2DbConnection $db
-     * @param MetaData $metaData
-     * @param FlushCacheByProductIds $flushCacheByProductIds
-     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param  \Magento\Framework\App\Helper\Context                          $context
+     * @param  \Magento\Framework\Filesystem                                  $filesystem
+     * @param  \Magento\Store\Model\StoreManager                              $storeManager
+     * @param  \Magento\Framework\Filesystem\DirectoryList                    $dirReader
+     * @param  \Magento\Framework\Filesystem\Io\File                          $fileFactory
+     * @param  \Magento\Framework\Stdlib\DateTime\DateTime                    $dateTime
+     * @param  MessageManagerInterface                                        $messageManager
+     * @param  \Mageseller\DickerdataImport\Logger\DickerdataImport           $dickerdataimportLogger
+     * @param  \Mageseller\DickerdataImport\Model\DickerdataCategoryFactory   $dickerdataCategoryFactory
+     * @param  CollectionFactory                                              $categoryCollectionFactory
+     * @param  ResourceConnection                                             $resourceConnection
+     * @param  Indexer                                                        $indexer
+     * @param  ProcessResourceFactory                                         $processResourceFactory
+     * @param  ResourceConnection                                             $resource
+     * @param  EavConfig                                                      $eavConfig
+     * @param  ProductFactory                                                 $productFactory
+     * @param  ProductResourceFactory                                         $productResourceFactory
+     * @param  \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param  InventoryHelper                                                $inventoryHelper
+     * @param  Url                                                            $urlHelper
+     * @param  \Mageseller\ProductImport\Api\ImporterFactory                  $importerFactory
+     * @param  \Magento\Framework\Indexer\IndexerRegistry                     $indexerRegistry
+     * @param  \Magento\CatalogInventory\Model\Indexer\Stock\Processor        $stockIndexerProcessor
+     * @param  \Magento\Catalog\Model\Indexer\Product\Price\Processor         $priceIndexer
+     * @param  \Magento\Catalog\Model\Indexer\Product\Eav\Processor           $productEavIndexerProcessor
+     * @param  Magento2DbConnection                                           $db
+     * @param  MetaData                                                       $metaData
+     * @param  FlushCacheByProductIds                                         $flushCacheByProductIds
+     * @param  \Magento\Catalog\Model\CategoryFactory                         $categoryFactory
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -292,35 +296,35 @@ class ProductHelper extends AbstractHelper
             $allCategoryNames = [];
             /*
              * Array
-(
-    [StockCode] => 0
-    [Vendor] => 1
-    [VendorStockCode] => 2
-    [StockDescription] => 3
-    [PrimaryCategory] => 4
-    [SecondaryCategory] => 5
-    [TertiaryCategory] => 6
-    [RRPEx] => 7
-    [DealerEx] => 8
-    [StockAvailable] => 9
-    [ETA] => 10
-    [Status] => 11
-    [Type] => 12
-    [BundledItem1] => 13
-    [BundledItem2] => 14
-    [BundledItem3] => 15
-    [BundledItem4] => 16
-    [BundledItem5] => 17
-)*/
+            (
+            [StockCode] => 0
+            [Vendor] => 1
+            [VendorStockCode] => 2
+            [StockDescription] => 3
+            [PrimaryCategory] => 4
+            [SecondaryCategory] => 5
+            [TertiaryCategory] => 6
+            [RRPEx] => 7
+            [DealerEx] => 8
+            [StockAvailable] => 9
+            [ETA] => 10
+            [Status] => 11
+            [Type] => 12
+            [BundledItem1] => 13
+            [BundledItem2] => 14
+            [BundledItem3] => 15
+            [BundledItem4] => 16
+            [BundledItem5] => 17
+            )*/
             $this->headers = array_flip($file->readCsv());
             $items = [];
             while (false !== ($row = $file->readCsv())) {
                 $items[] = $row;
-//                $categoryLevel1 = $row[$this->headers[Dickerdata::PRIMARY_CATEGORY]] ?? "";
-//                $categoryLevel2 = $row[$this->headers[Dickerdata::SECONDARY_CATEGORY]] ?? "";
-//                $sku = $row[$this->headers[Dickerdata::STOCK_CODE]] ?? "";
-//                $allSkus[] = $sku;
-//                $allCategoryNames = array_unique(array_merge($allCategoryNames, [$categoryLevel1,$categoryLevel2]));
+                //                $categoryLevel1 = $row[$this->headers[Dickerdata::PRIMARY_CATEGORY]] ?? "";
+                //                $categoryLevel2 = $row[$this->headers[Dickerdata::SECONDARY_CATEGORY]] ?? "";
+                //                $sku = $row[$this->headers[Dickerdata::STOCK_CODE]] ?? "";
+                //                $allSkus[] = $sku;
+                //                $allCategoryNames = array_unique(array_merge($allCategoryNames, [$categoryLevel1,$categoryLevel2]));
             }
             $disableSkus = array_diff($allDickerdataSkus, $allSkus);
             //$this->existingDickerdataCategoryIds = $this->getExistingDickerdataCategoryIds($allCategoryNames);
@@ -501,15 +505,18 @@ class ProductHelper extends AbstractHelper
         $select = $categoryCollection->getSelect();
         $select->reset(Select::COLUMNS)->columns('GROUP_CONCAT(`e`.`entity_id`)');
         $select->where("FIND_IN_SET(`{$dickerdataCategoryTable}`.`dickerdatacategory_id`, `at_dickerdata_category_ids`.`value`)");
-        return $this->db->fetchMap("
+        return $this->db->fetchMap(
+            "
             SELECT `name`, ({$select}) as `category_ids`  
             FROM `{$dickerdataCategoryTable}`
             WHERE BINARY `name` IN (" . $this->db->getMarks($allCategoryNames) . ")
-        ", array_values($allCategoryNames));
+        ", array_values($allCategoryNames)
+        );
     }
     protected function loadOptionValues(string $attributeCode)
     {
-        $options = $this->db->fetchMap("
+        $options = $this->db->fetchMap(
+            "
             SELECT V.`value`, O.`option_id`
             FROM {$this->metaData->attributeTable} A
             INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
@@ -518,7 +525,8 @@ class ProductHelper extends AbstractHelper
         ", [
             $attributeCode,
             $this->metaData->productEntityTypeId
-        ]);
+            ]
+        );
         return $options;
     }
     private function getAllDickerdataSkus()
@@ -536,7 +544,7 @@ class ProductHelper extends AbstractHelper
     /**
      * Returns an sku => id map for all existing skus.
      *
-     * @param string[] $skus
+     * @param  string[] $skus
      * @return array
      */
     public function getExistingSkus(array $skus)
@@ -545,16 +553,18 @@ class ProductHelper extends AbstractHelper
             return [];
         }
 
-        return $this->db->fetchMap("
+        return $this->db->fetchMap(
+            "
             SELECT `sku`, `entity_id` 
             FROM `{$this->metaData->productEntityTable}`
             WHERE BINARY `sku` IN (" . $this->db->getMarks($skus) . ")
-        ", array_values($skus));
+        ", array_values($skus)
+        );
     }
     /**
      * Initiate product reindex by product ids
      *
-     * @param array $productIdsToReindex
+     * @param  array $productIdsToReindex
      * @return void
      */
     private function reindexProducts($productIdsToReindex = [])
@@ -584,15 +594,17 @@ class ProductHelper extends AbstractHelper
     }
     public function parseObject($value)
     {
-        return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
-            return !is_array($value) && $value !== '';
-        }) : $value : [];
+        return isset($value) ? is_object($value) ? array_filter(
+            json_decode(json_encode($value), true), function ($value) {
+                return !is_array($value) && $value !== '';
+            }
+        ) : $value : [];
     }
 
     /**
      * Returns website ids to enable for product import
      *
-     * @return  array
+     * @return array
      */
     private function getWebsiteIds()
     {
@@ -614,7 +626,7 @@ class ProductHelper extends AbstractHelper
     /**
      * Returns stores used for product import
      *
-     * @return  StoreInterface[]
+     * @return StoreInterface[]
      */
     public function getStores()
     {

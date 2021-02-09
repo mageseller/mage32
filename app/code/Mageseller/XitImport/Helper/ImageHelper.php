@@ -41,6 +41,7 @@ class ImageHelper extends AbstractHelper
     const PDF_FOLDER = 'devicesPdf';
     /**
      * /**
+     *
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
@@ -55,7 +56,6 @@ class ImageHelper extends AbstractHelper
     protected $_dirReader;
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     *
      */
     protected $scopeConfig;
     /**
@@ -171,32 +171,32 @@ class ImageHelper extends AbstractHelper
     private $mediaUrl;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Store\Model\StoreManager $storeManager
-     * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
-     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param MessageManagerInterface $messageManager
-     * @param \Mageseller\XitImport\Logger\XitImport $xitimportLogger
-     * @param \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory
-     * @param CollectionFactory $categoryCollectionFactory
-     * @param ResourceConnection $resourceConnection
-     * @param Indexer $indexer
-     * @param ProcessResourceFactory $processResourceFactory
-     * @param ResourceConnection $resource
-     * @param EavConfig $eavConfig
-     * @param ProductFactory $productFactory
-     * @param ProductResourceFactory $productResourceFactory
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param InventoryHelper $inventoryHelper
-     * @param Url $urlHelper
-     * @param \Mageseller\ProductImport\Api\ImporterFactory $importerFactory
-     * @param \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
-     * @param \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
-     * @param \Magento\Catalog\Model\Indexer\Product\Price\Processor $priceIndexer
-     * @param \Magento\Catalog\Model\Indexer\Product\Eav\Processor $productEavIndexerProcessor
-     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param  \Magento\Framework\App\Helper\Context                          $context
+     * @param  \Magento\Framework\Filesystem                                  $filesystem
+     * @param  \Magento\Store\Model\StoreManager                              $storeManager
+     * @param  \Magento\Framework\Filesystem\DirectoryList                    $dirReader
+     * @param  \Magento\Framework\Filesystem\Io\File                          $fileFactory
+     * @param  \Magento\Framework\Stdlib\DateTime\DateTime                    $dateTime
+     * @param  MessageManagerInterface                                        $messageManager
+     * @param  \Mageseller\XitImport\Logger\XitImport                         $xitimportLogger
+     * @param  \Mageseller\XitImport\Model\XitCategoryFactory                 $xitCategoryFactory
+     * @param  CollectionFactory                                              $categoryCollectionFactory
+     * @param  ResourceConnection                                             $resourceConnection
+     * @param  Indexer                                                        $indexer
+     * @param  ProcessResourceFactory                                         $processResourceFactory
+     * @param  ResourceConnection                                             $resource
+     * @param  EavConfig                                                      $eavConfig
+     * @param  ProductFactory                                                 $productFactory
+     * @param  ProductResourceFactory                                         $productResourceFactory
+     * @param  \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param  InventoryHelper                                                $inventoryHelper
+     * @param  Url                                                            $urlHelper
+     * @param  \Mageseller\ProductImport\Api\ImporterFactory                  $importerFactory
+     * @param  \Magento\Framework\Indexer\IndexerRegistry                     $indexerRegistry
+     * @param  \Magento\CatalogInventory\Model\Indexer\Stock\Processor        $stockIndexerProcessor
+     * @param  \Magento\Catalog\Model\Indexer\Product\Price\Processor         $priceIndexer
+     * @param  \Magento\Catalog\Model\Indexer\Product\Eav\Processor           $productEavIndexerProcessor
+     * @param  \Magento\Catalog\Model\CategoryFactory                         $categoryFactory
      * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
@@ -448,9 +448,11 @@ class ImageHelper extends AbstractHelper
     }
     public function parseObject($value)
     {
-        return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
-            return !is_array($value) && $value !== '';
-        }) : $value : [];
+        return isset($value) ? is_object($value) ? array_filter(
+            json_decode(json_encode($value), true), function ($value) {
+                return !is_array($value) && $value !== '';
+            }
+        ) : $value : [];
     }
 
     public function parseValue($value)
@@ -494,7 +496,7 @@ class ImageHelper extends AbstractHelper
     /**
      * Returns stores used for product import
      *
-     * @return  StoreInterface[]
+     * @return StoreInterface[]
      */
     public function getStores()
     {
@@ -528,7 +530,7 @@ class ImageHelper extends AbstractHelper
     /**
      * Initiate product reindex by product ids
      *
-     * @param array $productIdsToReindex
+     * @param  array $productIdsToReindex
      * @return void
      */
     private function reindexProducts($productIdsToReindex = [])

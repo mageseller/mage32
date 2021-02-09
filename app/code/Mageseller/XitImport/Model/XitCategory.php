@@ -24,13 +24,13 @@ class XitCategory extends \Magento\Framework\Model\AbstractModel
     protected $_eventPrefix = 'mageseller_xitimport_xitcategory';
 
     /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param XitCategoryInterfaceFactory $xitcategoryDataFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param \Mageseller\XitImport\Model\ResourceModel\XitCategory $resource
+     * @param \Magento\Framework\Model\Context                                 $context
+     * @param \Magento\Framework\Registry                                      $registry
+     * @param XitCategoryInterfaceFactory                                      $xitcategoryDataFactory
+     * @param DataObjectHelper                                                 $dataObjectHelper
+     * @param \Mageseller\XitImport\Model\ResourceModel\XitCategory            $resource
      * @param \Mageseller\XitImport\Model\ResourceModel\XitCategory\Collection $resourceCollection
-     * @param array $data
+     * @param array                                                            $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -48,6 +48,7 @@ class XitCategory extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Retrieve xitcategory model with xitcategory data
+     *
      * @return XitCategoryInterface
      */
     public function getDataModel()

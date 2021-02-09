@@ -16,20 +16,26 @@ class DownloadableStorage
     const LINK_SAMPLES_PATH = BP . "/pub/media/downloadable/files/link_samples";
     const SAMPLES_PATH = BP . "/pub/media/downloadable/files/samples";
 
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var ImageStorage */
+    /**
+     * @var ImageStorage 
+     */
     protected $imageStorage;
 
     public function __construct(
         Magento2DbConnection $db,
         MetaData $metaData,
-        ImageStorage $imageStorage)
-    {
+        ImageStorage $imageStorage
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
         $this->imageStorage = $imageStorage;
@@ -94,12 +100,15 @@ class DownloadableStorage
                 $numberOfDownloads = $downloadLink->getNumberOfDownloads();
 
                 list($linkUrl, $linkFile, $linkType) = $this->interpretFileOrUrl(
-                    $downloadLink->getFileOrUrl(), $downloadLink->getTemporaryStoragePathLink(), self::LINKS_PATH);
+                    $downloadLink->getFileOrUrl(), $downloadLink->getTemporaryStoragePathLink(), self::LINKS_PATH
+                );
 
                 list($sampleUrl, $sampleFile, $sampleType) = $this->interpretFileOrUrl(
-                    $downloadLink->getSampleFileOrUrl(), $downloadLink->getTemporaryStoragePathSample(), self::LINK_SAMPLES_PATH);
+                    $downloadLink->getSampleFileOrUrl(), $downloadLink->getTemporaryStoragePathSample(), self::LINK_SAMPLES_PATH
+                );
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO `" . $this->metaData->downloadableLinkTable . "`
                     SET 
                         `product_id` = ?, 
@@ -123,7 +132,8 @@ class DownloadableStorage
                     $sampleUrl,
                     $sampleFile,
                     $sampleType
-                ]);
+                    ]
+                );
 
                 $downloadLink->setId($this->db->getLastInsertId());
             }
@@ -138,7 +148,8 @@ class DownloadableStorage
                     $downloadLinkId = $downloadLinkInformation->getDownloadLink()->getId();
                     if ($downloadLinkId !== null) {
 
-                        $this->db->execute("
+                        $this->db->execute(
+                            "
                             INSERT INTO `" . $this->metaData->downloadableLinkTitleTable . "`
                             SET 
                                 `link_id` = ?, 
@@ -148,12 +159,14 @@ class DownloadableStorage
                             $downloadLinkId,
                             $storeView->getStoreViewId(),
                             $downloadLinkInformation->getTitle()
-                        ]);
+                            ]
+                        );
 
                         // find the website that belongs to the store view (the website of store view "default" is "admin")
                         $websiteId = $this->metaData->storeViewWebsiteMap[$storeView->getStoreViewId()];
 
-                        $this->db->execute("
+                        $this->db->execute(
+                            "
                             INSERT INTO `" . $this->metaData->downloadableLinkPriceTable . "`
                             SET 
                                 `link_id` = ?, 
@@ -163,7 +176,8 @@ class DownloadableStorage
                             $downloadLinkId,
                             $websiteId,
                             $downloadLinkInformation->getPrice()
-                        ]);
+                            ]
+                        );
                     }
                 }
             }
@@ -182,9 +196,11 @@ class DownloadableStorage
             foreach ($samples = $product->getDownloadSamples() as $i => $downloadSample) {
 
                 list($sampleUrl, $sampleFile, $sampleType) = $this->interpretFileOrUrl(
-                    $downloadSample->getFileOrUrl(), $downloadSample->getTemporaryStoragePathSample(), self::SAMPLES_PATH);
+                    $downloadSample->getFileOrUrl(), $downloadSample->getTemporaryStoragePathSample(), self::SAMPLES_PATH
+                );
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                     INSERT INTO `" . $this->metaData->downloadableSampleTable . "`
                     SET 
                         `product_id` = ?, 
@@ -198,7 +214,8 @@ class DownloadableStorage
                     $sampleUrl,
                     $sampleFile,
                     $sampleType
-                ]);
+                    ]
+                );
 
                 $downloadSample->setId($this->db->getLastInsertId());
             }
@@ -213,7 +230,8 @@ class DownloadableStorage
                     $downloadSampleId = $downloadSampleInformation->getDownloadSample()->getId();
                     if ($downloadSampleId !== null) {
 
-                        $this->db->execute("
+                        $this->db->execute(
+                            "
                             INSERT INTO `" . $this->metaData->downloadableSampleTitleTable . "`
                             SET 
                                 `sample_id` = ?, 
@@ -223,7 +241,8 @@ class DownloadableStorage
                             $downloadSampleId,
                             $storeView->getStoreViewId(),
                             $downloadSampleInformation->getTitle()
-                        ]);
+                            ]
+                        );
                     }
                 }
             }

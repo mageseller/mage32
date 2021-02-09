@@ -7,8 +7,8 @@ use Magento\Framework\DataObject;
 class Boolean extends AbstractRenderer
 {
     /**
-     * @param   DataObject  $row
-     * @return  string
+     * @param  DataObject $row
+     * @return string
      */
     public function render(DataObject $row)
     {

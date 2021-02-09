@@ -13,10 +13,10 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 
 namespace Mageseller\Customization\Block\Adminhtml\Category\Edit\Tab;
@@ -48,12 +48,12 @@ class Category extends \Magento\Backend\Block\Widget\Form\Generic
      * Category constructor.
      *
      * @param \Mageseller\Customization\Model\Config\Source\MetaRobots $metaRobotsOptions
-     * @param \Magento\Config\Model\Config\Source\Enabledisable     $booleanOptions
-     * @param \Magento\Backend\Block\Template\Context               $context
-     * @param \Magento\Framework\Registry                           $registry
-     * @param \Magento\Framework\Data\FormFactory                   $formFactory
-     * @param \Magento\Store\Model\System\Store                     $systemStore
-     * @param array                                                 $data
+     * @param \Magento\Config\Model\Config\Source\Enabledisable        $booleanOptions
+     * @param \Magento\Backend\Block\Template\Context                  $context
+     * @param \Magento\Framework\Registry                              $registry
+     * @param \Magento\Framework\Data\FormFactory                      $formFactory
+     * @param \Magento\Store\Model\System\Store                        $systemStore
+     * @param array                                                    $data
      */
     public function __construct(
         \Mageseller\Customization\Model\Config\Source\MetaRobots $metaRobotsOptions,
@@ -78,7 +78,11 @@ class Category extends \Magento\Backend\Block\Widget\Form\Generic
     {
         /* @var $model \Mageseller\Customization\Model\Category */
         $model = $this->_coreRegistry->registry('current_devices_category');
-        /** @var \Magento\Framework\Data\Form $form */
+        /**
+* 
+         *
+ * @var \Magento\Framework\Data\Form $form 
+*/
         $form = $this->_formFactory->create();
         $form->setHtmlIdPrefix('cat_');
 
@@ -106,17 +110,17 @@ class Category extends \Magento\Backend\Block\Widget\Form\Generic
                 'store_ids', 'multiselect',
                 ['name'   => 'store_ids', 'label' => __('Stores view'),
                  'title'  => __('Stores view'),
-                 'values' => $this->_systemStore->getStoreValuesForForm(
-                     false, true
-                 )]
+                'values' => $this->_systemStore->getStoreValuesForForm(
+                    false, true
+                )]
             );
         }
 
         $fieldset->addField(
             'status', 'select', ['name'   => 'status', 'label' => __('Status'),
                                  'title'  => __('Status'),
-                                 'values' => $this->_booleanOptions->toOptionArray(
-                                 )]
+                                'values' => $this->_booleanOptions->toOptionArray(
+                                )]
         );
         $fieldset->addField(
             'meta_title', 'text',

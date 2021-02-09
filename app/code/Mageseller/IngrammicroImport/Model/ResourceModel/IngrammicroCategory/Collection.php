@@ -29,7 +29,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     /**
      * Insert multiple
      *
-     * @param array $data
+     * @param  array $data
      * @return void
      * @throws \Magento\Framework\Exception\AlreadyExistsException
      * @throws \Exception
@@ -37,7 +37,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     public function insertMultiple($data)
     {
         try {
-          return $this->getConnection()->insertMultiple($this->getMainTable(), $data);
+            return $this->getConnection()->insertMultiple($this->getMainTable(), $data);
         } catch (\Exception $e) {
             echo $e->getMessage();die;
             if ($e->getCode() === self::ERROR_CODE_DUPLICATE_ENTRY
@@ -54,8 +54,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     /**
      * Insert On Duplicate
      *
-     * @param $tableName
-     * @param array $data
+     * @param  $tableName
+     * @param  array     $data
      * @return void
      * @throws \Magento\Framework\Exception\AlreadyExistsException
      */

@@ -8,71 +8,71 @@ use Magento\Framework\App\Helper\AbstractHelper;
 class EavAttributeDataWithoutLoad extends AbstractHelper
 {
     /**
-    * Entity attribute values per backend table to delete
-    *
-    * @var array
-    */
+     * Entity attribute values per backend table to delete
+     *
+     * @var array
+     */
     protected $_attributeValuesToDelete = [];
 
     /**
-    * Entity attribute values per backend table to save
-    *
-    * @var array
-    */
+     * Entity attribute values per backend table to save
+     *
+     * @var array
+     */
     protected $_attributeValuesToSave = [];
     /**
-    * Array of describe attribute backend tables
-    * The table name as key
-    *
-    * @var array
-    */
+     * Array of describe attribute backend tables
+     * The table name as key
+     *
+     * @var array
+     */
     protected static $_attributeBackendTables = [];
     /**
-    * @var \Magento\Store\Model\StoreManagerInterface
-    */
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
     private $_storeManager;
     /**
-    * @var \Magento\Eav\Model\Config
-    */
+     * @var \Magento\Eav\Model\Config
+     */
     private $_eavConfig;
     /**
-    * @var \Magento\Eav\Model\Entity\AttributeFactory
-    */
+     * @var \Magento\Eav\Model\Entity\AttributeFactory
+     */
     private $_attributeFactory;
     /**
-    * @var \Magento\Framework\App\ResourceConnection
-    */
+     * @var \Magento\Framework\App\ResourceConnection
+     */
     private $_resource;
     /**
-    * @var \Magento\Framework\Locale\FormatInterface
-    */
+     * @var \Magento\Framework\Locale\FormatInterface
+     */
     private $_localeFormat;
 
     /**
-    * @var \Magento\Framework\DB\Adapter\AdapterInterface
-    */
+     * @var \Magento\Framework\DB\Adapter\AdapterInterface
+     */
     private $_connection;
 
     /**
-    * @var \Magento\Framework\Indexer\IndexerRegistry
-    */
+     * @var \Magento\Framework\Indexer\IndexerRegistry
+     */
     protected $indexerRegistry;
 
     /**
-    * @var \Magento\Catalog\Model\Indexer\Product\Eav\Processor
-    */
+     * @var \Magento\Catalog\Model\Indexer\Product\Eav\Processor
+     */
     protected $_productEavIndexerProcessor;
 
     /**
-    * Application Event Dispatcher
-    *
-    * @var \Magento\Framework\Event\ManagerInterface
-    */
+     * Application Event Dispatcher
+     *
+     * @var \Magento\Framework\Event\ManagerInterface
+     */
     protected $_eventManager;
     private $entityType;
     /**
-    * @var int
-    */
+     * @var int
+     */
     private $entityTypeId;
     protected $_entityTable;
     private $_attributes;
@@ -116,20 +116,20 @@ class EavAttributeDataWithoutLoad extends AbstractHelper
         $entityTypeId = "";
         if (!$this->entityTypeId) {
             switch ($entityTypeEav) {
-case \Magento\Customer\Model\Customer::ENTITY:
-$entityTypeId = 1;
-break;
-case 'customer_address':
-$entityTypeId = 2;
-break;
-case \Magento\Catalog\Model\Category::ENTITY:
-$entityTypeId = 3;
-break;
-case \Magento\Catalog\Model\Product::ENTITY:
-default:
-$entityTypeId = 4;
-break;
-}
+            case \Magento\Customer\Model\Customer::ENTITY:
+                $entityTypeId = 1;
+                break;
+            case 'customer_address':
+                $entityTypeId = 2;
+                break;
+            case \Magento\Catalog\Model\Category::ENTITY:
+                $entityTypeId = 3;
+                break;
+            case \Magento\Catalog\Model\Product::ENTITY:
+            default:
+                $entityTypeId = 4;
+                break;
+            }
             if ($entityType) {
                 return $entityType;
             }
@@ -195,11 +195,11 @@ break;
                 $staticTable,
                 $staticAttributes
             )->join(
-    ['e' => $this->getTable($this->getEntityTable($entityType))],
-    'e.' . $this->getLinkField() . ' = ' . $staticTable . '.' . $this->getLinkField()
-)->where(
-    'e.entity_id = :entity_id'
-);
+                ['e' => $this->getTable($this->getEntityTable($entityType))],
+                'e.' . $this->getLinkField() . ' = ' . $staticTable . '.' . $this->getLinkField()
+            )->where(
+                'e.entity_id = :entity_id'
+            );
             $attributesData = $connection->fetchRow($select, ['entity_id' => $entityId]);
         }
 
@@ -214,14 +214,14 @@ break;
         if ($typedAttributes) {
             foreach ($typedAttributes as $table => $_attributes) {
                 $select = $connection->select()
-->from(['default_value' => $table], ['attribute_id'])
-->join(
-    ['e' => $this->getTable($this->getEntityTable($entityType))],
-    'e.' . $this->getLinkField() . ' = ' . 'default_value.' . $this->getLinkField(),
-    ''
-)->where('default_value.attribute_id IN (?)', array_keys($_attributes))
-->where("e.entity_id = :entity_id")
-->where('default_value.store_id = ?', 0);
+                    ->from(['default_value' => $table], ['attribute_id'])
+                    ->join(
+                        ['e' => $this->getTable($this->getEntityTable($entityType))],
+                        'e.' . $this->getLinkField() . ' = ' . 'default_value.' . $this->getLinkField(),
+                        ''
+                    )->where('default_value.attribute_id IN (?)', array_keys($_attributes))
+                    ->where("e.entity_id = :entity_id")
+                    ->where('default_value.store_id = ?', 0);
 
                 $bind = ['entity_id' => $entityId];
 
@@ -232,10 +232,10 @@ break;
                         'store_value.value'
                     );
                     $joinCondition = [
-$connection->quoteInto('store_value.attribute_id IN (?)', array_keys($_attributes)),
-"store_value.{$this->getLinkField()} = e.{$this->getLinkField()}",
-'store_value.store_id = :store_id',
-];
+                    $connection->quoteInto('store_value.attribute_id IN (?)', array_keys($_attributes)),
+                    "store_value.{$this->getLinkField()} = e.{$this->getLinkField()}",
+                    'store_value.store_id = :store_id',
+                    ];
 
                     $select->joinLeft(
                         ['store_value' => $table],

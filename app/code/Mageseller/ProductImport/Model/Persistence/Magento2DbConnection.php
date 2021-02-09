@@ -32,26 +32,38 @@ class Magento2DbConnection
     // 1 MB / about 270 bytes per path
     const REQUEST_PATHS_PER_CHUNK = 3500;
 
-    /** @var ResourceConnection $connection */
+    /**
+     * @var ResourceConnection $connection 
+     */
     protected $connection;
 
-    /** @var  PDO */
+    /**
+     * @var PDO 
+     */
     protected $pdo;
 
-    /** @var bool Debug option: print slow queries */
+    /**
+     * @var bool Debug option: print slow queries 
+     */
     protected $echoSlowQueries = false;
 
-    /** @var int MySQL maximum allowed packet (in kB) */
+    /**
+     * @var int MySQL maximum allowed packet (in kB) 
+     */
     protected $maxAllowedPacket;
 
     public function __construct(ResourceConnection $connection)
     {
         $this->connection = $connection;
 
-        /** @var Mysql $mysql */
+        /**
+ * @var Mysql $mysql 
+*/
         $mysql = $connection->getConnection();
 
-        /** @var PDO $pdo */
+        /**
+ * @var PDO $pdo 
+*/
         $this->pdo = $mysql->getConnection();
 
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -74,13 +86,13 @@ class Magento2DbConnection
     /**
      * Prepares and executes an SQL query or statement
      *
-     * @param string $query
-     * @param array $values
+     * @param  string $query
+     * @param  array  $values
      * @return \PDOStatement
      */
     public function execute(string $query, $values = [])
     {
-#echo $query . "\n";
+        // echo $query . "\n";
 
         if ($this->echoSlowQueries) {
 
@@ -108,13 +120,14 @@ class Magento2DbConnection
      * Insert multiple rows at once, passing a single 1 dimensional array of $values
      *
      * @param string $table
-     * @param array $columns
-     * @param array $values
-     * @param int $magnitude
+     * @param array  $columns
+     * @param array  $values
+     * @param int    $magnitude
      */
     public function insertMultiple(string $table, array $columns, array $values, int $magnitude)
     {
-        $this->chunkedGroupExecute("
+        $this->chunkedGroupExecute(
+            "
             INSERT INTO `{$table}` (`" . implode('`, `', $columns) . "`) 
             VALUES {{marks}}",
             $columns, $values, $magnitude
@@ -126,13 +139,14 @@ class Magento2DbConnection
      * Replace multiple rows at once, passing a single 1 dimensional array of $values
      *
      * @param string $table
-     * @param array $columns
-     * @param array $values
-     * @param int $magnitude
+     * @param array  $columns
+     * @param array  $values
+     * @param int    $magnitude
      */
     public function replaceMultiple(string $table, array $columns, array $values, int $magnitude)
     {
-        $this->chunkedGroupExecute("
+        $this->chunkedGroupExecute(
+            "
             REPLACE INTO `{$table}` (`" . implode('`, `', $columns) . "`) 
             VALUES {{marks}}",
             $columns, $values, $magnitude
@@ -144,14 +158,15 @@ class Magento2DbConnection
      * Performs an ON DUPLICATE KEY UPDATE with $updateClause
      *
      * @param string $table
-     * @param array $columns
-     * @param array $values
-     * @param int $magnitude
+     * @param array  $columns
+     * @param array  $values
+     * @param int    $magnitude
      * @param string $updateClause
      */
     public function insertMultipleWithUpdate(string $table, array $columns, array $values, int $magnitude, string $updateClause)
     {
-        $this->chunkedGroupExecute("
+        $this->chunkedGroupExecute(
+            "
             INSERT INTO `{$table}` (`" . implode('`, `', $columns) . "`) 
             VALUES {{marks}}
             ON DUPLICATE KEY UPDATE {$updateClause}",
@@ -164,13 +179,14 @@ class Magento2DbConnection
      * Adds IGNORE to INSERT
      *
      * @param string $table
-     * @param array $columns
-     * @param array $values
-     * @param int $magnitude
+     * @param array  $columns
+     * @param array  $values
+     * @param int    $magnitude
      */
     public function insertMultipleWithIgnore(string $table, array $columns, array $values, int $magnitude)
     {
-        $this->chunkedGroupExecute("
+        $this->chunkedGroupExecute(
+            "
             INSERT IGNORE INTO `{$table}` (`" . implode('`, `', $columns) . "`) 
             VALUES {{marks}}",
             $columns, $values, $magnitude
@@ -182,15 +198,17 @@ class Magento2DbConnection
      *
      * @param string $table
      * @param string $keyColumn
-     * @param array $keys
+     * @param array  $keys
      */
     public function deleteMultiple(string $table, string $keyColumn, array $keys)
     {
         foreach (array_chunk($keys, self::DELETES_PER_CHUNK) as $chunk) {
-            $this->execute("
+            $this->execute(
+                "
                 DELETE FROM`{$table}`  
                 WHERE `{$keyColumn}` IN (" . $this->getMarks($chunk) . ")",
-                $chunk);
+                $chunk
+            );
         }
     }
 
@@ -200,23 +218,25 @@ class Magento2DbConnection
      *
      * @param string $table
      * @param string $keyColumn
-     * @param array $keys
+     * @param array  $keys
      * @param string $whereClause
      */
     public function deleteMultipleWithWhere(string $table, string $keyColumn, array $keys, string $whereClause)
     {
         foreach (array_chunk($keys, self::DELETES_PER_CHUNK) as $chunk) {
-            $this->execute("
+            $this->execute(
+                "
                 DELETE FROM`{$table}`  
                 WHERE `{$keyColumn}` IN (?" . str_repeat(',?', count($chunk) - 1) . ") AND {$whereClause}",
-                $chunk);
+                $chunk
+            );
         }
     }
 
     /**
      * Returns a comma separated string of question marks ?,?,?,?
      *
-     * @param array $values Must have at least 1 value
+     * @param  array $values Must have at least 1 value
      * @return string
      */
     public function getMarks($values)
@@ -238,7 +258,7 @@ class Magento2DbConnection
     /**
      * Executes a grouped query in chunks, to avoid the max_allowed_packet constraint
      *
-     * @param string $query
+     * @param string    $query
      * @param $columns
      * @param $values
      * @param $magnitude
@@ -266,8 +286,8 @@ class Magento2DbConnection
     /**
      * Returns the first cell of the first result of $query.
      *
-     * @param string $query
-     * @param array $params
+     * @param  string $query
+     * @param  array  $params
      * @return string|null
      */
     public function fetchSingleCell(string $query, array $params = [])
@@ -280,8 +300,8 @@ class Magento2DbConnection
     /**
      * Returns an array containing the first cells of each result of $query.
      *
-     * @param string $query
-     * @param array $params
+     * @param  string $query
+     * @param  array  $params
      * @return array
      */
     public function fetchSingleColumn(string $query, array $params = [])
@@ -292,8 +312,8 @@ class Magento2DbConnection
     /**
      * Returns a key => value array based on the first two select fields of $query.
      *
-     * @param string $query
-     * @param array $params
+     * @param  string $query
+     * @param  array  $params
      * @return array
      */
     public function fetchMap(string $query, array $params = [])
@@ -302,8 +322,8 @@ class Magento2DbConnection
     }
 
     /**
-     * @param string $query
-     * @param array $params
+     * @param  string $query
+     * @param  array  $params
      * @return array
      */
     public function fetchRow(string $query, array $params = [])
@@ -312,8 +332,8 @@ class Magento2DbConnection
     }
 
     /**
-     * @param string $query
-     * @param array $params
+     * @param  string $query
+     * @param  array  $params
      * @return array
      */
     public function fetchAllAssoc(string $query, array $params = [])
@@ -322,9 +342,9 @@ class Magento2DbConnection
     }
 
     /**
-     * @param string $query
-     * @param array $params
-     * @param array $groupColumns
+     * @param  string $query
+     * @param  array  $params
+     * @param  array  $groupColumns
      * @return array
      */
     public function fetchGrouped(string $query, array $params, array $groupColumns)
@@ -348,8 +368,8 @@ class Magento2DbConnection
     }
 
     /**
-     * @param string $query
-     * @param array $params
+     * @param  string $query
+     * @param  array  $params
      * @return array
      */
     public function fetchAllNonAssoc(string $query, array $params = [])
@@ -360,7 +380,7 @@ class Magento2DbConnection
     /**
      * Returns prefixed table name
      *
-     * @param string $table
+     * @param  string $table
      * @return string
      */
     public function getFullTableName(string $table)

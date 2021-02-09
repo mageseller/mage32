@@ -47,6 +47,7 @@ class ProductHelper extends AbstractHelper
     const SUPPLIER = 'leadersystemsdistribution';
     /**
      * /**
+     *
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
@@ -61,7 +62,6 @@ class ProductHelper extends AbstractHelper
     protected $_dirReader;
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     *
      */
     protected $scopeConfig;
     /**
@@ -169,9 +169,13 @@ class ProductHelper extends AbstractHelper
      * @var \Mageseller\ProductImport\Api\ImporterFactory
      */
     private $importerFactory;
-    /**  @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
     private $existingLeadersystemsCategoryIds;
     private $existingSkus;
@@ -183,35 +187,35 @@ class ProductHelper extends AbstractHelper
     private $start;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Store\Model\StoreManager $storeManager
-     * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
-     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param MessageManagerInterface $messageManager
-     * @param \Mageseller\LeadersystemsImport\Logger\LeadersystemsImport $leadersystemsimportLogger
-     * @param \Mageseller\LeadersystemsImport\Model\LeadersystemsCategoryFactory $leadersystemsCategoryFactory
-     * @param CollectionFactory $categoryCollectionFactory
-     * @param ResourceConnection $resourceConnection
-     * @param Indexer $indexer
-     * @param ProcessResourceFactory $processResourceFactory
-     * @param ResourceConnection $resource
-     * @param EavConfig $eavConfig
-     * @param ProductFactory $productFactory
-     * @param ProductResourceFactory $productResourceFactory
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param InventoryHelper $inventoryHelper
-     * @param Url $urlHelper
-     * @param \Mageseller\ProductImport\Api\ImporterFactory $importerFactory
-     * @param \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
-     * @param \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
-     * @param \Magento\Catalog\Model\Indexer\Product\Price\Processor $priceIndexer
-     * @param \Magento\Catalog\Model\Indexer\Product\Eav\Processor $productEavIndexerProcessor
-     * @param Magento2DbConnection $db
-     * @param MetaData $metaData
-     * @param FlushCacheByProductIds $flushCacheByProductIds
-     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param  \Magento\Framework\App\Helper\Context                              $context
+     * @param  \Magento\Framework\Filesystem                                      $filesystem
+     * @param  \Magento\Store\Model\StoreManager                                  $storeManager
+     * @param  \Magento\Framework\Filesystem\DirectoryList                        $dirReader
+     * @param  \Magento\Framework\Filesystem\Io\File                              $fileFactory
+     * @param  \Magento\Framework\Stdlib\DateTime\DateTime                        $dateTime
+     * @param  MessageManagerInterface                                            $messageManager
+     * @param  \Mageseller\LeadersystemsImport\Logger\LeadersystemsImport         $leadersystemsimportLogger
+     * @param  \Mageseller\LeadersystemsImport\Model\LeadersystemsCategoryFactory $leadersystemsCategoryFactory
+     * @param  CollectionFactory                                                  $categoryCollectionFactory
+     * @param  ResourceConnection                                                 $resourceConnection
+     * @param  Indexer                                                            $indexer
+     * @param  ProcessResourceFactory                                             $processResourceFactory
+     * @param  ResourceConnection                                                 $resource
+     * @param  EavConfig                                                          $eavConfig
+     * @param  ProductFactory                                                     $productFactory
+     * @param  ProductResourceFactory                                             $productResourceFactory
+     * @param  \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory     $productCollectionFactory
+     * @param  InventoryHelper                                                    $inventoryHelper
+     * @param  Url                                                                $urlHelper
+     * @param  \Mageseller\ProductImport\Api\ImporterFactory                      $importerFactory
+     * @param  \Magento\Framework\Indexer\IndexerRegistry                         $indexerRegistry
+     * @param  \Magento\CatalogInventory\Model\Indexer\Stock\Processor            $stockIndexerProcessor
+     * @param  \Magento\Catalog\Model\Indexer\Product\Price\Processor             $priceIndexer
+     * @param  \Magento\Catalog\Model\Indexer\Product\Eav\Processor               $productEavIndexerProcessor
+     * @param  Magento2DbConnection                                               $db
+     * @param  MetaData                                                           $metaData
+     * @param  FlushCacheByProductIds                                             $flushCacheByProductIds
+     * @param  \Magento\Catalog\Model\CategoryFactory                             $categoryFactory
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -502,15 +506,18 @@ class ProductHelper extends AbstractHelper
         $select = $categoryCollection->getSelect();
         $select->reset(Select::COLUMNS)->columns('GROUP_CONCAT(`e`.`entity_id`)');
         $select->where("FIND_IN_SET(`{$leadersystemsCategoryTable}`.`leadersystemscategory_id`, `at_leadersystems_category_ids`.`value`)");
-        return $this->db->fetchMap("
+        return $this->db->fetchMap(
+            "
             SELECT `name`, ({$select}) as `category_ids`  
             FROM `{$leadersystemsCategoryTable}`
             WHERE BINARY `name` IN (" . $this->db->getMarks($allCategoryNames) . ")
-        ", array_values($allCategoryNames));
+        ", array_values($allCategoryNames)
+        );
     }
     protected function loadOptionValues(string $attributeCode)
     {
-        $options = $this->db->fetchMap("
+        $options = $this->db->fetchMap(
+            "
             SELECT V.`value`, O.`option_id`
             FROM {$this->metaData->attributeTable} A
             INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
@@ -519,7 +526,8 @@ class ProductHelper extends AbstractHelper
         ", [
             $attributeCode,
             $this->metaData->productEntityTypeId
-        ]);
+            ]
+        );
         return $options;
     }
     private function getAllLeadersystemsSkus()
@@ -537,7 +545,7 @@ class ProductHelper extends AbstractHelper
     /**
      * Returns an sku => id map for all existing skus.
      *
-     * @param string[] $skus
+     * @param  string[] $skus
      * @return array
      */
     public function getExistingSkus(array $skus)
@@ -546,16 +554,18 @@ class ProductHelper extends AbstractHelper
             return [];
         }
 
-        return $this->db->fetchMap("
+        return $this->db->fetchMap(
+            "
             SELECT `sku`, `entity_id` 
             FROM `{$this->metaData->productEntityTable}`
             WHERE BINARY `sku` IN (" . $this->db->getMarks($skus) . ")
-        ", array_values($skus));
+        ", array_values($skus)
+        );
     }
     /**
      * Initiate product reindex by product ids
      *
-     * @param array $productIdsToReindex
+     * @param  array $productIdsToReindex
      * @return void
      */
     private function reindexProducts($productIdsToReindex = [])
@@ -585,15 +595,17 @@ class ProductHelper extends AbstractHelper
     }
     public function parseObject($value)
     {
-        return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
-            return !is_array($value) && $value !== '';
-        }) : $value : [];
+        return isset($value) ? is_object($value) ? array_filter(
+            json_decode(json_encode($value), true), function ($value) {
+                return !is_array($value) && $value !== '';
+            }
+        ) : $value : [];
     }
 
     /**
      * Returns website ids to enable for product import
      *
-     * @return  array
+     * @return array
      */
     private function getWebsiteIds()
     {
@@ -615,7 +627,7 @@ class ProductHelper extends AbstractHelper
     /**
      * Returns stores used for product import
      *
-     * @return  StoreInterface[]
+     * @return StoreInterface[]
      */
     public function getStores()
     {

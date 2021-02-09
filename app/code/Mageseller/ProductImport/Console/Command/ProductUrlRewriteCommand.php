@@ -23,14 +23,15 @@ class ProductUrlRewriteCommand extends Command
     const OPTION_REDIRECTS = 'redirects';
     const OPTION_CATEGORY_PATH_URLS = "category-path-urls";
 
-    /** @var ObjectManagerInterface */
+    /**
+     * @var ObjectManagerInterface 
+     */
     protected $objectManager;
 
     public function __construct(
         ObjectManagerInterface $objectManager,
         string $name = null
-    )
-    {
+    ) {
         $this->objectManager = $objectManager;
 
         parent::__construct($name);
@@ -40,7 +41,8 @@ class ProductUrlRewriteCommand extends Command
     {
         $this->setName('mageseller:product:urlrewrite');
         $this->setDescription('Updates url_rewrite to reflect the current state of the products.');
-        $this->setDefinition([
+        $this->setDefinition(
+            [
             new InputOption(
                 self::ARGUMENT_STOREVIEW_CODE,
                 's',
@@ -61,23 +63,27 @@ class ProductUrlRewriteCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'Handle category paths (delete: delete all existing and new category url-rewrites)',
                 ImportConfig::KEEP_CATEGORY_REWRITES
-
             ),
-        ]);
+            ]
+        );
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @param  InputInterface  $input
+     * @param  OutputInterface $output
      * @return int|null
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var UrlRewriteUpdater $urlRewriteUpdater */
+        /**
+ * @var UrlRewriteUpdater $urlRewriteUpdater 
+*/
         $urlRewriteUpdater = $this->objectManager->create(UrlRewriteUpdater::class);
 
-        /** @var Information $information */
+        /**
+ * @var Information $information 
+*/
         $information = $this->objectManager->create(Information::class);
 
         $storeViewCodes = $input->getOption(self::ARGUMENT_STOREVIEW_CODE);
@@ -100,7 +106,8 @@ class ProductUrlRewriteCommand extends Command
                 $storeViewCodes,
                 $logger,
                 $handleRedirects === ImportConfig::KEEP_REDIRECTS,
-                $handleCategories === ImportConfig::KEEP_CATEGORY_REWRITES);
+                $handleCategories === ImportConfig::KEEP_CATEGORY_REWRITES
+            );
         } catch (Exception $e) {
             $output->writeln("<error>" . $e->getMessage() . "</error>");
             return \Magento\Framework\Console\Cli::RETURN_FAILURE;

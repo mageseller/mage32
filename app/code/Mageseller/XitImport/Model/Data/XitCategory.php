@@ -18,6 +18,7 @@ class XitCategory extends \Magento\Framework\Api\AbstractExtensibleObject implem
 
     /**
      * Get xitcategory_id
+     *
      * @return string|null
      */
     public function getXitcategoryId()
@@ -27,7 +28,8 @@ class XitCategory extends \Magento\Framework\Api\AbstractExtensibleObject implem
 
     /**
      * Set xitcategory_id
-     * @param string $xitcategoryId
+     *
+     * @param  string $xitcategoryId
      * @return \Mageseller\XitImport\Api\Data\XitCategoryInterface
      */
     public function setXitcategoryId($xitcategoryId)
@@ -37,6 +39,7 @@ class XitCategory extends \Magento\Framework\Api\AbstractExtensibleObject implem
 
     /**
      * Get name
+     *
      * @return string|null
      */
     public function getName()
@@ -46,7 +49,8 @@ class XitCategory extends \Magento\Framework\Api\AbstractExtensibleObject implem
 
     /**
      * Set name
-     * @param string $name
+     *
+     * @param  string $name
      * @return \Mageseller\XitImport\Api\Data\XitCategoryInterface
      */
     public function setName($name)
@@ -56,6 +60,7 @@ class XitCategory extends \Magento\Framework\Api\AbstractExtensibleObject implem
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Mageseller\XitImport\Api\Data\XitCategoryExtensionInterface|null
      */
     public function getExtensionAttributes()
@@ -65,7 +70,8 @@ class XitCategory extends \Magento\Framework\Api\AbstractExtensibleObject implem
 
     /**
      * Set an extension attributes object.
-     * @param \Mageseller\XitImport\Api\Data\XitCategoryExtensionInterface $extensionAttributes
+     *
+     * @param  \Mageseller\XitImport\Api\Data\XitCategoryExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

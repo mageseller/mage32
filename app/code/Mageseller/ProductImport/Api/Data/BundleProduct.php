@@ -14,7 +14,9 @@ class BundleProduct extends Product
     const INPUT_TYPE_CHECKBOX = 'checkbox';
     const INPUT_TYPE_MULTIPLE_SELECT = 'multi';
 
-    /** @var BundleProductOption[]|null */
+    /**
+     * @var BundleProductOption[]|null 
+     */
     protected $options = null;
 
     public function getType()
@@ -43,7 +45,7 @@ class BundleProduct extends Product
     }
 
     /**
-     * @param string $storeViewCode
+     * @param  string $storeViewCode
      * @return BundleProductStoreView
      */
     public function storeView(string $storeViewCode)

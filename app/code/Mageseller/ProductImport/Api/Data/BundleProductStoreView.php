@@ -30,7 +30,9 @@ class BundleProductStoreView extends ProductStoreView
     const SHIPMENT_TYPE_TOGETHER = 0;
     const SHIPMENT_TYPE_SEPARATELY = 1;
 
-    /** @var BundleOptionInformation[] */
+    /**
+     * @var BundleOptionInformation[] 
+     */
     protected $optionInformations = [];
 
     /**

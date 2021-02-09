@@ -22,22 +22,34 @@ use Mageseller\ProductImport\Model\Resource\Storage\ProductEntityStorage;
  */
 class Importer
 {
-    /** @var Product[] */
+    /**
+     * @var Product[] 
+     */
     protected $products = [];
 
-    /** @var  ImportConfig */
+    /**
+     * @var ImportConfig 
+     */
     protected $config;
 
-    /** @var ProductEntityStorage */
+    /**
+     * @var ProductEntityStorage 
+     */
     protected $productEntityStorage;
 
-    /** @var ProductStorage */
+    /**
+     * @var ProductStorage 
+     */
     protected $productStorage;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var CacheManager */
+    /**
+     * @var CacheManager 
+     */
     protected $cacheManager;
 
     public function __construct(
@@ -45,8 +57,8 @@ class Importer
         ProductEntityStorage $productEntityStorage,
         ProductStorage $productStorage,
         MetaData $metaData,
-        CacheManager $cacheManager)
-    {
+        CacheManager $cacheManager
+    ) {
         $this->config = $config;
         $this->productEntityStorage = $productEntityStorage;
         $this->productStorage = $productStorage;
@@ -55,7 +67,7 @@ class Importer
     }
 
     /**
-     * @param SimpleProduct $product
+     * @param  SimpleProduct $product
      * @throws \Exception
      */
     public function importSimpleProduct(SimpleProduct $product)
@@ -72,7 +84,7 @@ class Importer
     }
 
     /**
-     * @param VirtualProduct $product
+     * @param  VirtualProduct $product
      * @throws \Exception
      */
     public function importVirtualProduct(VirtualProduct $product)
@@ -81,7 +93,7 @@ class Importer
     }
 
     /**
-     * @param DownloadableProduct $product
+     * @param  DownloadableProduct $product
      * @throws \Exception
      */
     public function importDownloadableProduct(DownloadableProduct $product)
@@ -98,7 +110,7 @@ class Importer
     }
 
     /**
-     * @param ConfigurableProduct $product
+     * @param  ConfigurableProduct $product
      * @throws \Exception
      */
     public function importConfigurableProduct(ConfigurableProduct $product)
@@ -118,7 +130,7 @@ class Importer
     }
 
     /**
-     * @param BundleProduct $product
+     * @param  BundleProduct $product
      * @throws \Exception
      */
     public function importBundleProduct(BundleProduct $product)
@@ -138,7 +150,7 @@ class Importer
     }
 
     /**
-     * @param GroupedProduct $product
+     * @param  GroupedProduct $product
      * @throws \Exception
      */
     public function importGroupedProduct(GroupedProduct $product)
@@ -160,6 +172,7 @@ class Importer
     /**
      * Call this function only once, at the end of the full import.
      * Not once for every product!
+     *
      * @throws \Exception
      */
     public function flush()
@@ -187,7 +200,7 @@ class Importer
      * Creates a Product object for an existing product, whose product type is unknown.
      * Returns false if no product with $sku exists.
      *
-     * @param string $sku
+     * @param  string $sku
      * @return BundleProduct|ConfigurableProduct|DownloadableProduct|GroupedProduct|SimpleProduct|VirtualProduct|false
      */
     public function getExistingProductBySku(string $sku)
@@ -199,7 +212,7 @@ class Importer
      * Creates a Product object for an existing product, whose product type is unknown.
      * Returns false if no product with $id exists.
      *
-     * @param int $id
+     * @param  int $id
      * @return BundleProduct|ConfigurableProduct|DownloadableProduct|GroupedProduct|SimpleProduct|VirtualProduct|false
      */
     public function getExistingProductById(int $id)
@@ -208,36 +221,48 @@ class Importer
     }
 
     /**
-     * @param Product $product
+     * @param  Product $product
      * @throws \Exception
      */
     public function importAnyProduct(Product $product)
     {
         switch ($product->getType()) {
-            case SimpleProduct::TYPE_SIMPLE:
-                /** @var SimpleProduct $product */
-                $this->importSimpleProduct($product);
-                break;
-            case VirtualProduct::TYPE_VIRTUAL:
-                /** @var VirtualProduct $product */
-                $this->importVirtualProduct($product);
-                break;
-            case DownloadableProduct::TYPE_DOWNLOADABLE:
-                /** @var DownloadableProduct $product */
-                $this->importDownloadableProduct($product);
-                break;
-            case ConfigurableProduct::TYPE_CONFIGURABLE:
-                /** @var ConfigurableProduct $product */
-                $this->importConfigurableProduct($product);
-                break;
-            case BundleProduct::TYPE_BUNDLE:
-                /** @var BundleProduct $product */
-                $this->importBundleProduct($product);
-                break;
-            case GroupedProduct::TYPE_GROUPED:
-                /** @var GroupedProduct $product */
-                $this->importGroupedProduct($product);
-                break;
+        case SimpleProduct::TYPE_SIMPLE:
+            /**
+ * @var SimpleProduct $product 
+*/
+            $this->importSimpleProduct($product);
+            break;
+        case VirtualProduct::TYPE_VIRTUAL:
+            /**
+ * @var VirtualProduct $product 
+*/
+            $this->importVirtualProduct($product);
+            break;
+        case DownloadableProduct::TYPE_DOWNLOADABLE:
+            /**
+ * @var DownloadableProduct $product 
+*/
+            $this->importDownloadableProduct($product);
+            break;
+        case ConfigurableProduct::TYPE_CONFIGURABLE:
+            /**
+ * @var ConfigurableProduct $product 
+*/
+            $this->importConfigurableProduct($product);
+            break;
+        case BundleProduct::TYPE_BUNDLE:
+            /**
+ * @var BundleProduct $product 
+*/
+            $this->importBundleProduct($product);
+            break;
+        case GroupedProduct::TYPE_GROUPED:
+            /**
+ * @var GroupedProduct $product 
+*/
+            $this->importGroupedProduct($product);
+            break;
         }
     }
 

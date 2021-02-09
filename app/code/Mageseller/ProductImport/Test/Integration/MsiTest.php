@@ -13,26 +13,38 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class MsiTest extends \Magento\TestFramework\TestCase\AbstractController
 {
-    /** @var  ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     private static $factory;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     private static $metaData;
 
-    /** @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected static $db;
 
     public static function setUpBeforeClass(): void
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         self::$factory = $objectManager->get(ImporterFactory::class);
 
-        /** @var MetaData metaData */
+        /**
+ * @var MetaData metaData 
+*/
         self::$metaData = $objectManager->get(MetaData::class);
 
-        /** @var Magento2DbConnection db */
+        /**
+ * @var Magento2DbConnection db 
+*/
         self::$db = $objectManager->get(Magento2DbConnection::class);
     }
 
@@ -86,24 +98,28 @@ class MsiTest extends \Magento\TestFramework\TestCase\AbstractController
 
     protected function loadSourceItemData(string $sku)
     {
-        return self::$db->fetchRow("
+        return self::$db->fetchRow(
+            "
             SELECT quantity, status
             FROM " . self::$metaData->inventorySourceItem . "
             WHERE sku = ? and source_code = ?
         ", [
             $sku, "default"
-        ]);
+            ]
+        );
     }
 
     protected function loadNotificationData(string $sku)
     {
-        return self::$db->fetchRow("
+        return self::$db->fetchRow(
+            "
             SELECT notify_stock_qty
             FROM " . self::$metaData->inventoryLowStockNotificationConfiguration . "
             WHERE sku = ? and source_code = ?
         ", [
             $sku, "default"
-        ]);
+            ]
+        );
     }
 
     /**
@@ -135,10 +151,12 @@ class MsiTest extends \Magento\TestFramework\TestCase\AbstractController
 
         $importer->flush();
 
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             "source code not found: japan",
             "source item quantity is not a decimal number with dot (100,25)",
             "source item notify_stock_qty is not a decimal number with dot (five)",
-        ], $product->getErrors());
+            ], $product->getErrors()
+        );
     }
 }

@@ -52,17 +52,17 @@ class XitCategoryRepository implements XitCategoryRepositoryInterface
     protected $extensibleDataObjectConverter;
 
     /**
-     * @param ResourceXitCategory $resource
-     * @param XitCategoryFactory $xitCategoryFactory
-     * @param XitCategoryInterfaceFactory $dataXitCategoryFactory
-     * @param XitCategoryCollectionFactory $xitCategoryCollectionFactory
+     * @param ResourceXitCategory                      $resource
+     * @param XitCategoryFactory                       $xitCategoryFactory
+     * @param XitCategoryInterfaceFactory              $dataXitCategoryFactory
+     * @param XitCategoryCollectionFactory             $xitCategoryCollectionFactory
      * @param XitCategorySearchResultsInterfaceFactory $searchResultsFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param DataObjectProcessor $dataObjectProcessor
-     * @param StoreManagerInterface $storeManager
-     * @param CollectionProcessorInterface $collectionProcessor
-     * @param JoinProcessorInterface $extensionAttributesJoinProcessor
-     * @param ExtensibleDataObjectConverter $extensibleDataObjectConverter
+     * @param DataObjectHelper                         $dataObjectHelper
+     * @param DataObjectProcessor                      $dataObjectProcessor
+     * @param StoreManagerInterface                    $storeManager
+     * @param CollectionProcessorInterface             $collectionProcessor
+     * @param JoinProcessorInterface                   $extensionAttributesJoinProcessor
+     * @param ExtensibleDataObjectConverter            $extensibleDataObjectConverter
      */
     public function __construct(
         ResourceXitCategory $resource,
@@ -112,10 +112,12 @@ class XitCategoryRepository implements XitCategoryRepositoryInterface
         try {
             $this->resource->save($xitCategoryModel);
         } catch (\Exception $exception) {
-            throw new CouldNotSaveException(__(
-                'Could not save the xitCategory: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotSaveException(
+                __(
+                    'Could not save the xitCategory: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return $xitCategoryModel->getDataModel();
     }
@@ -172,10 +174,12 @@ class XitCategoryRepository implements XitCategoryRepositoryInterface
             $this->resource->load($xitCategoryModel, $xitCategory->getXitcategoryId());
             $this->resource->delete($xitCategoryModel);
         } catch (\Exception $exception) {
-            throw new CouldNotDeleteException(__(
-                'Could not delete the XitCategory: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotDeleteException(
+                __(
+                    'Could not delete the XitCategory: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return true;
     }

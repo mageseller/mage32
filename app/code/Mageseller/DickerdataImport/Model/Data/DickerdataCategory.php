@@ -18,6 +18,7 @@ class DickerdataCategory extends \Magento\Framework\Api\AbstractExtensibleObject
 
     /**
      * Get dickerdatacategory_id
+     *
      * @return string|null
      */
     public function getDickerdatacategoryId()
@@ -27,7 +28,8 @@ class DickerdataCategory extends \Magento\Framework\Api\AbstractExtensibleObject
 
     /**
      * Set dickerdatacategory_id
-     * @param string $dickerdatacategoryId
+     *
+     * @param  string $dickerdatacategoryId
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface
      */
     public function setDickerdatacategoryId($dickerdatacategoryId)
@@ -37,6 +39,7 @@ class DickerdataCategory extends \Magento\Framework\Api\AbstractExtensibleObject
 
     /**
      * Get name
+     *
      * @return string|null
      */
     public function getName()
@@ -46,7 +49,8 @@ class DickerdataCategory extends \Magento\Framework\Api\AbstractExtensibleObject
 
     /**
      * Set name
-     * @param string $name
+     *
+     * @param  string $name
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface
      */
     public function setName($name)
@@ -56,6 +60,7 @@ class DickerdataCategory extends \Magento\Framework\Api\AbstractExtensibleObject
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryExtensionInterface|null
      */
     public function getExtensionAttributes()
@@ -65,7 +70,8 @@ class DickerdataCategory extends \Magento\Framework\Api\AbstractExtensibleObject
 
     /**
      * Set an extension attributes object.
-     * @param \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryExtensionInterface $extensionAttributes
+     *
+     * @param  \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

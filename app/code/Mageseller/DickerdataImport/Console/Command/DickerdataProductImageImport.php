@@ -43,10 +43,11 @@ class DickerdataProductImageImport extends Command
 
     /**
      * DickerdataCategoryImport constructor.
-     * @param State $state
-     * @param Dickerdata $dickerdataHelper
+     *
+     * @param State              $state
+     * @param Dickerdata         $dickerdataHelper
      * @param ImportImageProcess $importImageProcess
-     * @param string|null $name
+     * @param string|null        $name
      */
     public function __construct(
         State $state,

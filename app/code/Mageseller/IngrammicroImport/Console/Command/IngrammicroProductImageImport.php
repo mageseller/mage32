@@ -43,10 +43,11 @@ class IngrammicroProductImageImport extends Command
 
     /**
      * IngrammicroCategoryImport constructor.
-     * @param State $state
-     * @param Ingrammicro $ingrammicroHelper
+     *
+     * @param State              $state
+     * @param Ingrammicro        $ingrammicroHelper
      * @param ImportImageProcess $importImageProcess
-     * @param string|null $name
+     * @param string|null        $name
      */
     public function __construct(
         State $state,

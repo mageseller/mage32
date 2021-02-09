@@ -32,10 +32,10 @@ class Url
     private $productResource;
 
     /**
-     * @param   ProductUrlRewriteGenerator  $productUrlRewriteGenerator
-     * @param   UrlPersistInterface         $urlPersist
-     * @param   ProductRepositoryInterface  $productRepository
-     * @param   ProductResourceFactory      $productResourceFactory
+     * @param ProductUrlRewriteGenerator $productUrlRewriteGenerator
+     * @param UrlPersistInterface        $urlPersist
+     * @param ProductRepositoryInterface $productRepository
+     * @param ProductResourceFactory     $productResourceFactory
      */
     public function __construct(
         ProductUrlRewriteGenerator $productUrlRewriteGenerator,
@@ -50,7 +50,7 @@ class Url
     }
 
     /**
-     * @param   Product $product
+     * @param Product $product
      */
     public function generateUrlKey(Product $product)
     {
@@ -70,25 +70,29 @@ class Url
     }
 
     /**
-     * @param   Product $product
+     * @param Product $product
      */
     public function deleteProductUrlRewrites($product)
     {
-        $this->urlPersist->deleteByData([
+        $this->urlPersist->deleteByData(
+            [
             UrlRewrite::ENTITY_ID     => $product->getId(),
             UrlRewrite::ENTITY_TYPE   => ProductUrlRewriteGenerator::ENTITY_TYPE,
             UrlRewrite::REDIRECT_TYPE => 0,
             UrlRewrite::STORE_ID      => $product->getStoreId(),
-        ]);
+            ]
+        );
     }
 
     /**
-     * @param   int $productId
-     * @param   int $storeId
+     * @param int $productId
+     * @param int $storeId
      */
     public function refreshProductUrlRewrites($productId, $storeId)
     {
-        /** @var Product $product */
+        /**
+ * @var Product $product 
+*/
         $product = $this->productRepository->getById($productId, false, $storeId);
         $product->setStoreId($storeId);
 

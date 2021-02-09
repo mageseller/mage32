@@ -9,10 +9,14 @@ use Mageseller\ProductImport\Api\Data\DownloadSample;
  */
 class DownloadSampleInformation
 {
-    /**  @var DownloadSample */
+    /**
+     * @var DownloadSample 
+     */
     protected $downloadSample;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $title;
 
     public function __construct(DownloadSample $downloadSample, string $title)

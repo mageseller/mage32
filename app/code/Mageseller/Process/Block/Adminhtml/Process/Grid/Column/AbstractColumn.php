@@ -9,16 +9,16 @@ abstract class AbstractColumn extends Column
     /**
      * Decorates column value
      *
-     * @param   string  $value
-     * @param   Process $row
-     * @param   Column  $column
-     * @param   bool    $isExport
-     * @return  string
+     * @param  string  $value
+     * @param  Process $row
+     * @param  Column  $column
+     * @param  bool    $isExport
+     * @return string
      */
     abstract public function decorate($value, $row, $column, $isExport);
 
     /**
-     * @return  array
+     * @return array
      */
     public function getFrameCallback()
     {

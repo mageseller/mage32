@@ -10,12 +10,14 @@ use Mageseller\ProductImport\Model\Resource\Storage\ProductEntityStorage;
  */
 class GroupedProductReferenceResolver
 {
-    /** @var ProductEntityStorage */
+    /**
+     * @var ProductEntityStorage 
+     */
     protected $productEntityStorage;
 
     public function __construct(
-        ProductEntityStorage $productEntityStorage)
-    {
+        ProductEntityStorage $productEntityStorage
+    ) {
         $this->productEntityStorage = $productEntityStorage;
     }
 
@@ -24,7 +26,9 @@ class GroupedProductReferenceResolver
      */
     public function resolveIds(array $products)
     {
-        /** @var GroupedProduct[] $affectedProducts */
+        /**
+ * @var GroupedProduct[] $affectedProducts 
+*/
         $affectedProducts = [];
         foreach ($products as $product) {
             if ($product->getMembers() !== null) {

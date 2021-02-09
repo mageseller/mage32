@@ -22,7 +22,7 @@ class XitCategoryImport
     /**
      * Constructor
      *
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Psr\Log\LoggerInterface         $logger
      * @param \Mageseller\XitImport\Helper\Xit $xitHelper
      */
     public function __construct(\Psr\Log\LoggerInterface $logger, \Mageseller\XitImport\Helper\Xit $xitHelper)

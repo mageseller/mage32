@@ -15,16 +15,24 @@ class UrlRewriteUpdater
 {
     const BUNCH_SIZE = 1000;
 
-    /** @var ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     protected $importerFactory;
 
-    /** @var UrlRewriteStorage */
+    /**
+     * @var UrlRewriteStorage 
+     */
     protected $urlRewriteStorage;
 
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var Information */
+    /**
+     * @var Information 
+     */
     protected $information;
 
     public function __construct(
@@ -32,8 +40,7 @@ class UrlRewriteUpdater
         ImporterFactory $importerFactory,
         UrlRewriteStorage $urlRewriteStorage,
         Information $information
-    )
-    {
+    ) {
         $this->importerFactory = $importerFactory;
         $this->urlRewriteStorage = $urlRewriteStorage;
         $this->metaData = $metaData;
@@ -41,10 +48,10 @@ class UrlRewriteUpdater
     }
 
     /**
-     * @param array $storeViewCodes
-     * @param UrlRewriteUpdateLogger $logger
-     * @param bool $keepRedirects
-     * @param bool $keepCategories
+     * @param  array                  $storeViewCodes
+     * @param  UrlRewriteUpdateLogger $logger
+     * @param  bool                   $keepRedirects
+     * @param  bool                   $keepCategories
      * @throws \Exception
      */
     public function updateUrlRewrites(array $storeViewCodes, UrlRewriteUpdateLogger $logger, bool $keepRedirects, bool $keepCategories)

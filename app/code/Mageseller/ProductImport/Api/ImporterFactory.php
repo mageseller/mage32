@@ -11,10 +11,14 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class ImporterFactory
 {
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var ObjectManagerInterface */
+    /**
+     * @var ObjectManagerInterface 
+     */
     protected $objectManager;
 
     public function __construct(
@@ -30,7 +34,7 @@ class ImporterFactory
      *
      * Note: the config object is copied; making changes to it later does not affect the importer.
      *
-     * @param ImportConfig $originalConfig
+     * @param  ImportConfig $originalConfig
      * @return Importer
      * @throws Exception
      */
@@ -47,7 +51,7 @@ class ImporterFactory
     }
 
     /**
-     * @param ImportConfig $config
+     * @param  ImportConfig $config
      * @throws Exception
      */
     protected function validateConfig(ImportConfig $config)

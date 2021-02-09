@@ -52,17 +52,17 @@ class IngrammicroCategoryRepository implements IngrammicroCategoryRepositoryInte
     protected $extensibleDataObjectConverter;
 
     /**
-     * @param ResourceIngrammicroCategory $resource
-     * @param IngrammicroCategoryFactory $ingrammicroCategoryFactory
-     * @param IngrammicroCategoryInterfaceFactory $dataIngrammicroCategoryFactory
-     * @param IngrammicroCategoryCollectionFactory $ingrammicroCategoryCollectionFactory
+     * @param ResourceIngrammicroCategory                      $resource
+     * @param IngrammicroCategoryFactory                       $ingrammicroCategoryFactory
+     * @param IngrammicroCategoryInterfaceFactory              $dataIngrammicroCategoryFactory
+     * @param IngrammicroCategoryCollectionFactory             $ingrammicroCategoryCollectionFactory
      * @param IngrammicroCategorySearchResultsInterfaceFactory $searchResultsFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param DataObjectProcessor $dataObjectProcessor
-     * @param StoreManagerInterface $storeManager
-     * @param CollectionProcessorInterface $collectionProcessor
-     * @param JoinProcessorInterface $extensionAttributesJoinProcessor
-     * @param ExtensibleDataObjectConverter $extensibleDataObjectConverter
+     * @param DataObjectHelper                                 $dataObjectHelper
+     * @param DataObjectProcessor                              $dataObjectProcessor
+     * @param StoreManagerInterface                            $storeManager
+     * @param CollectionProcessorInterface                     $collectionProcessor
+     * @param JoinProcessorInterface                           $extensionAttributesJoinProcessor
+     * @param ExtensibleDataObjectConverter                    $extensibleDataObjectConverter
      */
     public function __construct(
         ResourceIngrammicroCategory $resource,
@@ -112,10 +112,12 @@ class IngrammicroCategoryRepository implements IngrammicroCategoryRepositoryInte
         try {
             $this->resource->save($ingrammicroCategoryModel);
         } catch (\Exception $exception) {
-            throw new CouldNotSaveException(__(
-                'Could not save the ingrammicroCategory: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotSaveException(
+                __(
+                    'Could not save the ingrammicroCategory: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return $ingrammicroCategoryModel->getDataModel();
     }
@@ -172,10 +174,12 @@ class IngrammicroCategoryRepository implements IngrammicroCategoryRepositoryInte
             $this->resource->load($ingrammicroCategoryModel, $ingrammicroCategory->getIngrammicrocategoryId());
             $this->resource->delete($ingrammicroCategoryModel);
         } catch (\Exception $exception) {
-            throw new CouldNotDeleteException(__(
-                'Could not delete the IngrammicroCategory: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotDeleteException(
+                __(
+                    'Could not delete the IngrammicroCategory: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return true;
     }

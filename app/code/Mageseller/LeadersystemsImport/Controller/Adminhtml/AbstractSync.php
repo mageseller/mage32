@@ -45,10 +45,10 @@ abstract class AbstractSync extends Action
     protected $logger;
 
     /**
-     * @param Context $context
-     * @param ProcessFactory $processFactory
+     * @param Context                $context
+     * @param ProcessFactory         $processFactory
      * @param ProcessResourceFactory $processResourceFactory
-     * @param LoggerInterface $logger
+     * @param LoggerInterface        $logger
      */
     public function __construct(
         Context $context,
@@ -65,7 +65,7 @@ abstract class AbstractSync extends Action
     /**
      * Will redirect with an error if Mageseller Connector is disabled in config
      *
-     * @return  bool
+     * @return bool
      */
     protected function checkConnectorEnabled()
     {

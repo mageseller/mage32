@@ -14,21 +14,26 @@ use Mageseller\ProductImport\Model\Resource\Resolver\OptionResolver;
  */
 class CacheManager
 {
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var CategoryImporter */
+    /**
+     * @var CategoryImporter 
+     */
     protected $categoryImporter;
 
-    /** @var OptionResolver */
+    /**
+     * @var OptionResolver 
+     */
     protected $optionResolver;
 
     public function __construct(
         MetaData $metaData,
         CategoryImporter $categoryImporter,
         OptionResolver $optionResolver
-    )
-    {
+    ) {
         $this->categoryImporter = $categoryImporter;
         $this->optionResolver = $optionResolver;
         $this->metaData = $metaData;

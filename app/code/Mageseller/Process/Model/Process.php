@@ -19,42 +19,42 @@ use Mageseller\Process\Model\ResourceModel\Process as ProcessResource;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
 
 /**
- * @method  string  getCreatedAt()
- * @method  $this   setCreatedAt(string $createdAt)
- * @method  $this   setDuration(int $duration)
- * @method  string  getErrorReport()
- * @method  $this   setErrorReport(string $report)
- * @method  string  getFile()
- * @method  $this   setFile(string $file)
- * @method  string  getHash()
- * @method  $this   setHash(string $hash)
- * @method  string  getHelper()
- * @method  $this   setHelper(string $helper)
- * @method  string  getMethod()
- * @method  $this   setMethod(string $method)
- * @method  string  getMagesellerFile()
- * @method  $this   setMagesellerFile(string $file)
- * @method  string  getMagesellerStatus()
- * @method  $this   setMagesellerStatus(string $status)
- * @method  string  getSuccessReport()
- * @method  $this   setSuccessReport(string $report)
- * @method  string  getSynchroId()
- * @method  $this   setSynchroId(string $synchroId)
- * @method  string  getMagesellerType()
- * @method  $this   setMagesellerType(string $type)
- * @method  string  getName()
- * @method  $this   setName(string $name)
- * @method  string  getOutput()
- * @method  $this   setOutput(string $output)
- * @method  $this   setParams(string|array $params)
- * @method  bool    getQuiet()
- * @method  $this   setQuiet(bool $flag)
- * @method  string  getStatus()
- * @method  $this   setStatus(string $status)
- * @method  string  getType()
- * @method  $this   setType(string $type)
- * @method  string  getUpdatedAt()
- * @method  $this   setUpdatedAt(string $updatedAt)
+ * @method string  getCreatedAt()
+ * @method $this   setCreatedAt(string $createdAt)
+ * @method $this   setDuration(int $duration)
+ * @method string  getErrorReport()
+ * @method $this   setErrorReport(string $report)
+ * @method string  getFile()
+ * @method $this   setFile(string $file)
+ * @method string  getHash()
+ * @method $this   setHash(string $hash)
+ * @method string  getHelper()
+ * @method $this   setHelper(string $helper)
+ * @method string  getMethod()
+ * @method $this   setMethod(string $method)
+ * @method string  getMagesellerFile()
+ * @method $this   setMagesellerFile(string $file)
+ * @method string  getMagesellerStatus()
+ * @method $this   setMagesellerStatus(string $status)
+ * @method string  getSuccessReport()
+ * @method $this   setSuccessReport(string $report)
+ * @method string  getSynchroId()
+ * @method $this   setSynchroId(string $synchroId)
+ * @method string  getMagesellerType()
+ * @method $this   setMagesellerType(string $type)
+ * @method string  getName()
+ * @method $this   setName(string $name)
+ * @method string  getOutput()
+ * @method $this   setOutput(string $output)
+ * @method $this   setParams(string|array $params)
+ * @method bool    getQuiet()
+ * @method $this   setQuiet(bool $flag)
+ * @method string  getStatus()
+ * @method $this   setStatus(string $status)
+ * @method string  getType()
+ * @method $this   setType(string $type)
+ * @method string  getUpdatedAt()
+ * @method $this   setUpdatedAt(string $updatedAt)
  */
 class Process extends AbstractModel
 {
@@ -133,17 +133,17 @@ class Process extends AbstractModel
     private $outputFactory;
 
     /**
-     * @param   Context                     $context
-     * @param   Registry                    $registry
-     * @param   AbstractResource|null       $resource
-     * @param   AbstractDbCollection|null   $resourceCollection
-     * @param   ObjectManagerInterface      $objectManager
-     * @param   UrlInterface                $urlBuilder
-     * @param   ProcessHelper               $processHelper
-     * @param   ProcessConfig               $processConfig
-     * @param   ProcessResourceFactory      $processResourceFactory
-     * @param   OutputFactory               $outputFactory
-     * @param   array                       $data
+     * @param Context                   $context
+     * @param Registry                  $registry
+     * @param AbstractResource|null     $resource
+     * @param AbstractDbCollection|null $resourceCollection
+     * @param ObjectManagerInterface    $objectManager
+     * @param UrlInterface              $urlBuilder
+     * @param ProcessHelper             $processHelper
+     * @param ProcessConfig             $processConfig
+     * @param ProcessResourceFactory    $processResourceFactory
+     * @param OutputFactory             $outputFactory
+     * @param array                     $data
      */
     public function __construct(
         Context $context,
@@ -174,15 +174,17 @@ class Process extends AbstractModel
     {
         $this->_init(ResourceModel\Process::class);
 
-        register_shutdown_function(function () {
-            if (!$this->stopped) {
-                $error = error_get_last();
-                if (!empty($error) && $error['type'] != E_NOTICE) {
-                    $message = sprintf('%s in %s on line %d', $error['message'], $error['file'], $error['line']);
-                    $this->fail($message);
+        register_shutdown_function(
+            function () {
+                if (!$this->stopped) {
+                    $error = error_get_last();
+                    if (!empty($error) && $error['type'] != E_NOTICE) {
+                        $message = sprintf('%s in %s on line %d', $error['message'], $error['file'], $error['line']);
+                        $this->fail($message);
+                    }
                 }
             }
-        });
+        );
     }
 
     /**
@@ -197,9 +199,9 @@ class Process extends AbstractModel
     }
 
     /**
-     * @param   string|OutputInterface  $output
-     * @return  $this
-     * @throws  \Exception
+     * @param  string|OutputInterface $output
+     * @return $this
+     * @throws \Exception
      */
     public function addOutput($output)
     {
@@ -219,7 +221,7 @@ class Process extends AbstractModel
     /**
      * Returns true if we can check Mageseller API status on process
      *
-     * @return  bool
+     * @return bool
      */
     public function canCheckMagesellerStatus()
     {
@@ -229,7 +231,7 @@ class Process extends AbstractModel
     /**
      * Returns true if process can be ran
      *
-     * @return  bool
+     * @return bool
      */
     public function canRun()
     {
@@ -237,8 +239,8 @@ class Process extends AbstractModel
     }
 
     /**
-     * @param   bool    $isMageseller
-     * @return  bool
+     * @param  bool $isMageseller
+     * @return bool
      */
     public function canShowFile($isMageseller = false)
     {
@@ -250,7 +252,7 @@ class Process extends AbstractModel
     /**
      * Returns true if process can be set to STOPPED status
      *
-     * @return  bool
+     * @return bool
      */
     public function canStop()
     {
@@ -258,7 +260,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  $this
+     * @return $this
      */
     public function checkMagesellerStatus()
     {
@@ -299,10 +301,12 @@ class Process extends AbstractModel
                 if ($filepath = $this->processHelper->saveFile($reportFile, 'json')) {
                     $this->setMagesellerFile($filepath);
                     // Send an event to check if there is an error in report file
-                    $this->_eventManager->dispatch('mirakl_api_get_synchronization_report', [
+                    $this->_eventManager->dispatch(
+                        'mirakl_api_get_synchronization_report', [
                         'report_file_path' => $filepath,
                         'has_error' => $hasError
-                    ]);
+                        ]
+                    );
                 }
 
                 if ($hasError->getData('error') === true) {
@@ -328,10 +332,12 @@ class Process extends AbstractModel
                 $this->setMagesellerStatus(self::STATUS_COMPLETED);
             }
         } catch (\Exception $e) {
-            $this->output(sprintf(
-                'Check report in Mageseller failed: %s',
-                $e->getMessage()
-            ));
+            $this->output(
+                sprintf(
+                    'Check report in Mageseller failed: %s',
+                    $e->getMessage()
+                )
+            );
             $this->setMagesellerStatus(self::STATUS_ERROR);
         }
 
@@ -343,8 +349,8 @@ class Process extends AbstractModel
     /**
      * Calls current process helper->method()
      *
-     * @throws  AlreadyRunningException
-     * @throws  \InvalidArgumentException
+     * @throws AlreadyRunningException
+     * @throws \InvalidArgumentException
      */
     public function execute()
     {
@@ -384,8 +390,8 @@ class Process extends AbstractModel
     /**
      * Marks current process as failed and stops execution
      *
-     * @param   string|null $message
-     * @return  $this
+     * @param  string|null $message
+     * @return $this
      */
     public function fail($message = null)
     {
@@ -397,7 +403,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  int|\DateInterval
+     * @return int|\DateInterval
      */
     public function getDuration()
     {
@@ -419,8 +425,8 @@ class Process extends AbstractModel
     /**
      * Returns file size in bytes
      *
-     * @param   bool    $isMageseller
-     * @return  bool|int
+     * @param  bool $isMageseller
+     * @return bool|int
      */
     public function getFileSize($isMageseller = false)
     {
@@ -436,8 +442,8 @@ class Process extends AbstractModel
     /**
      * Returns process file download URL for admin
      *
-     * @param   bool    $isMageseller
-     * @return  string|false
+     * @param  bool $isMageseller
+     * @return string|false
      */
     public function getDownloadFileUrl($isMageseller = false)
     {
@@ -447,18 +453,20 @@ class Process extends AbstractModel
             return false;
         }
 
-        return $this->urlBuilder->getUrl('mirakl/process/downloadFile', [
+        return $this->urlBuilder->getUrl(
+            'mirakl/process/downloadFile', [
             'id' => $this->getId(),
             'mirakl' => $isMageseller,
-        ]);
+            ]
+        );
     }
 
     /**
      * Returns file size formatted
      *
-     * @param   string  $separator
-     * @param   bool    $isMageseller
-     * @return  string|false
+     * @param  string $separator
+     * @param  bool   $isMageseller
+     * @return string|false
      */
     public function getFileSizeFormatted($separator = ' ', $isMageseller = false)
     {
@@ -470,8 +478,8 @@ class Process extends AbstractModel
     }
 
     /**
-     * @param   bool    $isMageseller
-     * @return  string|false
+     * @param  bool $isMageseller
+     * @return string|false
      */
     public function getFileUrl($isMageseller = false)
     {
@@ -485,8 +493,8 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  mixed
-     * @throws  \InvalidArgumentException
+     * @return mixed
+     * @throws \InvalidArgumentException
      */
     private function getHelperInstance()
     {
@@ -499,7 +507,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  array
+     * @return array
      */
     public function getParams()
     {
@@ -512,8 +520,8 @@ class Process extends AbstractModel
     }
 
     /**
-     * @param   null|string
-     * @return  array|string
+     * @param  null|string
+     * @return array|string
      */
     public static function getStatuses()
     {
@@ -531,29 +539,29 @@ class Process extends AbstractModel
     }
 
     /**
-     * @param   bool    $isMageseller
-     * @return  string
+     * @param  bool $isMageseller
+     * @return string
      */
     public function getStatusClass($isMageseller = false)
     {
         $status = $isMageseller ? $this->getMagesellerStatus() : $this->getStatus();
 
         switch ($status) {
-            case self::STATUS_PENDING:
-            case self::STATUS_IDLE:
-                $class = 'grid-severity-minor';
-                break;
-            case self::STATUS_PROCESSING:
-                $class = 'grid-severity-major';
-                break;
-            case self::STATUS_STOPPED:
-            case self::STATUS_ERROR:
-            case self::STATUS_TIMEOUT:
-                $class = 'grid-severity-critical';
-                break;
-            case self::STATUS_COMPLETED:
-            default:
-                $class = 'grid-severity-notice';
+        case self::STATUS_PENDING:
+        case self::STATUS_IDLE:
+            $class = 'grid-severity-minor';
+            break;
+        case self::STATUS_PROCESSING:
+            $class = 'grid-severity-major';
+            break;
+        case self::STATUS_STOPPED:
+        case self::STATUS_ERROR:
+        case self::STATUS_TIMEOUT:
+            $class = 'grid-severity-critical';
+            break;
+        case self::STATUS_COMPLETED:
+        default:
+            $class = 'grid-severity-notice';
         }
 
         return $class;
@@ -562,19 +570,21 @@ class Process extends AbstractModel
     /**
      * Returns process URL for admin
      *
-     * @return  string
+     * @return string
      */
     public function getUrl()
     {
-        return $this->urlBuilder->getUrl('mirakl/process/view', [
+        return $this->urlBuilder->getUrl(
+            'mirakl/process/view', [
             'id' => $this->getId()
-        ]);
+            ]
+        );
     }
 
     /**
      * Sets current process status to idle
      *
-     * @return  $this
+     * @return $this
      */
     public function idle()
     {
@@ -582,7 +592,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isCompleted()
     {
@@ -590,7 +600,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isEnded()
     {
@@ -598,7 +608,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isError()
     {
@@ -606,7 +616,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isPending()
     {
@@ -614,7 +624,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isProcessing()
     {
@@ -622,7 +632,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isStatusIdle()
     {
@@ -630,7 +640,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isStopped()
     {
@@ -638,7 +648,7 @@ class Process extends AbstractModel
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isTimeout()
     {
@@ -648,9 +658,9 @@ class Process extends AbstractModel
     /**
      * Outputs specified string in all associated output handlers
      *
-     * @param   string  $str
-     * @param   bool    $save
-     * @return  $this
+     * @param  string $str
+     * @param  bool   $save
+     * @return $this
      */
     public function output($str, $save = false)
     {
@@ -668,8 +678,8 @@ class Process extends AbstractModel
     /**
      * Wraps process execution
      *
-     * @param   bool    $force
-     * @return  $this
+     * @param  bool $force
+     * @return $this
      */
     public function run($force = false)
     {
@@ -685,7 +695,7 @@ class Process extends AbstractModel
     /**
      * Starts current process
      *
-     * @return  $this
+     * @return $this
      */
     public function start()
     {
@@ -709,8 +719,8 @@ class Process extends AbstractModel
     /**
      * Stops current process
      *
-     * @param   string  $status
-     * @return  $this
+     * @param  string $status
+     * @return $this
      */
     public function stop($status = self::STATUS_COMPLETED)
     {
@@ -735,7 +745,7 @@ class Process extends AbstractModel
     /**
      * Updates current process duration
      *
-     * @return  $this
+     * @return $this
      */
     public function updateDuration()
     {

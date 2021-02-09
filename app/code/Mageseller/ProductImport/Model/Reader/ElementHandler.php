@@ -34,87 +34,137 @@ use Mageseller\ProductImport\Model\Data\Image;
  */
 class ElementHandler
 {
-    /** @var Importer */
+    /**
+     * @var Importer 
+     */
     protected $importer;
 
     /**
      * XML processing
      */
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $characterData;
 
-    /** @var string[] */
+    /**
+     * @var string[] 
+     */
     protected $items;
 
-    /** @var string[] */
+    /**
+     * @var string[] 
+     */
     protected $elementPath = [self::ROOT];
 
-    /** @var array[] */
+    /**
+     * @var array[] 
+     */
     protected $attributePath = [[]];
 
     /**
      * Context items
      */
 
-    /** @var Product */
+    /**
+     * @var Product 
+     */
     protected $product;
 
-    /** @var ProductStoreView */
+    /**
+     * @var ProductStoreView 
+     */
     protected $storeView;
 
-    /** @var ProductStockItem */
+    /**
+     * @var ProductStockItem 
+     */
     protected $defaultStockItem;
 
-    /** @var SourceItem */
+    /**
+     * @var SourceItem 
+     */
     protected $sourceItem;
 
-    /** @var GroupedProductMember[] */
+    /**
+     * @var GroupedProductMember[] 
+     */
     protected $members;
 
-    /** @var BundleProductOption[] */
+    /**
+     * @var BundleProductOption[] 
+     */
     protected $options;
 
-    /** @var BundleProductOption */
+    /**
+     * @var BundleProductOption 
+     */
     protected $option;
 
-    /** @var BundleProductSelection[] */
+    /**
+     * @var BundleProductSelection[] 
+     */
     protected $productSelections;
 
-    /** @var DownloadLink[] */
+    /**
+     * @var DownloadLink[] 
+     */
     protected $downloadLinks;
 
-    /** @var DownloadLink */
+    /**
+     * @var DownloadLink 
+     */
     protected $downloadLink;
 
-    /** @var DownloadSample[] */
+    /**
+     * @var DownloadSample[] 
+     */
     protected $downloadSamples;
 
-    /** @var DownloadSample */
+    /**
+     * @var DownloadSample 
+     */
     protected $downloadSample;
 
-    /** @var Image[] */
+    /**
+     * @var Image[] 
+     */
     protected $images;
 
-    /** @var Image */
+    /**
+     * @var Image 
+     */
     protected $image;
 
-    /** @var Weee[] */
+    /**
+     * @var Weee[] 
+     */
     protected $weees;
 
-    /** @var TierPrice[] */
+    /**
+     * @var TierPrice[] 
+     */
     protected $tierPrices;
 
-    /** @var CustomOption[] */
+    /**
+     * @var CustomOption[] 
+     */
     protected $customOptions;
 
-    /** @var CustomOption */
+    /**
+     * @var CustomOption 
+     */
     protected $customOption;
 
-    /** @var CustomOptionValue[] */
+    /**
+     * @var CustomOptionValue[] 
+     */
     protected $customOptionValues;
 
-    /** @var string[] */
+    /**
+     * @var string[] 
+     */
     protected $skuValues;
 
     /**
@@ -228,9 +278,9 @@ class ElementHandler
     /**
      * Initialize data structures.
      *
-     * @param $parser
-     * @param $element
-     * @param $attributes
+     * @param  $parser
+     * @param  $element
+     * @param  $attributes
      * @throws Exception
      */
     public function elementStart($parser, $element, $attributes)
@@ -398,8 +448,8 @@ class ElementHandler
     }
 
     /**
-     * @param $parser
-     * @param $element
+     * @param  $parser
+     * @param  $element
      * @throws \Exception
      */
     public function elementEnd($parser, $element)
@@ -439,7 +489,9 @@ class ElementHandler
             }
 
             if ($scope === ConfigurableProduct::TYPE_CONFIGURABLE) {
-                /** @var ConfigurableProduct $configurable */
+                /**
+ * @var ConfigurableProduct $configurable 
+*/
                 $configurable = $this->product;
 
                 if ($element === self::SUPER_ATTRIBUTE_CODES) {
@@ -448,21 +500,27 @@ class ElementHandler
                     $configurable->setVariantSkus($this->items);
                 }
             } elseif ($scope === GroupedProduct::TYPE_GROUPED) {
-                /** @var GroupedProduct $grouped */
+                /**
+ * @var GroupedProduct $grouped 
+*/
                 $grouped = $this->product;
 
                 if ($element === self::MEMBERS) {
                     $grouped->setMembers($this->members);
                 }
             } elseif ($scope === BundleProduct::TYPE_BUNDLE) {
-                /** @var BundleProduct $bundle */
+                /**
+ * @var BundleProduct $bundle 
+*/
                 $bundle = $this->product;
 
                 if ($element === self::OPTIONS) {
                     $bundle->setOptions($this->options);
                 }
             } elseif ($scope === DownloadableProduct::TYPE_DOWNLOADABLE) {
-                /** @var DownloadableProduct $downloadable */
+                /**
+ * @var DownloadableProduct $downloadable 
+*/
                 $downloadable = $this->product;
 
                 if ($element === self::DOWNLOAD_LINKS) {
@@ -694,9 +752,9 @@ class ElementHandler
     }
 
     /**
-     * @param $parser
-     * @param string $type
-     * @param array $attributes
+     * @param  $parser
+     * @param  string $type
+     * @param  array  $attributes
      * @return Product
      * @throws Exception
      */

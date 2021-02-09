@@ -26,6 +26,7 @@ class XitCategoryImport extends Command
 
     /**
      * XitCategoryImport constructor.
+     *
      * @param string|null $name
      */
     public function __construct(\Mageseller\XitImport\Helper\Xit $xitHelper, string $name = null)
@@ -55,10 +56,12 @@ class XitCategoryImport extends Command
     {
         $this->setName("mageseller_xitimport:xitcategoryimport");
         $this->setDescription("Category Import Xit");
-        $this->setDefinition([
+        $this->setDefinition(
+            [
             new InputArgument(self::NAME_ARGUMENT, InputArgument::OPTIONAL, "Name"),
             new InputOption(self::NAME_OPTION, "-a", InputOption::VALUE_NONE, "Option functionality")
-        ]);
+            ]
+        );
         parent::configure();
     }
 }

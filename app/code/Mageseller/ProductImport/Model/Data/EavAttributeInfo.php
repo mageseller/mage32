@@ -22,25 +22,39 @@ class EavAttributeInfo
     const TYPE_VARCHAR = 'varchar';
     const TYPE_TEXT = 'text';
 
-    /** @var  string */
+    /**
+     * @var string 
+     */
     public $attributeCode;
 
-    /** @var  int */
+    /**
+     * @var int 
+     */
     public $attributeId;
 
-    /** @var  bool */
+    /**
+     * @var bool 
+     */
     public $isRequired;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     public $backendType;
 
-    /** @var  string */
+    /**
+     * @var string 
+     */
     public $frontendInput;
 
-    /** @var  string */
+    /**
+     * @var string 
+     */
     public $tableName;
 
-    /** @var int */
+    /**
+     * @var int 
+     */
     public $scope;
 
     public function __construct(string $attributeCode, int $attributeId, bool $isRequired, string $backendType, string $tableName, $frontendInput, int $scope)

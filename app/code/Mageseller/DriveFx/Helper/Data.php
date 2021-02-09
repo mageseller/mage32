@@ -47,10 +47,11 @@ class Data extends AbstractHelper
 
     /**
      * Data constructor.
-     * @param Context $context
-     * @param DrivefxLogger $drivefxlogger
-     * @param ApiV3Helper $apiHelper
-     * @param CustomerFactory $customerFactory
+     *
+     * @param Context             $context
+     * @param DrivefxLogger       $drivefxlogger
+     * @param ApiV3Helper         $apiHelper
+     * @param CustomerFactory     $customerFactory
      * @param StockItemRepository $stockItemRepository
      */
     public function __construct(
@@ -67,8 +68,8 @@ class Data extends AbstractHelper
         $this->customerFactory = $customerFactory;
     }
     /**
-     * @param $value
-     * @param string $scope
+     * @param  $value
+     * @param  string $scope
      * @return mixed
      */
     public function getConfig($value, $scope = ScopeInterface::SCOPE_STORE)

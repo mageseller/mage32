@@ -45,8 +45,8 @@ class HandlerFactory
     /**
      * Create corresponding class instance
      *
-     * @param $type
-     * @param array $data
+     * @param  $type
+     * @param  array $data
      * @return ObjectType
      */
     public function create($type, array $data = [])
@@ -57,8 +57,10 @@ class HandlerFactory
 
         $resultInstance = $this->objectManager->create($this->instanceTypeNames[$type], $data);
         if (!$resultInstance instanceof ObjectType) {
-            throw new InvalidArgumentException(get_class($resultInstance) .
-                ' isn\'t instance of \Mageseller\XitImport\Logger\Handler\HandlerAbstract');
+            throw new InvalidArgumentException(
+                get_class($resultInstance) .
+                ' isn\'t instance of \Mageseller\XitImport\Logger\Handler\HandlerAbstract'
+            );
         }
 
         return $resultInstance;

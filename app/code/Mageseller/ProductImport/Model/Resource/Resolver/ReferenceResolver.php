@@ -16,43 +16,69 @@ use Mageseller\ProductImport\Api\ImportConfig;
  */
 class ReferenceResolver
 {
-    /** @var CategoryImporter */
+    /**
+     * @var CategoryImporter 
+     */
     protected $categoryImporter;
 
-    /** @var TaxClassResolver */
+    /**
+     * @var TaxClassResolver 
+     */
     protected $taxClassResolver;
 
-    /** @var AttributeSetResolver */
+    /**
+     * @var AttributeSetResolver 
+     */
     protected $attributeSetResolver;
 
-    /** @var StoreViewResolver */
+    /**
+     * @var StoreViewResolver 
+     */
     protected $storeViewResolver;
 
-    /** @var SourceResolver */
+    /**
+     * @var SourceResolver 
+     */
     protected $sourceResolver;
 
-    /** @var WebsiteResolver */
+    /**
+     * @var WebsiteResolver 
+     */
     protected $websiteResolver;
 
-    /** @var WeeeResolver */
+    /**
+     * @var WeeeResolver 
+     */
     protected $weeeResolver;
 
-    /** @var OptionResolver */
+    /**
+     * @var OptionResolver 
+     */
     protected $optionResolver;
 
-    /** @var LinkedProductReferenceResolver */
+    /**
+     * @var LinkedProductReferenceResolver 
+     */
     protected $linkedProductReferenceResolver;
 
-    /** @var TierPriceResolver */
+    /**
+     * @var TierPriceResolver 
+     */
     protected $tierPriceResolver;
 
-    /** @var BundleProductReferenceResolver */
+    /**
+     * @var BundleProductReferenceResolver 
+     */
     protected $bundleProductReferenceResolver;
 
-    /** @var GroupedProductReferenceResolver */
+    /**
+     * @var GroupedProductReferenceResolver 
+     */
     protected $groupedProductReferenceResolver;
 
-    /** @var ConfigurableProductReferenceResolver */
+    /**
+     * @var ConfigurableProductReferenceResolver 
+     */
     protected $configurableProductReferenceResolver;
 
     public function __construct(
@@ -69,8 +95,7 @@ class ReferenceResolver
         BundleProductReferenceResolver $bundleProductReferenceResolver,
         GroupedProductReferenceResolver $groupedProductReferenceResolver,
         ConfigurableProductReferenceResolver $configurableProductReferenceResolver
-    )
-    {
+    ) {
         $this->categoryImporter = $categoryImporter;
         $this->taxClassResolver = $taxClassResolver;
         $this->attributeSetResolver = $attributeSetResolver;
@@ -87,8 +112,8 @@ class ReferenceResolver
     }
 
     /**
-     * @param Product[] $products
-     * @param ImportConfig $config
+     * @param  Product[]    $products
+     * @param  ImportConfig $config
      * @throws \Exception
      */
     public function resolveExternalReferences(array $products, ImportConfig $config)
@@ -104,39 +129,41 @@ class ReferenceResolver
 
             foreach ($product->getUnresolvedAttributes() as $attribute => $value) {
                 switch ($attribute) {
-                    case Product::ATTRIBUTE_SET_ID:
-                        list($id, $error) = $this->attributeSetResolver->resolveName($value);
-                        if ($error === "") {
-                            $product->setAttributeSetId($id);
-                        } else {
-                            $product->addError($error);
-                            $product->removeAttributeSetId();
-                        }
-                        break;
-                    case Product::CATEGORY_IDS:
-                        list($ids, $error) = $this->categoryImporter->importCategoryPaths($value,
-                            $config->autoCreateCategories, $config->categoryNamePathSeparator);
-                        $product->addCategoryIds($ids);
-                        if ($error !== "") {
-                            $product->addError($error);
-                            $product->addCategoryIds([]);
-                        }
-                        break;
-                    case Product::WEBSITE_IDS:
-                        list($ids, $error) = $this->websiteResolver->resolveCodes($value);
-                        if ($error === "") {
-                            $product->setWebsitesIds($ids);
-                        } else {
-                            $product->addError($error);
-                            $product->removeWebsiteIds();
-                        }
-                        break;
-                    case Product::WEEE_ATTRIBUTE:
-                        $error = $this->weeeResolver->resolveWeeeAttributeId();
-                        if ($error !== "") {
-                            $product->addError($error);
-                        }
-                        break;
+                case Product::ATTRIBUTE_SET_ID:
+                    list($id, $error) = $this->attributeSetResolver->resolveName($value);
+                    if ($error === "") {
+                        $product->setAttributeSetId($id);
+                    } else {
+                        $product->addError($error);
+                        $product->removeAttributeSetId();
+                    }
+                    break;
+                case Product::CATEGORY_IDS:
+                    list($ids, $error) = $this->categoryImporter->importCategoryPaths(
+                        $value,
+                        $config->autoCreateCategories, $config->categoryNamePathSeparator
+                    );
+                    $product->addCategoryIds($ids);
+                    if ($error !== "") {
+                        $product->addError($error);
+                        $product->addCategoryIds([]);
+                    }
+                    break;
+                case Product::WEBSITE_IDS:
+                    list($ids, $error) = $this->websiteResolver->resolveCodes($value);
+                    if ($error === "") {
+                        $product->setWebsitesIds($ids);
+                    } else {
+                        $product->addError($error);
+                        $product->removeWebsiteIds();
+                    }
+                    break;
+                case Product::WEEE_ATTRIBUTE:
+                    $error = $this->weeeResolver->resolveWeeeAttributeId();
+                    if ($error !== "") {
+                        $product->addError($error);
+                    }
+                    break;
                 }
             }
 
@@ -159,17 +186,17 @@ class ReferenceResolver
 
                 foreach ($storeView->getUnresolvedAttributes() as $attribute => $value) {
                     switch ($attribute) {
-                        case ProductStoreView::ATTR_TAX_CLASS_ID:
-                            list($id, $error) = $this->taxClassResolver->resolveName($value);
-                            if ($error === "") {
-                                $storeView->setTaxClassId($id);
-                            } else {
-                                $product->addError($error);
-                                $storeView->removeAttribute(ProductStoreView::ATTR_TAX_CLASS_ID);
-                            }
-                            break;
-                        default:
-                            throw new \Exception("Unknown unresolved attribute: " . $attribute);
+                    case ProductStoreView::ATTR_TAX_CLASS_ID:
+                        list($id, $error) = $this->taxClassResolver->resolveName($value);
+                        if ($error === "") {
+                            $storeView->setTaxClassId($id);
+                        } else {
+                            $product->addError($error);
+                            $storeView->removeAttribute(ProductStoreView::ATTR_TAX_CLASS_ID);
+                        }
+                        break;
+                    default:
+                        throw new \Exception("Unknown unresolved attribute: " . $attribute);
                     }
                 }
 
@@ -191,9 +218,11 @@ class ReferenceResolver
                     if ($optionNames === null) {
                         $storeView->setMultiSelectAttributeOptionIds($attribute, null);
                     } else {
-                        $nonEmptyNames = array_filter($optionNames, function ($val) {
-                            return ($val !== "") && ($val !== null);
-                        });
+                        $nonEmptyNames = array_filter(
+                            $optionNames, function ($val) {
+                                return ($val !== "") && ($val !== null);
+                            }
+                        );
                         list ($ids, $error) = $this->optionResolver->resolveOptions($attribute, $nonEmptyNames, $config->autoCreateOptionAttributes);
                         if ($error === "") {
                             $storeView->setMultiSelectAttributeOptionIds($attribute, $ids);
@@ -208,7 +237,7 @@ class ReferenceResolver
     }
 
     /**
-     * @param array $products
+     * @param  array $products
      * @throws \Exception
      */
     public function resolveProductReferences(array $products)

@@ -26,7 +26,7 @@ class Importcategory extends \Magento\Backend\App\Action
     /**
      * Constructor
      *
-     * @param \Magento\Backend\App\Action\Context  $context
+     * @param \Magento\Backend\App\Action\Context $context
      * @param \Magento\Framework\Json\Helper\Data $jsonHelper
      */
     public function __construct(

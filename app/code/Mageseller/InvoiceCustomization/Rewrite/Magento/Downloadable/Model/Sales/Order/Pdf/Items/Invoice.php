@@ -19,7 +19,7 @@ class Invoice extends \Magento\Downloadable\Model\Sales\Order\Pdf\Items\Invoice
     /**
      * Draw item line
      *
-     * @return void
+     * @return                                        void
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function draw()

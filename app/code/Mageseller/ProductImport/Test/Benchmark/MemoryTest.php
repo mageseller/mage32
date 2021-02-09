@@ -20,14 +20,18 @@ class MemoryTest extends \Magento\TestFramework\TestCase\AbstractController
 {
     const PRODUCT_COUNT = 2500;
 
-    /** @var  ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     private static $factory;
 
     public static function setUpBeforeClass(): void
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         self::$factory = $objectManager->get(ImporterFactory::class);
     }
 
@@ -112,9 +116,9 @@ class MemoryTest extends \Magento\TestFramework\TestCase\AbstractController
     }
 
     /**
-     * @param $skus
-     * @param $categories
-     * @param $importer
+     * @param  $skus
+     * @param  $categories
+     * @param  $importer
      * @throws \Exception
      */
     public function insertProducts($skus, $categories, Importer $importer)
@@ -160,9 +164,9 @@ class MemoryTest extends \Magento\TestFramework\TestCase\AbstractController
     }
 
     /**
-     * @param $skus
-     * @param $categories
-     * @param $importer
+     * @param  $skus
+     * @param  $categories
+     * @param  $importer
      * @throws \Exception
      */
     public function updateProducts($skus, $categories, Importer $importer)

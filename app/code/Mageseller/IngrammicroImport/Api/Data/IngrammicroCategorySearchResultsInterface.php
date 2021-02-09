@@ -16,13 +16,15 @@ interface IngrammicroCategorySearchResultsInterface extends \Magento\Framework\A
 
     /**
      * Get IngrammicroCategory list.
+     *
      * @return \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface[]
      */
     public function getItems();
 
     /**
      * Set name list.
-     * @param \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface[] $items
+     *
+     * @param  \Mageseller\IngrammicroImport\Api\Data\IngrammicroCategoryInterface[] $items
      * @return $this
      */
     public function setItems(array $items);

@@ -5,7 +5,7 @@ namespace Mageseller\IngrammicroImport\Block\Adminhtml\Form\Field;
 /**
  * Custom import CSV file field for shipping table rates
  *
- * @author     Magento Core Team <core@magentocommerce.com>
+ * @author Magento Core Team <core@magentocommerce.com>
  */
 class ImportCategory extends \Magento\Framework\Data\Form\Element\AbstractElement
 {

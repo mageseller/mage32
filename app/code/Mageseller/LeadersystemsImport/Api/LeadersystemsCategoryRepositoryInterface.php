@@ -18,7 +18,8 @@ interface LeadersystemsCategoryRepositoryInterface
 
     /**
      * Save LeadersystemsCategory
-     * @param \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface $leadersystemsCategory
+     *
+     * @param  \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface $leadersystemsCategory
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -28,7 +29,8 @@ interface LeadersystemsCategoryRepositoryInterface
 
     /**
      * Retrieve LeadersystemsCategory
-     * @param string $leadersystemscategoryId
+     *
+     * @param  string $leadersystemscategoryId
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -36,7 +38,8 @@ interface LeadersystemsCategoryRepositoryInterface
 
     /**
      * Retrieve LeadersystemsCategory matching the specified criteria.
-     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
+     *
+     * @param  \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategorySearchResultsInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -46,7 +49,8 @@ interface LeadersystemsCategoryRepositoryInterface
 
     /**
      * Delete LeadersystemsCategory
-     * @param \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface $leadersystemsCategory
+     *
+     * @param  \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface $leadersystemsCategory
      * @return bool true on success
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -56,7 +60,8 @@ interface LeadersystemsCategoryRepositoryInterface
 
     /**
      * Delete LeadersystemsCategory by ID
-     * @param string $leadersystemscategoryId
+     *
+     * @param  string $leadersystemscategoryId
      * @return bool true on success
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\LocalizedException

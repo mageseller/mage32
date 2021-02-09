@@ -12,16 +12,20 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class BundleStorage
 {
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
-    /** @var  MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(
         Magento2DbConnection $db,
-        MetaData $metaData)
-    {
+        MetaData $metaData
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
     }
@@ -54,7 +58,8 @@ class BundleStorage
 
             foreach ($product->getOptions() as $i => $option) {
 
-                $this->db->execute("
+                $this->db->execute(
+                    "
                 INSERT INTO `{$this->metaData->bundleOptionTable}`
                 SET 
                     `parent_id` = ?,
@@ -65,13 +70,15 @@ class BundleStorage
                     $product->id,
                     (int)$option->isRequired(),
                     $i + 1,
-                    $option->getInputType()]);
+                    $option->getInputType()]
+                );
 
                 $option->id = $this->db->getLastInsertId();
 
                 foreach ($option->getSelections() as $j => $selection) {
 
-                    $this->db->execute("
+                    $this->db->execute(
+                        "
                     INSERT INTO `{$this->metaData->bundleSelectionTable}`
                     SET
                         `option_id` = ?,
@@ -92,7 +99,8 @@ class BundleStorage
                         $selection->getPriceType(),
                         $selection->getPriceValue(),
                         $selection->getQuantity(),
-                        (int)$selection->isCanChangeQuantity()]);
+                        (int)$selection->isCanChangeQuantity()]
+                    );
                 }
             }
 
@@ -101,7 +109,8 @@ class BundleStorage
 
                     if ($magento22) {
 
-                        $this->db->execute("
+                        $this->db->execute(
+                            "
                         INSERT INTO `{$this->metaData->bundleOptionValueTable}`
                         SET
                             `option_id` = ?,
@@ -113,11 +122,13 @@ class BundleStorage
                             $storeView->getStoreViewId(),
                             $optionInformation->getTitle(),
                             $product->id
-                        ]);
+                            ]
+                        );
 
                     } else {
 
-                        $this->db->execute("
+                        $this->db->execute(
+                            "
                         INSERT INTO `{$this->metaData->bundleOptionValueTable}`
                         SET
                             `option_id` = ?,
@@ -127,7 +138,8 @@ class BundleStorage
                             $optionInformation->getOption()->id,
                             $storeView->getStoreViewId(),
                             $optionInformation->getTitle()
-                        ]);
+                            ]
+                        );
                     }
                 }
             }

@@ -42,6 +42,7 @@ class Xit extends AbstractHelper
 
     /**
      * /**
+     *
      * @var \Magento\Framework\Filesystem\Directory\WriteInterface
      */
     protected $_mediaDirectory;
@@ -57,7 +58,6 @@ class Xit extends AbstractHelper
     protected $_dirReader;
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     *
      */
     protected $scopeConfig;
     /**
@@ -127,25 +127,25 @@ class Xit extends AbstractHelper
     private $attributeFactory;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Filesystem $filesystem
-     * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
-     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param MessageManagerInterface $messageManager
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param \Mageseller\XitImport\Logger\XitImport $xitimportLogger
-     * @param \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory
-     * @param \Mageseller\XitImport\Helper\ProductHelper $xitProductHelper
-     * @param \Mageseller\XitImport\Helper\ImageHelper $xitImageHelper
-     * @param CollectionFactory $categoryCollectionFactory
-     * @param ResourceConnection $resourceConnection
-     * @param MagentoConfig $configuration
-     * @param StoreManagerInterface $storeManager
-     * @param ProcessResourceFactory $processResourceFactory
-     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
-     * @param AttributeCollectionFactory $attributeFactory
-     * @param Config $eavConfig
+     * @param  \Magento\Framework\App\Helper\Context                          $context
+     * @param  \Magento\Framework\Filesystem                                  $filesystem
+     * @param  \Magento\Framework\Filesystem\DirectoryList                    $dirReader
+     * @param  \Magento\Framework\Filesystem\Io\File                          $fileFactory
+     * @param  \Magento\Framework\Stdlib\DateTime\DateTime                    $dateTime
+     * @param  MessageManagerInterface                                        $messageManager
+     * @param  \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param  \Mageseller\XitImport\Logger\XitImport                         $xitimportLogger
+     * @param  \Mageseller\XitImport\Model\XitCategoryFactory                 $xitCategoryFactory
+     * @param  \Mageseller\XitImport\Helper\ProductHelper                     $xitProductHelper
+     * @param  \Mageseller\XitImport\Helper\ImageHelper                       $xitImageHelper
+     * @param  CollectionFactory                                              $categoryCollectionFactory
+     * @param  ResourceConnection                                             $resourceConnection
+     * @param  MagentoConfig                                                  $configuration
+     * @param  StoreManagerInterface                                          $storeManager
+     * @param  ProcessResourceFactory                                         $processResourceFactory
+     * @param  \Magento\Catalog\Model\CategoryFactory                         $categoryFactory
+     * @param  AttributeCollectionFactory                                     $attributeFactory
+     * @param  Config                                                         $eavConfig
      * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
@@ -209,7 +209,7 @@ class Xit extends AbstractHelper
         return $attributeCodes;
     }
     /**
-     * @return  int
+     * @return int
      */
     public function getCurrentStoreId()
     {
@@ -217,7 +217,7 @@ class Xit extends AbstractHelper
     }
 
     /**
-     * @return  int
+     * @return int
      */
     public function getCurrentWebsiteId()
     {
@@ -227,9 +227,9 @@ class Xit extends AbstractHelper
     /**
      * Returns a config flag
      *
-     * @param   string  $path
-     * @param   mixed   $store
-     * @return  bool
+     * @param  string $path
+     * @param  mixed  $store
+     * @return bool
      */
     public function getFlag($path, $store = null)
     {
@@ -239,8 +239,8 @@ class Xit extends AbstractHelper
     /**
      * Returns store locale
      *
-     * @param   mixed   $store
-     * @return  string
+     * @param  mixed $store
+     * @return string
      */
     public function getLocale($store = null)
     {
@@ -250,8 +250,8 @@ class Xit extends AbstractHelper
     /**
      * Get tax class id specified for shipping tax estimation
      *
-     * @param   mixed   $store
-     * @return  int
+     * @param  mixed $store
+     * @return int
      */
     public function getShippingTaxClass($store = null)
     {
@@ -261,10 +261,10 @@ class Xit extends AbstractHelper
     /**
      * Reads the configuration directly from the database
      *
-     * @param   string  $path
-     * @param   string  $scope
-     * @param   int     $scopeId
-     * @return  string|false
+     * @param  string $path
+     * @param  string $scope
+     * @param  int    $scopeId
+     * @return string|false
      */
     public function getRawValue($path, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0)
     {
@@ -282,9 +282,9 @@ class Xit extends AbstractHelper
     /**
      * Returns a config value
      *
-     * @param   string  $path
-     * @param   mixed   $store
-     * @return  mixed
+     * @param  string $path
+     * @param  mixed  $store
+     * @return mixed
      */
     public function getValue($path, $store = null)
     {
@@ -294,8 +294,8 @@ class Xit extends AbstractHelper
     /**
      * Returns store name if defined
      *
-     * @param   mixed   $store
-     * @return  string
+     * @param  mixed $store
+     * @return string
      */
     public function getStoreName($store = null)
     {
@@ -303,16 +303,16 @@ class Xit extends AbstractHelper
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function isSingleStoreMode()
     {
         return $this->storeManager->hasSingleStore();
     }
     /**
-     * @param   string  $entity
-     * @param   mixed   $store
-     * @return  \DateTime|null
+     * @param  string $entity
+     * @param  mixed  $store
+     * @return \DateTime|null
      */
     public function getSyncDate($entity, $store = null)
     {
@@ -329,7 +329,7 @@ class Xit extends AbstractHelper
     }
 
     /**
-     * @return  $this
+     * @return $this
      */
     protected function resetConfig()
     {
@@ -339,8 +339,8 @@ class Xit extends AbstractHelper
     }
 
     /**
-     * @param   string  $entity
-     * @return  $this
+     * @param  string $entity
+     * @return $this
      */
     public function resetSyncDate($entity)
     {
@@ -350,9 +350,9 @@ class Xit extends AbstractHelper
     }
 
     /**
-     * @param   string  $entity
-     * @param   string  $time
-     * @return  $this
+     * @param  string $entity
+     * @param  string $time
+     * @return $this
      */
     public function setSyncDate($entity, $time = 'now')
     {
@@ -364,10 +364,10 @@ class Xit extends AbstractHelper
     /**
      * Set a config value
      *
-     * @param   string  $path
-     * @param   string  $value
-     * @param   string  $scope
-     * @param   int     $scopeId
+     * @param string $path
+     * @param string $value
+     * @param string $scope
+     * @param int    $scopeId
      */
     public function setValue($path, $value, $scope = 'default', $scopeId = 0)
     {
@@ -383,8 +383,8 @@ class Xit extends AbstractHelper
     }
 
     /**
-     * @param $value
-     * @param string $scope
+     * @param  $value
+     * @param  string $scope
      * @return mixed
      */
     public function getConfig($value, $scope = ScopeInterface::SCOPE_STORE)
@@ -496,14 +496,16 @@ class Xit extends AbstractHelper
             }
         }*/
         /*Adding category names start*/
-        $allCategories = array_map(function ($v) {
-            $names = explode(self::SEPERATOR, $v);
+        $allCategories = array_map(
+            function ($v) {
+                $names = explode(self::SEPERATOR, $v);
 
-            return $names[0] ? [
+                return $names[0] ? [
                 'name' => $names[0],
                 'parent_name' => $names[1]
-            ] : [];
-        }, array_keys($categoriesWithParents));
+                ] : [];
+            }, array_keys($categoriesWithParents)
+        );
         $allCategories = array_filter($allCategories);
         $collection = $this->xitCategoryFactory->create()->getCollection();
         $collection->insertOnDuplicate($allCategories);
@@ -630,9 +632,11 @@ class Xit extends AbstractHelper
 
     public function parseObject($value)
     {
-        return isset($value) ? is_object($value) ? array_filter(json_decode(json_encode($value), true), function ($value) {
-            return !is_array($value) && $value !== '';
-        }) : $value : [];
+        return isset($value) ? is_object($value) ? array_filter(
+            json_decode(json_encode($value), true), function ($value) {
+                return !is_array($value) && $value !== '';
+            }
+        ) : $value : [];
     }
 
     public function parseValue($value)
@@ -774,17 +778,19 @@ class Xit extends AbstractHelper
     {
         $collection = $this->xitCategoryFactory->create()->getCollection();
         $select = $collection->getSelect()->reset(Select::COLUMNS)
-                    ->joinLeft(
-                        ['eav' => $this->resourceConnection->getTableName('eav_attribute')],
-                        'eav.attribute_id = main_table.attribute_id',
-                        ['attribute_name' => 'frontend_label']
-                    )
-                    ->columns([
+            ->joinLeft(
+                ['eav' => $this->resourceConnection->getTableName('eav_attribute')],
+                'eav.attribute_id = main_table.attribute_id',
+                ['attribute_name' => 'frontend_label']
+            )
+            ->columns(
+                [
                         'id' => 'xitcategory_id',
                         'name' => 'name',
                         'parent_id' => 'parent_id',
                         'attribute_id' => 'attribute_id'
-                    ]);
+                        ]
+            );
         $connection = $this->resourceConnection->getConnection();
         $categoryWithParents = $connection->fetchAll($select);
         $tree = $this->buildTreeFromArray($categoryWithParents);

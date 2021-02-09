@@ -20,15 +20,21 @@ class ProductReaderTest extends \Magento\TestFramework\TestCase\AbstractControll
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var Magento2DbConnection $db */
+        /**
+ * @var Magento2DbConnection $db 
+*/
         $db = $objectManager->get(Magento2DbConnection::class);
 
-        /** @var MetaData $metaData */
+        /**
+ * @var MetaData $metaData 
+*/
         $metaData = $objectManager->create(MetaData::class);
 
         $this->setupAttributes($objectManager);
 
-        /** @var XmlProductReader $productReader */
+        /**
+ * @var XmlProductReader $productReader 
+*/
         $productReader = $objectManager->create(XmlProductReader::class);
 
         foreach (glob(__DIR__ . '/../../doc/example/*.xml') as $xmlFile) {
@@ -91,14 +97,16 @@ class ProductReaderTest extends \Magento\TestFramework\TestCase\AbstractControll
         $db = $objectManager->get(Magento2DbConnection::class);
 
         // create a multiple select attribute
-        $db->execute("
+        $db->execute(
+            "
             REPLACE INTO " . $metaData->attributeTable . "
             SET 
                 entity_type_id = " . $metaData->productEntityTypeId . ",
                 attribute_code = 'color_group_product_importer',
                 frontend_input = 'multiselect',
                 backend_type = 'varchar'
-        ");
+        "
+        );
 
         $insertId = $db->getLastInsertId();
 

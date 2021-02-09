@@ -7,22 +7,34 @@ namespace Mageseller\ProductImport\Model\Data;
  */
 class Image
 {
-    /** @var int Database gallery media image id */
+    /**
+     * @var int Database gallery media image id 
+     */
     public $valueId;
 
-    /** @var string Image path or url given by the user */
+    /**
+     * @var string Image path or url given by the user 
+     */
     protected $imagePath;
 
-    /** @var string Relative image path if there are no conflicting image /d/u/duck.jpg */
+    /**
+     * @var string Relative image path if there are no conflicting image /d/u/duck.jpg 
+     */
     protected $defaultStoragePath;
 
-    /** @var string Calculated relative image path where the file is really located (i.e.  /d/u/duck_2.jpg) */
+    /**
+     * @var string Calculated relative image path where the file is really located (i.e.  /d/u/duck_2.jpg) 
+     */
     protected $actualStoragePath;
 
-    /** @var string Absolute path. In the validation process the image is located here, temporarily */
+    /**
+     * @var string Absolute path. In the validation process the image is located here, temporarily 
+     */
     protected $temporaryStoragePath;
 
-    /** @var bool Is this image in use (if not, it will not appear in frontend and backend. */
+    /**
+     * @var bool Is this image in use (if not, it will not appear in frontend and backend. 
+     */
     protected $enabled;
 
     public function __construct(string $imagePath)

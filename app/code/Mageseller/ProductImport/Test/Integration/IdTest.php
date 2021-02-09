@@ -14,23 +14,33 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class IdTest extends \Magento\TestFramework\TestCase\AbstractController
 {
-    /** @var  ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     private static $factory;
 
-    /** @var  Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected static $db;
 
-    /** @var  Metadata */
+    /**
+     * @var Metadata 
+     */
     protected static $metadata;
 
     public static function setUpBeforeClass(): void
     {
         $objectManager = \Magento\TestFramework\Helper\Bootstrap::getObjectManager();
 
-        /** @var ImporterFactory $factory */
+        /**
+ * @var ImporterFactory $factory 
+*/
         self::$factory = $objectManager->get(ImporterFactory::class);
 
-        /** @var Magento2DbConnection $db */
+        /**
+ * @var Magento2DbConnection $db 
+*/
         self::$db = $objectManager->get(Magento2DbConnection::class);
 
         self::$metadata = $objectManager->get(MetaData::class);

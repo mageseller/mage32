@@ -43,10 +43,11 @@ class LeadersystemsProductImport extends Command
 
     /**
      * LeadersystemsCategoryImport constructor.
-     * @param State $state
+     *
+     * @param State         $state
      * @param Leadersystems $leadersystemsHelper
      * @param ImportProcess $importProcess
-     * @param string|null $name
+     * @param string|null   $name
      */
     public function __construct(
         State $state,

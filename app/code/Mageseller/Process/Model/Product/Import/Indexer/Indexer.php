@@ -50,7 +50,6 @@ class Indexer extends AbstractHelper
     protected $_eventManager;
     /**
      * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     *
      */
     protected $scopeConfig;
 
@@ -77,11 +76,11 @@ class Indexer extends AbstractHelper
     public $productIdsForIndexers = [];
 
     /**
-     * @param XitHelper $xitHelper
-     * @param MagentoProductHelper $catalogProduct
-     * @param IndexerRegistry $indexerRegistry
-     * @param Registry $registry
-     * @param CollectionFactory $indexerCollectionFactory
+     * @param XitHelper             $xitHelper
+     * @param MagentoProductHelper  $catalogProduct
+     * @param IndexerRegistry       $indexerRegistry
+     * @param Registry              $registry
+     * @param CollectionFactory     $indexerCollectionFactory
      * @param EventManagerInterface $eventManager
      */
     public function __construct(
@@ -101,8 +100,8 @@ class Indexer extends AbstractHelper
         $this->_eventManager            = $eventManager;
     }
     /**
-     * @param $value
-     * @param string $scope
+     * @param  $value
+     * @param  string $scope
      * @return mixed
      */
     public function getConfig($value, $scope = ScopeInterface::SCOPE_STORE)
@@ -138,15 +137,17 @@ class Indexer extends AbstractHelper
         }
 
         // Allow to add other indexers
-        $this->_eventManager->dispatch('mageseller_product_import_indexer_init', [
+        $this->_eventManager->dispatch(
+            'mageseller_product_import_indexer_init', [
             'indexer' => $this
-        ]);
+            ]
+        );
 
         $this->registry->register('mageseller_import_no_indexer', true, true);
     }
 
     /**
-     * @param   string  $indexerId
+     * @param string $indexerId
      */
     public function addIndexer($indexerId)
     {
@@ -169,8 +170,8 @@ class Indexer extends AbstractHelper
     }
 
     /**
-     * @param   string  $indexerId
-     * @return  bool
+     * @param  string $indexerId
+     * @return bool
      */
     public function isEnabled($indexerId)
     {
@@ -178,7 +179,7 @@ class Indexer extends AbstractHelper
     }
 
     /**
-     * @param   Product $product
+     * @param Product $product
      */
     public function setIdsToIndex(Product $product)
     {
@@ -221,14 +222,16 @@ class Indexer extends AbstractHelper
         }
 
         // Allow to add other indexers
-        $this->_eventManager->dispatch('mageseller_product_import_indexer_add_id', [
+        $this->_eventManager->dispatch(
+            'mageseller_product_import_indexer_add_id', [
             'indexer' => $this,
             'product' => $product,
-        ]);
+            ]
+        );
     }
 
     /**
-     * @return  array
+     * @return array
      */
     public function getIdsToIndex()
     {
@@ -236,7 +239,7 @@ class Indexer extends AbstractHelper
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function shouldIndex()
     {
@@ -248,7 +251,7 @@ class Indexer extends AbstractHelper
     }
 
     /**
-     * @return  bool
+     * @return bool
      */
     public function shouldReindex()
     {
@@ -257,7 +260,7 @@ class Indexer extends AbstractHelper
     }
 
     /**
-     * @throws  \Exception
+     * @throws \Exception
      */
     public function reindex()
     {

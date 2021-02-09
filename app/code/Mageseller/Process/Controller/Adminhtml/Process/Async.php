@@ -10,10 +10,14 @@ class Async extends AbstractProcessAction
     {
         ob_start();
 
-        /** @var \Mageseller\Process\Helper\Data $helper */
+        /**
+ * @var \Mageseller\Process\Helper\Data $helper 
+*/
         $helper = $this->_objectManager->create(\Mageseller\Process\Helper\Data::class);
 
-        /** @var \Mageseller\Process\Helper\Config $config */
+        /**
+ * @var \Mageseller\Process\Helper\Config $config 
+*/
         $config = $this->_objectManager->create(\Mageseller\Process\Helper\Config::class);
 
         $body = [];

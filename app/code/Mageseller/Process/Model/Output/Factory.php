@@ -12,7 +12,7 @@ class Factory
     protected $objectManager;
 
     /**
-     * @param   ObjectManagerInterface  $objectManager
+     * @param ObjectManagerInterface $objectManager
      */
     public function __construct(ObjectManagerInterface $objectManager)
     {
@@ -20,9 +20,9 @@ class Factory
     }
 
     /**
-     * @param   string  $type
-     * @param   Process $process
-     * @return  OutputInterface
+     * @param  string  $type
+     * @param  Process $process
+     * @return OutputInterface
      */
     public function create($type, $process)
     {

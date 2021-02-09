@@ -23,7 +23,7 @@ class Decimal
      * Formats $in with 4 decimals.
      * If $in is not a number, it is left unchanged.
      *
-     * @param string|null $in
+     * @param  string|null $in
      * @return string|null
      */
     public static function format(string $in = null)
@@ -46,7 +46,7 @@ class Decimal
      * Formats $in with 4 / 6 decimals.
      * If $in is not a number, it is left unchanged.
      *
-     * @param string|null $in
+     * @param  string|null $in
      * @return string|null
      */
     public static function formatPrice(string $in = null)

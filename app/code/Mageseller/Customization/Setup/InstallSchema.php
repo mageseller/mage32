@@ -13,15 +13,17 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
+
 namespace Mageseller\Customization\Setup;
 
 /**
  * Class InstallSchema
+ *
  * @package Mageseller\Customization\Setup
  */
 class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
@@ -29,9 +31,9 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
     /**
      * install tables
      *
-     * @param \Magento\Framework\Setup\SchemaSetupInterface $setup
-     * @param \Magento\Framework\Setup\ModuleContextInterface $context
-     * @return void
+     * @param                                         \Magento\Framework\Setup\SchemaSetupInterface   $setup
+     * @param                                         \Magento\Framework\Setup\ModuleContextInterface $context
+     * @return                                        void
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function install(\Magento\Framework\Setup\SchemaSetupInterface $setup, \Magento\Framework\Setup\ModuleContextInterface $context)
@@ -48,23 +50,14 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
                     [
                         'identity' => true,
                         'nullable' => false,
-                        'primary'  => true,
+                        'primary' => true,
                         'unsigned' => true,
                     ],
                     'Customization ID'
                 )
                 ->addColumn('option_id', \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER, null, ['unsigned' => true, 'nullable' => false], 'Attribute Option Id')
                 ->addColumn('store_id', \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER, null, ['nullable' => false, 'default' => '0'], 'Config Scope Id')
-                ->addColumn('page_title', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, 255, [], 'Devices Page Title')
-                ->addColumn('url_key', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, 255, ['nullable => false'], 'Url Key')
-                ->addColumn('image', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, 255, [], 'Devices Devices Image')
-                ->addColumn('is_featured', \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER, 1, [], 'Devices Featured Devices')
-                ->addColumn('short_description', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, '64k', [], 'Devices Short Description')
-                ->addColumn('description', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, '64k', [], 'Devices Description')
-                ->addColumn('static_block', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, null, [], 'Static Block')
-                ->addColumn('meta_title', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, null, [], 'Meta Title')
-                ->addColumn('meta_keywords', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, null, [], 'Meta Keywords')
-                ->addColumn('meta_description', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, null, [], 'Meta Description')
+                ->addColumn('alternate_options', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, 255, [], 'Replacement Keywords')
                 ->addForeignKey(
                     $installer->getFkName('mageseller_custom_attribute_information', 'option_id', 'eav_attribute_option', 'option_id'),
                     'option_id',

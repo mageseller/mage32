@@ -24,13 +24,13 @@ class LeadersystemsCategory extends \Magento\Framework\Model\AbstractModel
     protected $_eventPrefix = 'mageseller_leadersystemsimport_leadersystemscategory';
 
     /**
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param LeadersystemsCategoryInterfaceFactory $leadersystemscategoryDataFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param \Mageseller\LeadersystemsImport\Model\ResourceModel\LeadersystemsCategory $resource
+     * @param \Magento\Framework\Model\Context                                                     $context
+     * @param \Magento\Framework\Registry                                                          $registry
+     * @param LeadersystemsCategoryInterfaceFactory                                                $leadersystemscategoryDataFactory
+     * @param DataObjectHelper                                                                     $dataObjectHelper
+     * @param \Mageseller\LeadersystemsImport\Model\ResourceModel\LeadersystemsCategory            $resource
      * @param \Mageseller\LeadersystemsImport\Model\ResourceModel\LeadersystemsCategory\Collection $resourceCollection
-     * @param array $data
+     * @param array                                                                                $data
      */
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -48,6 +48,7 @@ class LeadersystemsCategory extends \Magento\Framework\Model\AbstractModel
 
     /**
      * Retrieve leadersystemscategory model with leadersystemscategory data
+     *
      * @return LeadersystemsCategoryInterface
      */
     public function getDataModel()

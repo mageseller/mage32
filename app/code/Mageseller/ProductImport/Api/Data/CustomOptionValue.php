@@ -9,13 +9,19 @@ use Mageseller\ProductImport\Helper\Decimal;
  */
 class CustomOptionValue
 {
-    /** @var string A 12.4 price string */
+    /**
+     * @var string A 12.4 price string 
+     */
     protected $price;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $priceType;
 
-    /** @var string */
+    /**
+     * @var string 
+     */
     protected $title;
 
     public function __construct(string $price, string $priceType, string $title)

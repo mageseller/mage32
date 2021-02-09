@@ -12,23 +12,27 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class Information
 {
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
-    /** @var Magento2DbConnection */
+    /**
+     * @var Magento2DbConnection 
+     */
     protected $db;
 
     public function __construct(
         MetaData $metaData,
         Magento2DbConnection $db
-    )
-    {
+    ) {
         $this->metaData = $metaData;
         $this->db = $db;
     }
 
     /**
      * Returns the codes of all store views, except for the global store view.
+     *
      * @return string[]
      */
     public function getNonGlobalStoreViewCodes()
@@ -43,10 +47,12 @@ class Information
      */
     public function getProductIds()
     {
-        return $this->db->fetchSingleColumn("
+        return $this->db->fetchSingleColumn(
+            "
             SELECT `entity_id`
             FROM `" . $this->metaData->productEntityTable . "`
-        ");
+        "
+        );
     }
 
     /**
@@ -56,13 +62,15 @@ class Information
      */
     public function getCaseSensitiveSku(string $caseInsensitiveSku)
     {
-        $sku = $this->db->fetchSingleCell("
+        $sku = $this->db->fetchSingleCell(
+            "
             SELECT `sku`
             FROM {$this->metaData->productEntityTable}
             WHERE `sku` = ?
         ", [
             $caseInsensitiveSku
-        ]);
+            ]
+        );
 
         if (!$sku) {
             return false;

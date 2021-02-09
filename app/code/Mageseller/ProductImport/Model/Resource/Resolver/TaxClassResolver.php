@@ -9,7 +9,9 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
  */
 class TaxClassResolver
 {
-    /** @var MetaData */
+    /**
+     * @var MetaData 
+     */
     protected $metaData;
 
     public function __construct(MetaData $metaData)

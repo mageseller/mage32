@@ -52,17 +52,17 @@ class DickerdataCategoryRepository implements DickerdataCategoryRepositoryInterf
     protected $extensibleDataObjectConverter;
 
     /**
-     * @param ResourceDickerdataCategory $resource
-     * @param DickerdataCategoryFactory $dickerdataCategoryFactory
-     * @param DickerdataCategoryInterfaceFactory $dataDickerdataCategoryFactory
-     * @param DickerdataCategoryCollectionFactory $dickerdataCategoryCollectionFactory
+     * @param ResourceDickerdataCategory                      $resource
+     * @param DickerdataCategoryFactory                       $dickerdataCategoryFactory
+     * @param DickerdataCategoryInterfaceFactory              $dataDickerdataCategoryFactory
+     * @param DickerdataCategoryCollectionFactory             $dickerdataCategoryCollectionFactory
      * @param DickerdataCategorySearchResultsInterfaceFactory $searchResultsFactory
-     * @param DataObjectHelper $dataObjectHelper
-     * @param DataObjectProcessor $dataObjectProcessor
-     * @param StoreManagerInterface $storeManager
-     * @param CollectionProcessorInterface $collectionProcessor
-     * @param JoinProcessorInterface $extensionAttributesJoinProcessor
-     * @param ExtensibleDataObjectConverter $extensibleDataObjectConverter
+     * @param DataObjectHelper                                $dataObjectHelper
+     * @param DataObjectProcessor                             $dataObjectProcessor
+     * @param StoreManagerInterface                           $storeManager
+     * @param CollectionProcessorInterface                    $collectionProcessor
+     * @param JoinProcessorInterface                          $extensionAttributesJoinProcessor
+     * @param ExtensibleDataObjectConverter                   $extensibleDataObjectConverter
      */
     public function __construct(
         ResourceDickerdataCategory $resource,
@@ -112,10 +112,12 @@ class DickerdataCategoryRepository implements DickerdataCategoryRepositoryInterf
         try {
             $this->resource->save($dickerdataCategoryModel);
         } catch (\Exception $exception) {
-            throw new CouldNotSaveException(__(
-                'Could not save the dickerdataCategory: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotSaveException(
+                __(
+                    'Could not save the dickerdataCategory: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return $dickerdataCategoryModel->getDataModel();
     }
@@ -172,10 +174,12 @@ class DickerdataCategoryRepository implements DickerdataCategoryRepositoryInterf
             $this->resource->load($dickerdataCategoryModel, $dickerdataCategory->getDickerdatacategoryId());
             $this->resource->delete($dickerdataCategoryModel);
         } catch (\Exception $exception) {
-            throw new CouldNotDeleteException(__(
-                'Could not delete the DickerdataCategory: %1',
-                $exception->getMessage()
-            ));
+            throw new CouldNotDeleteException(
+                __(
+                    'Could not delete the DickerdataCategory: %1',
+                    $exception->getMessage()
+                )
+            );
         }
         return true;
     }

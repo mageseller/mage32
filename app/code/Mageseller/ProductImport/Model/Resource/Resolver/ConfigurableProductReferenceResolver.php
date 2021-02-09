@@ -10,12 +10,14 @@ use Mageseller\ProductImport\Model\Resource\Storage\ProductEntityStorage;
  */
 class ConfigurableProductReferenceResolver
 {
-    /** @var ProductEntityStorage */
+    /**
+     * @var ProductEntityStorage 
+     */
     protected $productEntityStorage;
 
     public function __construct(
-        ProductEntityStorage $productEntityStorage)
-    {
+        ProductEntityStorage $productEntityStorage
+    ) {
         $this->productEntityStorage = $productEntityStorage;
     }
 

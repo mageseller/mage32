@@ -217,19 +217,19 @@ class EavAtrributeUpdateHelper extends AbstractHelper
         $entityTypeId = "";
         if (!$this->entityTypeId) {
             switch ($entityTypeEav) {
-                case \Magento\Customer\Model\Customer::ENTITY:
-                    $entityTypeId = 1;
-                    break;
-                case 'customer_address':
-                    $entityTypeId = 2;
-                    break;
-                case \Magento\Catalog\Model\Category::ENTITY:
-                    $entityTypeId = 3;
-                    break;
-                case \Magento\Catalog\Model\Product::ENTITY:
-                default:
-                    $entityTypeId = 4;
-                    break;
+            case \Magento\Customer\Model\Customer::ENTITY:
+                $entityTypeId = 1;
+                break;
+            case 'customer_address':
+                $entityTypeId = 2;
+                break;
+            case \Magento\Catalog\Model\Category::ENTITY:
+                $entityTypeId = 3;
+                break;
+            case \Magento\Catalog\Model\Product::ENTITY:
+            default:
+                $entityTypeId = 4;
+                break;
             }
             if ($entityType) {
                 return $entityTypeId;
@@ -274,7 +274,7 @@ class EavAtrributeUpdateHelper extends AbstractHelper
     /**
      * Check is attribute indexable in EAV
      *
-     * @param \Magento\Catalog\Model\ResourceModel\Eav\Attribute|string $attribute
+     * @param  \Magento\Catalog\Model\ResourceModel\Eav\Attribute|string $attribute
      * @return bool
      */
     protected function _attributeIsIndexable($attribute)

@@ -29,7 +29,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     /**
      * Insert multiple
      *
-     * @param array $data
+     * @param  array $data
      * @return void
      * @throws \Magento\Framework\Exception\AlreadyExistsException
      * @throws \Exception
@@ -53,8 +53,8 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     /**
      * Insert On Duplicate
      *
-     * @param $tableName
-     * @param array $data
+     * @param  $tableName
+     * @param  array     $data
      * @return void
      * @throws \Magento\Framework\Exception\AlreadyExistsException
      */

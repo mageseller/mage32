@@ -38,7 +38,9 @@ class ProductImportCommand extends Command
     const OPTION_REDIRECTS = 'redirects';
     const OPTION_CATEGORY_PATH_URLS = "category-path-urls";
 
-    /** @var ObjectManagerInterface */
+    /**
+     * @var ObjectManagerInterface 
+     */
     protected $objectManager;
 
     public function __construct(
@@ -54,7 +56,8 @@ class ProductImportCommand extends Command
     {
         $this->setName('mageseller:product:import');
         $this->setDescription('Import products from file.');
-        $this->setDefinition([
+        $this->setDefinition(
+            [
             new InputArgument(
                 self::ARGUMENT_FILENAME,
                 InputArgument::REQUIRED,
@@ -175,18 +178,21 @@ class ProductImportCommand extends Command
                 InputOption::VALUE_NONE,
                 "Skip XSD validation of the XML file"
             ),
-        ]);
+            ]
+        );
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
+     * @param  InputInterface  $input
+     * @param  OutputInterface $output
      * @return int|null
      * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var XmlProductReader $xmlProductReader */
+        /**
+ * @var XmlProductReader $xmlProductReader 
+*/
         $xmlProductReader = $this->objectManager->create(XmlProductReader::class);
         $fileName = $input->getArgument(self::ARGUMENT_FILENAME);
 

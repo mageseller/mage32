@@ -19,39 +19,45 @@ interface DickerdataCategoryInterface extends \Magento\Framework\Api\ExtensibleD
 
     /**
      * Get dickerdatacategory_id
+     *
      * @return string|null
      */
     public function getDickerdatacategoryId();
 
     /**
      * Set dickerdatacategory_id
-     * @param string $dickerdatacategoryId
+     *
+     * @param  string $dickerdatacategoryId
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface
      */
     public function setDickerdatacategoryId($dickerdatacategoryId);
 
     /**
      * Get name
+     *
      * @return string|null
      */
     public function getName();
 
     /**
      * Set name
-     * @param string $name
+     *
+     * @param  string $name
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface
      */
     public function setName($name);
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryExtensionInterface|null
      */
     public function getExtensionAttributes();
 
     /**
      * Set an extension attributes object.
-     * @param \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryExtensionInterface $extensionAttributes
+     *
+     * @param  \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

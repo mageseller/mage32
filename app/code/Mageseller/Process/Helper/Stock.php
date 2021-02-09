@@ -21,9 +21,9 @@ class Stock extends AbstractHelper
     protected $stockConfiguration;
 
     /**
-     * @param   Context                         $context
-     * @param   StockRegistryProviderInterface  $stockRegistryProvider
-     * @param   StockConfigurationInterface     $stockConfiguration
+     * @param Context                        $context
+     * @param StockRegistryProviderInterface $stockRegistryProvider
+     * @param StockConfigurationInterface    $stockConfiguration
      */
     public function __construct(
         Context $context,
@@ -38,10 +38,11 @@ class Stock extends AbstractHelper
     /**
      * Returns stock quantity of specified product.
      * Rewriting the default Magento method because it does not work for configurable product (returns 0).
+     *
      * @see \Magento\CatalogInventory\Model\StockStateProvider::getStockQty()
      *
-     * @param   Product $product
-     * @return  float
+     * @param  Product $product
+     * @return float
      */
     public function getProductStockQty(Product $product)
     {
@@ -76,8 +77,8 @@ class Stock extends AbstractHelper
     }
 
     /**
-     * @param   Product $product
-     * @return  StockItemInterface
+     * @param  Product $product
+     * @return StockItemInterface
      */
     public function getProductStockItem(Product $product)
     {

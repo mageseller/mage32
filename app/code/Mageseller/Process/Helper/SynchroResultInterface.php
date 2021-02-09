@@ -6,15 +6,15 @@ interface SynchroResultInterface
     /**
      * Gets synchronization error report file
      *
-     * @param   string  $synchroId
-     * @return  \SplFileObject
+     * @param  string $synchroId
+     * @return \SplFileObject
      */
     public function getErrorReport($synchroId);
 
     /**
      * Gets synchronization result by its id
      *
-     * @param   string  $synchroId
+     * @param string $synchroId
      */
     public function getSynchroResult($synchroId);
 }

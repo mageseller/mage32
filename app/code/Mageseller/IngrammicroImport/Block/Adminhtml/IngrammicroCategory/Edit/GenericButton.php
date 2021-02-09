@@ -39,9 +39,9 @@ abstract class GenericButton
     /**
      * Generate url by route and parameters
      *
-     * @param   string $route
-     * @param   array $params
-     * @return  string
+     * @param  string $route
+     * @param  array  $params
+     * @return string
      */
     public function getUrl($route = '', $params = [])
     {

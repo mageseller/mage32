@@ -29,17 +29,20 @@ class ProductImportWebApi implements ProductImportWebApiInterface
     const OPTION_REDIRECTS = 'redirects';
     const OPTION_CATEGORY_PATH_URLS = "category-path-urls";
 
-    /** @var ImporterFactory */
+    /**
+     * @var ImporterFactory 
+     */
     protected $importerFactory;
 
-    /** @var XmlProductReader */
+    /**
+     * @var XmlProductReader 
+     */
     protected $xmlProductReader;
 
     public function __construct(
         ImporterFactory $importerFactory,
         XmlProductReader $xmlProductReader
-    )
-    {
+    ) {
         $this->importerFactory = $importerFactory;
         $this->xmlProductReader = $xmlProductReader;
     }

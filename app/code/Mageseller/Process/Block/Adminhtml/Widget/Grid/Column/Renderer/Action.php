@@ -6,8 +6,8 @@ use Magento\Framework\DataObject;
 class Action extends \Magento\Backend\Block\Widget\Grid\Column\Renderer\Action
 {
     /**
-     * @param   DataObject  $row
-     * @return  string
+     * @param  DataObject $row
+     * @return string
      */
     public function render(DataObject $row)
     {

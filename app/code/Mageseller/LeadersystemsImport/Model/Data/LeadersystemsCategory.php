@@ -18,6 +18,7 @@ class LeadersystemsCategory extends \Magento\Framework\Api\AbstractExtensibleObj
 
     /**
      * Get leadersystemscategory_id
+     *
      * @return string|null
      */
     public function getLeadersystemscategoryId()
@@ -27,7 +28,8 @@ class LeadersystemsCategory extends \Magento\Framework\Api\AbstractExtensibleObj
 
     /**
      * Set leadersystemscategory_id
-     * @param string $leadersystemscategoryId
+     *
+     * @param  string $leadersystemscategoryId
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface
      */
     public function setLeadersystemscategoryId($leadersystemscategoryId)
@@ -37,6 +39,7 @@ class LeadersystemsCategory extends \Magento\Framework\Api\AbstractExtensibleObj
 
     /**
      * Get name
+     *
      * @return string|null
      */
     public function getName()
@@ -46,7 +49,8 @@ class LeadersystemsCategory extends \Magento\Framework\Api\AbstractExtensibleObj
 
     /**
      * Set name
-     * @param string $name
+     *
+     * @param  string $name
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryInterface
      */
     public function setName($name)
@@ -56,6 +60,7 @@ class LeadersystemsCategory extends \Magento\Framework\Api\AbstractExtensibleObj
 
     /**
      * Retrieve existing extension attributes object or create a new one.
+     *
      * @return \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryExtensionInterface|null
      */
     public function getExtensionAttributes()
@@ -65,7 +70,8 @@ class LeadersystemsCategory extends \Magento\Framework\Api\AbstractExtensibleObj
 
     /**
      * Set an extension attributes object.
-     * @param \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryExtensionInterface $extensionAttributes
+     *
+     * @param  \Mageseller\LeadersystemsImport\Api\Data\LeadersystemsCategoryExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(

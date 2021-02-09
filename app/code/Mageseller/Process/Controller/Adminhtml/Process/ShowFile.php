@@ -35,15 +35,21 @@ class ShowFile extends AbstractProcessAction
                 fseek($fh, 0);
                 $body = '<table border="1" cellpadding="2" style="border-collapse: collapse; border: 1px solid #aaa;">';
                 while ($data = $fgetcsv()) {
-                    $body .= sprintf('<tr>%s</tr>', implode('', array_map(function ($value) {
-                        if (preg_match('#^(https?:\/\/.+)$#', $value)) {
-                            $value = sprintf('<a href="%1$s" target="_blank">%1$s</a>', $value);
-                        } else {
-                            $value = htmlspecialchars($value);
-                        }
+                    $body .= sprintf(
+                        '<tr>%s</tr>', implode(
+                            '', array_map(
+                                function ($value) {
+                                    if (preg_match('#^(https?:\/\/.+)$#', $value)) {
+                                        $value = sprintf('<a href="%1$s" target="_blank">%1$s</a>', $value);
+                                    } else {
+                                        $value = htmlspecialchars($value);
+                                    }
 
-                        return '<td>' . $value . '</td>';
-                    }, $data)));
+                                    return '<td>' . $value . '</td>';
+                                }, $data
+                            )
+                        )
+                    );
                 }
                 $body .= '</table>';
             } else {

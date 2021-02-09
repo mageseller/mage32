@@ -22,7 +22,7 @@ class DickerdataCategoryImport
     /**
      * Constructor
      *
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param \Psr\Log\LoggerInterface                       $logger
      * @param \Mageseller\DickerdataImport\Helper\Dickerdata $dickerdataHelper
      */
     public function __construct(\Psr\Log\LoggerInterface $logger, \Mageseller\DickerdataImport\Helper\Dickerdata $dickerdataHelper)

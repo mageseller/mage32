@@ -17,8 +17,8 @@ class Edit extends \Mageseller\LeadersystemsImport\Controller\Adminhtml\Leadersy
     protected $resultPageFactory;
 
     /**
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Magento\Framework\Registry $coreRegistry
+     * @param \Magento\Backend\App\Action\Context        $context
+     * @param \Magento\Framework\Registry                $coreRegistry
      * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
      */
     public function __construct(
@@ -46,7 +46,9 @@ class Edit extends \Mageseller\LeadersystemsImport\Controller\Adminhtml\Leadersy
             $model->load($id);
             if (!$model->getId()) {
                 $this->messageManager->addErrorMessage(__('This Leadersystemscategory no longer exists.'));
-                /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
+                /**
+ * @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect 
+*/
                 $resultRedirect = $this->resultRedirectFactory->create();
                 return $resultRedirect->setPath('*/*/');
             }
@@ -54,7 +56,9 @@ class Edit extends \Mageseller\LeadersystemsImport\Controller\Adminhtml\Leadersy
         $this->_coreRegistry->register('mageseller_leadersystemsimport_leadersystemscategory', $model);
         
         // 3. Build edit form
-        /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
+        /**
+ * @var \Magento\Backend\Model\View\Result\Page $resultPage 
+*/
         $resultPage = $this->resultPageFactory->create();
         $this->initPage($resultPage)->addBreadcrumb(
             $id ? __('Edit Leadersystemscategory') : __('New Leadersystemscategory'),

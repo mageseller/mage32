@@ -4,18 +4,18 @@ namespace Mageseller\Process\Model\Output;
 interface OutputInterface
 {
     /**
-     * @return  $this
+     * @return $this
      */
     public function close();
 
     /**
-     * @param   string  $str
-     * @return  $this
+     * @param  string $str
+     * @return $this
      */
     public function display($str);
 
     /**
-     * @return  string
+     * @return string
      */
     public function getType();
 }

@@ -16,13 +16,15 @@ interface DickerdataCategorySearchResultsInterface extends \Magento\Framework\Ap
 
     /**
      * Get DickerdataCategory list.
+     *
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface[]
      */
     public function getItems();
 
     /**
      * Set name list.
-     * @param \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface[] $items
+     *
+     * @param  \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface[] $items
      * @return $this
      */
     public function setItems(array $items);

@@ -9,11 +9,14 @@ class GroupedProduct extends Product
 {
     const TYPE_GROUPED = "grouped";
 
-    /** @var GroupedProductMember[] */
+    /**
+     * @var GroupedProductMember[] 
+     */
     protected $members;
 
     /**
      * Used in catalog_product_entity table
+     *
      * @return string
      */
     public function getType()

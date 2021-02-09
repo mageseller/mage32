@@ -21,7 +21,9 @@ class Delete extends \Mageseller\LeadersystemsImport\Controller\Adminhtml\Leader
      */
     public function execute()
     {
-        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
+        /**
+ * @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect 
+*/
         $resultRedirect = $this->resultRedirectFactory->create();
         // check if we know what should be deleted
         $id = $this->getRequest()->getParam('leadersystemscategory_id');

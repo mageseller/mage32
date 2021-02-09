@@ -43,10 +43,11 @@ class DickerdataProductImport extends Command
 
     /**
      * DickerdataCategoryImport constructor.
-     * @param State $state
-     * @param Dickerdata $dickerdataHelper
+     *
+     * @param State         $state
+     * @param Dickerdata    $dickerdataHelper
      * @param ImportProcess $importProcess
-     * @param string|null $name
+     * @param string|null   $name
      */
     public function __construct(
         State $state,

@@ -13,10 +13,10 @@
  * Do not edit or add to this file if you wish to upgrade this extension to newer
  * version in the future.
  *
- * @category    Mageseller
- * @package     Mageseller_Customization
- * @copyright   Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
- * @license     https://www.mageseller.com/LICENSE.txt
+ * @category  Mageseller
+ * @package   Mageseller_Customization
+ * @copyright Copyright (c) 2017 Mageseller (http://www.mageseller.com/)
+ * @license   https://www.mageseller.com/LICENSE.txt
  */
 
 namespace Mageseller\Customization\Block\Adminhtml\Category;
@@ -36,9 +36,9 @@ class Edit extends \Magento\Backend\Block\Widget\Form\Container
     /**
      * constructor
      *
-     * @param \Magento\Framework\Registry $coreRegistry
+     * @param \Magento\Framework\Registry           $coreRegistry
      * @param \Magento\Backend\Block\Widget\Context $context
-     * @param array $data
+     * @param array                                 $data
      */
     public function __construct(
         \Magento\Framework\Registry $coreRegistry,

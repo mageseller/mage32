@@ -18,7 +18,8 @@ interface DickerdataCategoryRepositoryInterface
 
     /**
      * Save DickerdataCategory
-     * @param \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface $dickerdataCategory
+     *
+     * @param  \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface $dickerdataCategory
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -28,7 +29,8 @@ interface DickerdataCategoryRepositoryInterface
 
     /**
      * Retrieve DickerdataCategory
-     * @param string $dickerdatacategoryId
+     *
+     * @param  string $dickerdatacategoryId
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -36,7 +38,8 @@ interface DickerdataCategoryRepositoryInterface
 
     /**
      * Retrieve DickerdataCategory matching the specified criteria.
-     * @param \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
+     *
+     * @param  \Magento\Framework\Api\SearchCriteriaInterface $searchCriteria
      * @return \Mageseller\DickerdataImport\Api\Data\DickerdataCategorySearchResultsInterface
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -46,7 +49,8 @@ interface DickerdataCategoryRepositoryInterface
 
     /**
      * Delete DickerdataCategory
-     * @param \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface $dickerdataCategory
+     *
+     * @param  \Mageseller\DickerdataImport\Api\Data\DickerdataCategoryInterface $dickerdataCategory
      * @return bool true on success
      * @throws \Magento\Framework\Exception\LocalizedException
      */
@@ -56,7 +60,8 @@ interface DickerdataCategoryRepositoryInterface
 
     /**
      * Delete DickerdataCategory by ID
-     * @param string $dickerdatacategoryId
+     *
+     * @param  string $dickerdatacategoryId
      * @return bool true on success
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\LocalizedException
