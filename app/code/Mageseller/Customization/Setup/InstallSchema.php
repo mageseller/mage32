@@ -55,9 +55,27 @@ class InstallSchema implements \Magento\Framework\Setup\InstallSchemaInterface
                     ],
                     'Customization ID'
                 )
-                ->addColumn('option_id', \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER, null, ['unsigned' => true, 'nullable' => false], 'Attribute Option Id')
-                ->addColumn('store_id', \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER, null, ['nullable' => false, 'default' => '0'], 'Config Scope Id')
-                ->addColumn('alternate_options', \Magento\Framework\DB\Ddl\Table::TYPE_TEXT, 255, [], 'Replacement Keywords')
+                ->addColumn(
+                    'option_id',
+                    \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                    null,
+                    ['unsigned' => true, 'nullable' => false],
+                    'Attribute Option Id'
+                )
+                ->addColumn(
+                    'store_id',
+                    \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                    null,
+                    ['nullable' => false, 'default' => '0'],
+                    'Config Scope Id'
+                )
+                ->addColumn(
+                    'alternate_options',
+                    \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                    255,
+                    [],
+                    'Replacement Keywords'
+                )
                 ->addForeignKey(
                     $installer->getFkName('mageseller_custom_attribute_information', 'option_id', 'eav_attribute_option', 'option_id'),
                     'option_id',

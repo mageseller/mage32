@@ -45,6 +45,7 @@ class ProductHelper extends AbstractHelper
     const XIT_CATEGORY_TABLE = "mageseller_xitimport_xitcategory";
     const PDF_FOLDER = 'devicesPdf';
     const SUPPLIER = 'xitdistribution';
+    const SEPERATOR = " ---|--- ";
     /**
      * /**
      *
@@ -170,11 +171,11 @@ class ProductHelper extends AbstractHelper
      */
     private $importerFactory;
     /**
-     * @var Magento2DbConnection 
+     * @var Magento2DbConnection
      */
     protected $db;
     /**
-     * @var MetaData 
+     * @var MetaData
      */
     protected $metaData;
     private $existingXitCategoryIds;
@@ -294,15 +295,12 @@ class ProductHelper extends AbstractHelper
                 $allSkus[] = (string)$item->ItemDetail->ManufacturerPartID;
                 $categories = $this->parseObject($item->ItemDetail->Classifications->Classification);
                 unset($categories['@attributes']);
-                //$categories = [];
                 $allCategoryNames = array_unique(array_merge($allCategoryNames, $categories));
             }
-            print_r($allSkus);
-            die;
-            $disableSkus = array_diff($allXitSkus, $allSkus);
+
+            $this->existingSkus = $this->getExistingSkus($allSkus);
 
             $this->existingXitCategoryIds = $this->getExistingXitCategoryIds($allCategoryNames);
-            $this->existingSkus = $this->getExistingSkus($allSkus);
             // Disable or not the indexing when UpdateOnSave mode
             $this->indexer->initIndexers();
             $config = new ImportConfig();
@@ -322,7 +320,9 @@ class ProductHelper extends AbstractHelper
                 }
                 $this->start = microtime(true);
             };
+            /*Disabling product start */
             $importer = $this->importerFactory->createImporter($config);
+            $disableSkus = array_values(array_diff($allXitSkus, $allSkus));
             foreach ($disableSkus as $lineNumber => $sku) {
                 $product = new SimpleProduct($sku);
                 $product->lineNumber = $lineNumber;
@@ -330,7 +330,9 @@ class ProductHelper extends AbstractHelper
                 $importer->importSimpleProduct($product);
             }
             $importer->flush();
+            /*Disabling product ends */
 
+            /* Importing Products starts */
             $importer = $this->importerFactory->createImporter($config);
             $isFlush = false;
             $processResource = $this->processResourceFactory->create();
@@ -365,6 +367,7 @@ class ProductHelper extends AbstractHelper
                     $process->output($error);
                 }
             }
+            /* Importing Products ends */
         } catch (\Exception $e) {
             $process->fail($e->getMessage());
             throw $e;
@@ -383,6 +386,22 @@ class ProductHelper extends AbstractHelper
     }
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
+        $categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
+        unset($categories['@attributes']);
+
+        $categoryIds = [];
+        $lastCat = '';
+        foreach (array_values($categories) as $level => $categoryName) {
+            $existingXitCategoryIds = $this->existingXitCategoryIds[$categoryName . self::SEPERATOR . $lastCat] ?? [];
+            if ($existingXitCategoryIds) {
+                $categoryIds = array_merge($categoryIds, explode(",", $existingXitCategoryIds));
+            }
+            $lastCat = $categoryName;
+            if ($level >= 2) {
+                break;
+            }
+        }
+
         $sku = (string)$data->ItemDetail->ManufacturerPartID;
         $price = (string)$data->ItemDetail->UnitPrice;
         $price = floatval(preg_replace('/[^\d.]/', '', $price));
@@ -411,6 +430,11 @@ class ProductHelper extends AbstractHelper
 
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;
+
+        if ($categoryIds) {
+            $categoryIds = array_filter(array_unique($categoryIds));
+            $product->addCategoryIds($categoryIds);
+        }
 
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
@@ -474,20 +498,6 @@ class ProductHelper extends AbstractHelper
         }
         $global->setSelectAttribute('supplier', self::SUPPLIER);
 
-        $categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
-        unset($categories['@attributes']);
-        $categoryIds = [];
-        foreach ($categories as $categoryName) {
-            $existingXitCategoryIds = $this->existingXitCategoryIds[$categoryName] ?? [];
-            if ($existingXitCategoryIds) {
-                $categoryIds = array_merge($categoryIds, explode(",", $existingXitCategoryIds));
-            }
-        }
-        if ($categoryIds) {
-            $categoryIds = array_filter(array_unique($categoryIds));
-            $product->addCategoryIds($categoryIds);
-        }
-
         //brochure_url
         /*// German eav attributes
         $german = $product->storeView('de_store');
@@ -508,12 +518,14 @@ class ProductHelper extends AbstractHelper
         $select = $categoryCollection->getSelect();
         $select->reset(Select::COLUMNS)->columns('GROUP_CONCAT(`e`.`entity_id`)');
         $select->where("FIND_IN_SET(`{$xitCategoryTable}`.`xitcategory_id`, `at_xit_category_ids`.`value`)");
+
         return $this->db->fetchMap(
             "
-            SELECT `name`, ({$select}) as `category_ids`  
+            SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), ({$select}) as `category_ids`  
             FROM `{$xitCategoryTable}`
             WHERE BINARY `name` IN (" . $this->db->getMarks($allCategoryNames) . ")
-        ", array_values($allCategoryNames)
+        ",
+            array_values($allCategoryNames)
         );
     }
     protected function loadOptionValues(string $attributeCode)
@@ -525,7 +537,8 @@ class ProductHelper extends AbstractHelper
             INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
             INNER JOIN {$this->metaData->attributeOptionValueTable} V ON V.option_id = O.option_id
             WHERE A.`attribute_code` = ? AND A.`entity_type_id` = ? AND V.store_id = 0
-        ", [
+        ",
+            [
             $attributeCode,
             $this->metaData->productEntityTypeId
             ]
@@ -538,6 +551,7 @@ class ProductHelper extends AbstractHelper
         $xitOptionId = $option['xitdistribution'] ?? "";
         if ($xitOptionId) {
             $productCollection = $this->_productCollectionFactory->create();
+            $productCollection->addAttributeToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, 'left');
             $productCollection->addAttributeToFilter('supplier', ['eq' => $xitOptionId ], 'left');
             $select = $productCollection->getSelect();
             $select->reset(Select::COLUMNS)->columns(['sku']);
@@ -561,7 +575,8 @@ class ProductHelper extends AbstractHelper
             SELECT `sku`, `entity_id` 
             FROM `{$this->metaData->productEntityTable}`
             WHERE BINARY `sku` IN (" . $this->db->getMarks($skus) . ")
-        ", array_values($skus)
+        ",
+            array_values($skus)
         );
     }
     /**
@@ -598,7 +613,8 @@ class ProductHelper extends AbstractHelper
     public function parseObject($value)
     {
         return isset($value) ? is_object($value) ? array_filter(
-            json_decode(json_encode($value), true), function ($value) {
+            json_decode(json_encode($value), true),
+            function ($value) {
                 return !is_array($value) && $value !== '';
             }
         ) : $value : [];
