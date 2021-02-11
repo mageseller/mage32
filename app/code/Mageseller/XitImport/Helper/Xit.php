@@ -504,7 +504,8 @@ class Xit extends AbstractHelper
                 'name' => $names[0],
                 'parent_name' => $names[1]
                 ] : [];
-            }, array_keys($categoriesWithParents)
+            },
+            array_keys($categoriesWithParents)
         );
         $allCategories = array_filter($allCategories);
         $collection = $this->xitCategoryFactory->create()->getCollection();
@@ -633,7 +634,8 @@ class Xit extends AbstractHelper
     public function parseObject($value)
     {
         return isset($value) ? is_object($value) ? array_filter(
-            json_decode(json_encode($value), true), function ($value) {
+            json_decode(json_encode($value), true),
+            function ($value) {
                 return !is_array($value) && $value !== '';
             }
         ) : $value : [];

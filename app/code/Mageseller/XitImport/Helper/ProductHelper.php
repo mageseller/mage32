@@ -293,14 +293,11 @@ class ProductHelper extends AbstractHelper
             $allCategoryNames = [];
             foreach ($items as $item) {
                 $allSkus[] = (string)$item->ItemDetail->ManufacturerPartID;
-                $categories = $this->parseObject($item->ItemDetail->Classifications->Classification);
-                unset($categories['@attributes']);
-                $allCategoryNames = array_unique(array_merge($allCategoryNames, $categories));
             }
 
             $this->existingSkus = $this->getExistingSkus($allSkus);
+            $this->existingXitCategoryIds = $this->getExistingXitCategoryIds();
 
-            $this->existingXitCategoryIds = $this->getExistingXitCategoryIds($allCategoryNames);
             // Disable or not the indexing when UpdateOnSave mode
             $this->indexer->initIndexers();
             $config = new ImportConfig();
@@ -386,13 +383,13 @@ class ProductHelper extends AbstractHelper
     }
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
+        $categoryIds = [];
         $categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
         unset($categories['@attributes']);
-
-        $categoryIds = [];
         $lastCat = '';
         foreach (array_values($categories) as $level => $categoryName) {
-            $existingXitCategoryIds = $this->existingXitCategoryIds[$categoryName . self::SEPERATOR . $lastCat] ?? [];
+            $catName = strtolower($categoryName . self::SEPERATOR . $lastCat);
+            $existingXitCategoryIds = $this->existingXitCategoryIds[$catName] ?? [];
             if ($existingXitCategoryIds) {
                 $categoryIds = array_merge($categoryIds, explode(",", $existingXitCategoryIds));
             }
@@ -457,10 +454,10 @@ class ProductHelper extends AbstractHelper
         $stock->setQuantityIncrements(1);
 
         if (isset($this->existingSkus[$sku])) {
-            if ($oldUpdateAt <= $currentUpdateAT) {
-                $j++;
-                $importer->importSimpleProduct($product);
-            }
+            //if ($oldUpdateAt <= $currentUpdateAT) {
+            $j++;
+            $importer->importSimpleProduct($product);
+            //}
             return;
         }
 
@@ -507,11 +504,8 @@ class ProductHelper extends AbstractHelper
         $j++;
         $importer->importSimpleProduct($product);
     }
-    private function getExistingXitCategoryIds($allCategoryNames)
+    private function getExistingXitCategoryIds()
     {
-        if (empty($allCategoryNames)) {
-            return [];
-        }
         $xitCategoryTable = $this->db->getFullTableName(self::XIT_CATEGORY_TABLE);
         $categoryCollection = $this->categoryCollectionFactory->create();
         $categoryCollection->addAttributeToSelect('xit_category_ids', 'left');
@@ -520,12 +514,8 @@ class ProductHelper extends AbstractHelper
         $select->where("FIND_IN_SET(`{$xitCategoryTable}`.`xitcategory_id`, `at_xit_category_ids`.`value`)");
 
         return $this->db->fetchMap(
-            "
-            SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), ({$select}) as `category_ids`  
-            FROM `{$xitCategoryTable}`
-            WHERE BINARY `name` IN (" . $this->db->getMarks($allCategoryNames) . ")
-        ",
-            array_values($allCategoryNames)
+            "SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), ({$select}) as `category_ids`  
+            FROM `{$xitCategoryTable}`"
         );
     }
     protected function loadOptionValues(string $attributeCode)

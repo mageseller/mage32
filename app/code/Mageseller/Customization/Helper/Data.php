@@ -139,12 +139,12 @@ class Data extends AbstractHelper
         FilterManager $filter,
         DevicesFactory $devicesFactory
     ) {
+        parent::__construct($context);
         $this->_filter         = $filter;
         $this->translitUrl     = $translitUrl;
         $this->_devicesFactory   = $devicesFactory;
         $this->objectManager = $objectManager;
         $this->storeManager = $storeManager;
-        parent::__construct($context, $objectManager, $storeManager);
     }
 
     /**
@@ -506,8 +506,6 @@ class Data extends AbstractHelper
         return ($routePath[0] == $devicesRoute);
     }
 
-
-
     //************************* Get Devices List Function ***************************
     /**
      * @param null $type
@@ -536,8 +534,6 @@ class Data extends AbstractHelper
 
         return $list;
     }
-
-
 
     //*********************** Get Category and Alpha bet Character Filter Class for Mixitup ***********************
     /**
@@ -575,7 +571,7 @@ class Data extends AbstractHelper
     {
         if ($scopeValue === null && !$this->isArea()) {
             /**
- * @var Config $backendConfig 
+ * @var Config $backendConfig
 */
             if (!$this->backendConfig) {
                 $this->backendConfig = $this->objectManager->get(\Magento\Backend\App\ConfigInterface::class);
@@ -595,7 +591,7 @@ class Data extends AbstractHelper
     {
         if (!isset($this->isArea[$area])) {
             /**
- * @var State $state 
+ * @var State $state
 */
             $state = $this->objectManager->get(\Magento\Framework\App\State::class);
 
