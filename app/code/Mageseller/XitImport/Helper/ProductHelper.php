@@ -186,6 +186,10 @@ class ProductHelper extends AbstractHelper
      * @var float|string
      */
     private $start;
+    /**
+     * @var array
+     */
+    private $productIdsToReindex;
 
     /**
      * @param  \Magento\Framework\App\Helper\Context                          $context
@@ -298,16 +302,13 @@ class ProductHelper extends AbstractHelper
             $this->existingSkus = $this->getExistingSkus($allSkus);
             $this->existingXitCategoryIds = $this->getExistingXitCategoryIds();
 
-            // Disable or not the indexing when UpdateOnSave mode
-            $this->indexer->initIndexers();
             $config = new ImportConfig();
             $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SERIAL;
-            $productIdsToReindex = [];
             // a callback function to postprocess imported products
-            $config->resultCallback = function (\Mageseller\ProductImport\Api\Data\Product $product) use (&$process, &$productIdsToReindex, &$importer) {
+            $config->resultCallback = function (\Mageseller\ProductImport\Api\Data\Product $product) use (&$process, &$importer) {
                 $time = round(microtime(true) - $this->start, 2);
                 if ($product->isOk()) {
-                    $productIdsToReindex[] = $product->id;
+                    $this->productIdsToReindex[] = $product->id;
                     $message = sprintf("%s: success! sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
                 } else {
                     $message = sprintf("%s: failed! sku = %s error = %s ( $time s)\n", $product->lineNumber, $product->getSku(), implode('; ', $product->getErrors()));
@@ -317,7 +318,9 @@ class ProductHelper extends AbstractHelper
                 }
                 $this->start = microtime(true);
             };
+
             /*Disabling product start */
+            $this->productIdsToReindex = [];
             $importer = $this->importerFactory->createImporter($config);
             $disableSkus = array_values(array_diff($allXitSkus, $allSkus));
             foreach ($disableSkus as $lineNumber => $sku) {
@@ -330,8 +333,10 @@ class ProductHelper extends AbstractHelper
             /*Disabling product ends */
 
             /* Importing Products starts */
-            $importer = $this->importerFactory->createImporter($config);
+            $this->productIdsToReindex = [];
             $isFlush = false;
+            $importer = $this->importerFactory->createImporter($config);
+
             $processResource = $this->processResourceFactory->create();
             $processResource->save($process);
             $i = 0; // Line number
@@ -375,8 +380,7 @@ class ProductHelper extends AbstractHelper
             //}
             // Reindex
             $process->output(__('Reindexing...'), true);
-            $this->reindexProducts($productIdsToReindex);
-            //$this->indexer->reindex();
+            $this->reindexProducts($this->productIdsToReindex);
         }
 
         $process->output(__('Done!'));
@@ -400,8 +404,6 @@ class ProductHelper extends AbstractHelper
         }
 
         $sku = (string)$data->ItemDetail->ManufacturerPartID;
-        $price = (string)$data->ItemDetail->UnitPrice;
-        $price = floatval(preg_replace('/[^\d.]/', '', $price));
         $taxRate = (string)$data->ItemDetail->TaxRate;
         $updatedAt = (string)$data->UpdatedAt;
         $currentUpdateAT = date_parse($updatedAt);
@@ -435,12 +437,22 @@ class ProductHelper extends AbstractHelper
 
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
-        $global->setPrice($price);
+        /* Adding price starts*/
+        $price = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->UnitPrice)));
         if (isset($data->ItemDetail->RRP)) {
-            $specialPrice = (string)$data->ItemDetail->RRP;
-            $specialPrice = $specialPrice ? floatval(preg_replace('/[^\d.]/', '', $specialPrice)) : null;
-            $global->setSpecialPrice($specialPrice);
+            $price = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->RRP)));
+            $specialPrice = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->UnitPrice)));
+            if ($price > $specialPrice) {
+                $global->setSpecialPrice($specialPrice);
+            } else {
+                $price = $specialPrice;
+                $global->setSpecialPrice($price);
+            }
         }
+        $global->setPrice($price);
+        /* Adding price ends*/
+
+        /* Adding quantity starts*/
         $isInStock = $quantity > 0;
         $product->sourceItem("default")->setQuantity($quantity);
         $product->sourceItem("default")->setStatus($isInStock);
@@ -452,6 +464,7 @@ class ProductHelper extends AbstractHelper
         $stock->setNotifyStockQuantity(1);
         $stock->setManageStock(true);
         $stock->setQuantityIncrements(1);
+        /* Adding quantity ends */
 
         if (isset($this->existingSkus[$sku])) {
             //if ($oldUpdateAt <= $currentUpdateAT) {
@@ -577,12 +590,20 @@ class ProductHelper extends AbstractHelper
      */
     private function reindexProducts($productIdsToReindex = [])
     {
-        $indexer = $this->indexerRegistry->get(\Magento\Catalog\Model\Indexer\Product\Category::INDEXER_ID);
-        if (is_array($productIdsToReindex) && count($productIdsToReindex) > 0 && !$indexer->isScheduled()) {
-            $indexer->reindexList($productIdsToReindex);
-            //$this->_productEavIndexerProcessor->reindexList($productIdsToReindex);
-            $this->stockIndexerProcessor->reindexList($productIdsToReindex);
-            $this->priceIndexer->reindexList($productIdsToReindex);
+        if (is_array($productIdsToReindex) && count($productIdsToReindex) > 0) {
+            $indexer = $this->indexerRegistry->get(\Magento\Catalog\Model\Indexer\Product\Category::INDEXER_ID);
+            if (!$indexer->isScheduled()) {
+                $indexer->reindexList($productIdsToReindex);
+            }
+            if (!$this->_productEavIndexerProcessor->isIndexerScheduled()) {
+                $this->_productEavIndexerProcessor->reindexList($productIdsToReindex);
+            }
+            if (!$this->stockIndexerProcessor->isIndexerScheduled()) {
+                $this->stockIndexerProcessor->reindexList($productIdsToReindex);
+            }
+            if (!$this->priceIndexer->isIndexerScheduled()) {
+                $this->priceIndexer->reindexList($productIdsToReindex);
+            }
             $this->flushCacheByProductIds->execute($productIdsToReindex);
         }
     }

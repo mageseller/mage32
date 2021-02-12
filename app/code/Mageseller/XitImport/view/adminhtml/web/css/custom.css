@@ -60,3 +60,7 @@ main .supplier-categories-name {
 main .shop-category-name {
     margin-left: 50px;
 }
+.used_as_attribute {
+    color: black;
+    margin-left: 50px;
+}

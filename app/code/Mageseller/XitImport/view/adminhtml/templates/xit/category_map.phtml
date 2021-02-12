@@ -26,7 +26,7 @@ $isEnableEdsModule = $helper->getEnable();
                 <input type="hidden" name="shop_input_id" id="shop_input_id" value="">
             </td>
             <td>
-                <button name="submit" id="submit" value="Submit" class="action- scalable primary"> Submit</button>
+                <button name="submit" id="submit" value="Submit" class="action- scalable primary"> Map</button>
             </td>
             <td>
                 <div class="or-tag"> OR </div>
@@ -67,7 +67,7 @@ $isEnableEdsModule = $helper->getEnable();
     $formData['save_category_url'] = $this->getUrl("mageseller_xitimport/xitcategory/savecategory");
     $formData['delete_category_url'] = $this->getUrl("mageseller_xitimport/xitcategory/delcategory");
     $formData['supplier_category_url'] = $this->getUrl("mageseller_xitimport/xitcategory/suppliercategory");
-    $formData['use_as_attribute_url'] = $this->getUrl("mageseller_leadersystemsimport/leadersystemscategory/useasattribute");
+    $formData['use_as_attribute_url'] = $this->getUrl("mageseller_xitimport/xitcategory/useasattribute");
     $formData['already_mapped_array'] = json_encode($categoryNameArray);
     $serializedFormData = $this->helper('Magento\Framework\Json\Helper\Data')->jsonEncode($formData); ?>
     <script type="text/x-magento-init">

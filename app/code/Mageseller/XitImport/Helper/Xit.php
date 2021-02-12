@@ -732,12 +732,15 @@ class Xit extends AbstractHelper
             $supplierCategoryName = $supplierTreeCategory['name'];
             $html .= "<a data-id='$supplierCategoryId' href='javascript:void(0)' $style>$supplierCategoryName</a>
                         $name";
+            if ($attributeName) {
+                $html .= "<div class='used_as_attribute' >" .
+                            " ==> Used as Attribute :  " . $attributeName .
+                        "</div>";
+            }
             if (isset($supplierTreeCategory['childs'])) {
                 $html .= $this->getSupplierCategoryTree($supplierTreeCategory['childs'], $categoryMapArray);
             }
-            if ($attributeName) {
-                $html .= " ==> Used as Attribute :  " . $attributeName;
-            }
+
             $html .= "</li>";
         }
         $html .= "</ul>";
