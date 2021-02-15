@@ -1,5 +1,6 @@
 <?php
 /** @var \Mageseller\XitImport\Block\Adminhtml\Category $block */
+/** @var \Mageseller\XitImport\Helper\Xit $helper */
 $helper = $this->helper(\Mageseller\XitImport\Helper\Xit::class);
 $productAttributes = $helper->getAllProductAttributes();
 $isEnableEdsModule = $helper->getEnable();

@@ -12,11 +12,14 @@
 namespace Mageseller\XitImport\Helper;
 
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product as ProductEntityType;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Catalog\Model\ResourceModel\ProductFactory as ProductResourceFactory;
+use Magento\Eav\Api\Data\AttributeInterface;
 use Magento\Eav\Model\Config as EavConfig;
+use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory as AttributeCollectionFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\ResourceConnection;
@@ -178,49 +181,73 @@ class ProductHelper extends AbstractHelper
      * @var MetaData
      */
     protected $metaData;
-    private $existingXitCategoryIds;
-    private $existingSkus;
-    private $mediaUrl;
+    protected $existingXitCategoryIds;
+    protected $existingSkus;
+    protected $mediaUrl;
 
     /**
      * @var float|string
      */
-    private $start;
+    protected $start;
     /**
      * @var array
      */
-    private $productIdsToReindex;
+    protected $productIdsToReindex;
+    /**
+     * @var array
+     */
+    protected $existingXitCategoryAttributeIds;
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Eav\Attribute
+     */
+    protected $_eavAttribute;
+    private $eavAttributes;
+    /**
+     * @var AttributeCollectionFactory
+     */
+    private $attributeFactory;
+    /**
+     * @var \Mageseller\Customization\Model\ResourceModel\Devices\Collection
+     */
+    private $optionReplacementCollection;
+    /**
+     * @var array|mixed|string|null
+     */
+    private $optionReplaceMents;
 
     /**
-     * @param  \Magento\Framework\App\Helper\Context                          $context
-     * @param  \Magento\Framework\Filesystem                                  $filesystem
-     * @param  \Magento\Store\Model\StoreManager                              $storeManager
-     * @param  \Magento\Framework\Filesystem\DirectoryList                    $dirReader
-     * @param  \Magento\Framework\Filesystem\Io\File                          $fileFactory
-     * @param  \Magento\Framework\Stdlib\DateTime\DateTime                    $dateTime
-     * @param  MessageManagerInterface                                        $messageManager
-     * @param  \Mageseller\XitImport\Logger\XitImport                         $xitimportLogger
-     * @param  \Mageseller\XitImport\Model\XitCategoryFactory                 $xitCategoryFactory
-     * @param  CollectionFactory                                              $categoryCollectionFactory
-     * @param  ResourceConnection                                             $resourceConnection
-     * @param  Indexer                                                        $indexer
-     * @param  ProcessResourceFactory                                         $processResourceFactory
-     * @param  ResourceConnection                                             $resource
-     * @param  EavConfig                                                      $eavConfig
-     * @param  ProductFactory                                                 $productFactory
-     * @param  ProductResourceFactory                                         $productResourceFactory
-     * @param  \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param  InventoryHelper                                                $inventoryHelper
-     * @param  Url                                                            $urlHelper
-     * @param  \Mageseller\ProductImport\Api\ImporterFactory                  $importerFactory
-     * @param  \Magento\Framework\Indexer\IndexerRegistry                     $indexerRegistry
-     * @param  \Magento\CatalogInventory\Model\Indexer\Stock\Processor        $stockIndexerProcessor
-     * @param  \Magento\Catalog\Model\Indexer\Product\Price\Processor         $priceIndexer
-     * @param  \Magento\Catalog\Model\Indexer\Product\Eav\Processor           $productEavIndexerProcessor
-     * @param  Magento2DbConnection                                           $db
-     * @param  MetaData                                                       $metaData
-     * @param  FlushCacheByProductIds                                         $flushCacheByProductIds
-     * @param  \Magento\Catalog\Model\CategoryFactory                         $categoryFactory
+     * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Magento\Framework\Filesystem $filesystem
+     * @param \Magento\Store\Model\StoreManager $storeManager
+     * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
+     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
+     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
+     * @param MessageManagerInterface $messageManager
+     * @param \Mageseller\XitImport\Logger\XitImport $xitimportLogger
+     * @param \Mageseller\XitImport\Model\XitCategoryFactory $xitCategoryFactory
+     * @param CollectionFactory $categoryCollectionFactory
+     * @param ResourceConnection $resourceConnection
+     * @param Indexer $indexer
+     * @param ProcessResourceFactory $processResourceFactory
+     * @param ResourceConnection $resource
+     * @param EavConfig $eavConfig
+     * @param ProductFactory $productFactory
+     * @param ProductResourceFactory $productResourceFactory
+     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param InventoryHelper $inventoryHelper
+     * @param Url $urlHelper
+     * @param \Mageseller\ProductImport\Api\ImporterFactory $importerFactory
+     * @param \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry
+     * @param \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor
+     * @param \Magento\Catalog\Model\Indexer\Product\Price\Processor $priceIndexer
+     * @param \Magento\Catalog\Model\Indexer\Product\Eav\Processor $productEavIndexerProcessor
+     * @param Magento2DbConnection $db
+     * @param MetaData $metaData
+     * @param FlushCacheByProductIds $flushCacheByProductIds
+     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param \Magento\Catalog\Model\ResourceModel\Eav\Attribute $eavAttribute
+     * @param AttributeCollectionFactory $attributeFactory
+     * @param \Mageseller\Customization\Model\ResourceModel\Devices\Collection $optionReplacementCollection
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
@@ -253,7 +280,10 @@ class ProductHelper extends AbstractHelper
         Magento2DbConnection $db,
         MetaData $metaData,
         FlushCacheByProductIds $flushCacheByProductIds,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory
+        \Magento\Catalog\Model\CategoryFactory $categoryFactory,
+        \Magento\Catalog\Model\ResourceModel\Eav\Attribute $eavAttribute,
+        AttributeCollectionFactory $attributeFactory,
+        \Mageseller\Customization\Model\ResourceModel\Devices\Collection $optionReplacementCollection
     ) {
         parent::__construct($context);
         $this->_dateTime = $dateTime;
@@ -287,6 +317,9 @@ class ProductHelper extends AbstractHelper
         $this->db = $db;
         $this->metaData = $metaData;
         $this->mediaUrl = $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+        $this->_eavAttribute = $eavAttribute;
+        $this->attributeFactory = $attributeFactory;
+        $this->optionReplacementCollection = $optionReplacementCollection;
     }
 
     public function processProducts($items, Process $process, $since, $sendReport = true)
@@ -301,8 +334,13 @@ class ProductHelper extends AbstractHelper
 
             $this->existingSkus = $this->getExistingSkus($allSkus);
             $this->existingXitCategoryIds = $this->getExistingXitCategoryIds();
+            $this->existingXitCategoryAttributeIds = $this->getExistingXitCategoryAttributeIds();
+            $this->optionReplaceMents =  $this->getOptionReplaceMents();
 
+            $attributes = array_values($this->existingXitCategoryAttributeIds);
+            $attributes[] = "brand";
             $config = new ImportConfig();
+            $config->autoCreateOptionAttributes = array_unique($attributes);
             $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SERIAL;
             // a callback function to postprocess imported products
             $config->resultCallback = function (\Mageseller\ProductImport\Api\Data\Product $product) use (&$process, &$importer) {
@@ -385,9 +423,55 @@ class ProductHelper extends AbstractHelper
 
         $process->output(__('Done!'));
     }
+    public function getOptionReplaceMents()
+    {
+        $collection = $this->attributeFactory->create();
+        $collection
+            ->addFieldToFilter('entity_type_id', $this->eavConfig->getEntityType(ProductEntityType::ENTITY)->getEntityTypeId())
+            ->addFieldToFilter('frontend_input', 'select')
+            ->setOrder('attribute_id', 'desc');
+        $optionReplacementsCollection = $this->optionReplacementCollection;
+        $select = $optionReplacementsCollection->getSelect()
+            ->reset('columns')
+            ->columns(['option_id','alternate_options']);
+        $optionReplacementsTableData = $this->db->fetchMap($select);
+        $attributeOptionReplaceMents = [];
+        foreach ($collection as $attribute) {
+            $optionReplacements = [];
+            $options = $attribute->getSource()->getAllOptions();
+            foreach ($options as $option) {
+                $value = $option['value'];  // Value
+                if (isset($optionReplacementsTableData[$value])) {
+                    $labels = explode(",", $optionReplacementsTableData[$value]);
+                    foreach ($labels as $label) {
+                        $optionReplacements[$label] = $value;
+                    }
+                }
+            }
+            $attributeOptionReplaceMents[$attribute[AttributeInterface::ATTRIBUTE_CODE]] = $optionReplacements;
+        }
+        return $attributeOptionReplaceMents;
+
+        return $this->getAttributeById($attributeId)->getAttributeCode();
+    }
+    public function getAttributeById($attributeId)
+    {
+        if (!isset($this->eavAttributes[$attributeId])) {
+            $this->eavAttributes[$attributeId] = $this->_eavAttribute->load($attributeId);
+        }
+        return $this->eavAttributes[$attributeId];
+    }
+    public function getAttributeCode($attributeId)
+    {
+        return $this->getAttributeById($attributeId)->getAttributeCode();
+    }
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
         $categoryIds = [];
+        $customAttrbutes = [];
+        if (isset($data->ItemDetail->ManufacturerName)) {
+            $customAttrbutes['brand'] = $data->ItemDetail->ManufacturerName;
+        }
         $categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
         unset($categories['@attributes']);
         $lastCat = '';
@@ -397,6 +481,11 @@ class ProductHelper extends AbstractHelper
             if ($existingXitCategoryIds) {
                 $categoryIds = array_merge($categoryIds, explode(",", $existingXitCategoryIds));
             }
+            $useAsAttribute = $this->existingXitCategoryAttributeIds[$catName] ?? "";
+            if ($useAsAttribute) {
+                $customAttrbutes[$useAsAttribute] = $categoryName;
+            }
+
             $lastCat = $categoryName;
             if ($level >= 2) {
                 break;
@@ -437,6 +526,9 @@ class ProductHelper extends AbstractHelper
 
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
+
+        /* TODO: Adding price margin from this file app\code\Aalogics\Dropship\Model\Supplier\Xitdistribution.php*/
+
         /* Adding price starts*/
         $price = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->UnitPrice)));
         if (isset($data->ItemDetail->RRP)) {
@@ -450,12 +542,24 @@ class ProductHelper extends AbstractHelper
             }
         }
         $global->setPrice($price);
+        $global->setPrice($price);
         /* Adding price ends*/
 
         /* Adding quantity starts*/
         $isInStock = $quantity > 0;
         $product->sourceItem("default")->setQuantity($quantity);
         $product->sourceItem("default")->setStatus($isInStock);
+
+        if ($customAttrbutes) {
+            foreach ($customAttrbutes as $attrbuteCode => $optionName) {
+                if (isset($this->optionReplaceMents[$attrbuteCode][$optionName])) {
+                    $optionId = $this->optionReplaceMents[$attrbuteCode][$optionName];
+                    $global->setSelectAttributeOptionId($attrbuteCode, $optionId);
+                } else {
+                    $global->setSelectAttribute($attrbuteCode, $optionName);
+                }
+            }
+        }
 
         $stock = $product->defaultStockItem();
         $stock->setQty($quantity);
@@ -517,7 +621,7 @@ class ProductHelper extends AbstractHelper
         $j++;
         $importer->importSimpleProduct($product);
     }
-    private function getExistingXitCategoryIds()
+    public function getExistingXitCategoryIds()
     {
         $xitCategoryTable = $this->db->getFullTableName(self::XIT_CATEGORY_TABLE);
         $categoryCollection = $this->categoryCollectionFactory->create();
@@ -529,6 +633,18 @@ class ProductHelper extends AbstractHelper
         return $this->db->fetchMap(
             "SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), ({$select}) as `category_ids`  
             FROM `{$xitCategoryTable}`"
+        );
+    }
+    public function getExistingXitCategoryAttributeIds()
+    {
+        $xitCategoryTable = $this->db->getFullTableName(self::XIT_CATEGORY_TABLE);
+        $eavAttributeTable = $this->db->getFullTableName('eav_attribute');
+        return $this->db->fetchMap(
+            "SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), `attribute_code`  
+            FROM `{$xitCategoryTable}` AS `xit`
+            LEFT JOIN `{$eavAttributeTable}` AS `eav`
+            ON `xit`.`attribute_id` = `eav`.`attribute_id`
+            WHERE `xit`.`attribute_id` IS NOT NULL"
         );
     }
     protected function loadOptionValues(string $attributeCode)

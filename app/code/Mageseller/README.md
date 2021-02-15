@@ -16,3 +16,9 @@
    **IM:** 3PM
 
    **Stock + Price:** all at 5AM every day and DD every 3 hours
+8) Assign Supplier Category Ids to product while import.
+9) Use category as attribute while import
+10) Use 4th category as attribute option in Xit and 3rd category as attribute option in Dickerdata.
+11) While importing price need price margin 
+
+
