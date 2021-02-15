@@ -20,5 +20,5 @@
 9) Use category as attribute while import
 10) Use 4th category as attribute option in Xit and 3rd category as attribute option in Dickerdata.
 11) While importing price need price margin 
-
-
+12) Add lowest price if sku is from different supplier and update supplier.
+13) Create options in store configuration for backorder keywords. 

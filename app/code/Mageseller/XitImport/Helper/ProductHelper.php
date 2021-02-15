@@ -31,6 +31,7 @@ use Mageseller\Process\Helper\Product\Import\Url;
 use Mageseller\Process\Model\Process;
 use Mageseller\Process\Model\Product\Import\Indexer\Indexer;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
+use Mageseller\ProductImport\Api\Data\ProductStockItem;
 use Mageseller\ProductImport\Api\Data\ProductStoreView;
 use Mageseller\ProductImport\Api\Data\SimpleProduct;
 use Mageseller\ProductImport\Api\ImportConfig;
@@ -470,7 +471,7 @@ class ProductHelper extends AbstractHelper
         $categoryIds = [];
         $customAttrbutes = [];
         if (isset($data->ItemDetail->ManufacturerName)) {
-            $customAttrbutes['brand'] = $data->ItemDetail->ManufacturerName;
+            $customAttrbutes['brand'] = strval($data->ItemDetail->ManufacturerName);
         }
         $categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
         unset($categories['@attributes']);
@@ -498,24 +499,6 @@ class ProductHelper extends AbstractHelper
         $currentUpdateAT = date_parse($updatedAt);
         $oldUpdateAt = date_parse($since->format('Y-m-d H:i:s'));
 
-        $availibilities = $data->Availability->Warehouse;
-        $quantity = 0;
-        foreach ($availibilities as $avail) {
-            $v = (string)$avail->StockLevel;
-            if (strtolower($v) == 'call') {
-                $quantity = '999999';
-                continue;
-            }
-            if (strtolower($v) == 'on order') {
-                $quantity = '999999';
-                continue;
-            }
-            $trimmedQty = trim($v, '+');
-            if ($trimmedQty) {
-                $quantity =  $trimmedQty;
-            }
-        }
-
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;
 
@@ -542,14 +525,62 @@ class ProductHelper extends AbstractHelper
             }
         }
         $global->setPrice($price);
-        $global->setPrice($price);
         /* Adding price ends*/
 
-        /* Adding quantity starts*/
-        $isInStock = $quantity > 0;
-        $product->sourceItem("default")->setQuantity($quantity);
-        $product->sourceItem("default")->setStatus($isInStock);
 
+
+        /* Adding quantity starts*/
+        $availibilities = $data->Availability->Warehouse;
+        $quantity = 0;
+        $isBackOrder = false;
+        foreach ($availibilities as $avail) {
+            $v = (string)$avail->StockLevel;
+            if (strtolower($v) == 'call') {
+                $quantity = '999999';
+                $isBackOrder = true;
+                continue;
+            }
+            if (strtolower($v) == 'on order') {
+                $quantity = '999999';
+                $isBackOrder = true;
+                continue;
+            }
+            $trimmedQty = trim($v, '+');
+            if ($trimmedQty) {
+                $quantity =  $trimmedQty;
+                $isBackOrder = false;
+            }
+        }
+        $isInStock = $quantity > 0;
+
+        $stock = $product->defaultStockItem();
+        if ($isBackOrder) {
+            $product->sourceItem("default")->setQuantity(0);
+            $product->sourceItem("default")->setStatus(1);
+            $stock->setQty(0);
+            $stock->setIsInStock(1);
+            $stock->setBackorders(ProductStockItem::BACKORDERS_ALLOW_QTY_BELOW_0_AND_NOTIFY_CUSTOMER);
+            $stock->setUseConfigBackorders(false);
+        } else {
+            $product->sourceItem("default")->setQuantity($quantity);
+            $product->sourceItem("default")->setStatus($isInStock);
+            $stock->setQty($quantity);
+            $stock->setIsInStock($isInStock);
+            $stock->setMaximumSaleQuantity(10000.0000);
+            $stock->setNotifyStockQuantity(1);
+            $stock->setManageStock(true);
+            $stock->setQuantityIncrements(1);
+        }
+
+        /* Adding quantity ends */
+
+        if (isset($this->existingSkus[$sku])) {
+            //if ($oldUpdateAt <= $currentUpdateAT) {
+            $j++;
+            $importer->importSimpleProduct($product);
+            //}
+            return;
+        }
         if ($customAttrbutes) {
             foreach ($customAttrbutes as $attrbuteCode => $optionName) {
                 if (isset($this->optionReplaceMents[$attrbuteCode][$optionName])) {
@@ -560,24 +591,6 @@ class ProductHelper extends AbstractHelper
                 }
             }
         }
-
-        $stock = $product->defaultStockItem();
-        $stock->setQty($quantity);
-        $stock->setIsInStock($isInStock);
-        $stock->setMaximumSaleQuantity(10000.0000);
-        $stock->setNotifyStockQuantity(1);
-        $stock->setManageStock(true);
-        $stock->setQuantityIncrements(1);
-        /* Adding quantity ends */
-
-        if (isset($this->existingSkus[$sku])) {
-            //if ($oldUpdateAt <= $currentUpdateAT) {
-            $j++;
-            $importer->importSimpleProduct($product);
-            //}
-            return;
-        }
-
         $name = (string)$data->ItemDetail->Title;
         $description = (string)$data->ItemDetail->Description;
         $taxClassName = 'Taxable Goods';
