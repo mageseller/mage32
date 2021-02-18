@@ -12,36 +12,22 @@
 namespace Mageseller\XitImport\Helper;
 
 use Exception;
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Adapter\AdapterInterface;
-use Mageseller\Process\Helper\Product\Import\Url;
 use Mageseller\Process\Model\Process;
-use Mageseller\Process\Model\Product\Import\Indexer\Indexer;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
 use Mageseller\ProductImport\Api\Data\ProductStockItem;
 use Mageseller\ProductImport\Api\Data\ProductStoreView;
 use Mageseller\ProductImport\Api\Data\SimpleProduct;
 use Mageseller\ProductImport\Api\ImportConfig;
 use Mageseller\ProductImport\Api\ImporterFactory;
-use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
-use Mageseller\ProductImport\Model\Resource\MetaData;
 use Mageseller\XitImport\Logger\XitImport;
 
 class ProductHelper extends AbstractHelper
 {
-    const FILENAME = 'vendor-file.xml';
-    const TMP_FILENAME = 'vendor-file-tmp.xml';
-    const DOWNLOAD_FOLDER = 'supplier/xit';
-    const XIT_IMPORTCONFIG_IS_ENABLE = 'xit/importconfig/is_enable';
-    const ATTRIBUTE_PRODUCT_SKU = 'sku';
-    const XIT_CATEGORY_TABLE = "mageseller_xitimport_xitcategory";
-    const PDF_FOLDER = 'devicesPdf';
     const SUPPLIER = 'xitdistribution';
     const SEPERATOR = " ---|--- ";
+
     /**
      * @var XitImport
      */
@@ -54,18 +40,6 @@ class ProductHelper extends AbstractHelper
      * @var ImporterFactory
      */
     private $importerFactory;
-    /**
-     * @var Magento2DbConnection
-     */
-    protected $db;
-    /**
-     * @var MetaData
-     */
-    protected $metaData;
-    protected $existingXitCategoryIds;
-    protected $existingSkus;
-    protected $mediaUrl;
-
     /**
      * @var float|string
      */
@@ -82,19 +56,28 @@ class ProductHelper extends AbstractHelper
     /**
      * @var array|mixed|string|null
      */
-    private $optionReplaceMents;
+    protected $optionReplaceMents;
     /**
      * @var \Mageseller\Utility\Helper\Data
      */
-    private $utilityHelper;
+    protected $utilityHelper;
     /**
      * @var array|string
      */
-    private $backOrderValues;
+    protected $backOrderValues;
     /**
      * @var array
      */
-    private $existingSkusWithSupplier;
+    protected $existingSkusWithSupplier;
+    /**
+     * @var array
+     */
+    protected $existingXitCategoryIds;
+    /**
+     * @var array
+     */
+    protected $existingSkus;
+
 
     /**
      * @param Context $context
@@ -221,36 +204,6 @@ class ProductHelper extends AbstractHelper
 
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-        $categoryIds = [];
-        $customAttrbutes = [];
-        if (isset($data->ItemDetail->ManufacturerName)) {
-            $customAttrbutes['brand'] = strval($data->ItemDetail->ManufacturerName);
-        }
-        $categories = $this->utilityHelper->parseObject($data->ItemDetail->Classifications->Classification);
-        unset($categories['@attributes']);
-        $lastCat = '';
-        $level = 0;
-        foreach (array_values($categories) as $categoryName) {
-            $catName = strtolower($categoryName . self::SEPERATOR . $lastCat);
-            if ($level <= 2) {
-                $existingXitCategoryIds = $this->existingXitCategoryIds[$catName] ?? [];
-                if ($existingXitCategoryIds) {
-                    $categoryIds = array_merge($categoryIds, explode(",", $existingXitCategoryIds));
-                }
-                $useAsAttribute = $this->existingXitCategoryAttributeIds[$catName] ?? "";
-                if ($useAsAttribute) {
-                    $customAttrbutes[$useAsAttribute] = $categoryName;
-                }
-            } else {
-                //$customAttrbutes[$useAsAttribute] = $categoryName;
-            }
-
-            $lastCat = $categoryName;
-            if ($level > 2) {
-                break;
-            }
-            $level++;
-        }
 
         $sku = (string) $data->ItemDetail->ManufacturerPartID;
         $taxRate = (string) $data->ItemDetail->TaxRate;
@@ -261,10 +214,7 @@ class ProductHelper extends AbstractHelper
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;
 
-        if ($categoryIds) {
-            $categoryIds = array_filter(array_unique($categoryIds));
-            $product->addCategoryIds($categoryIds);
-        }
+
 
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
@@ -331,6 +281,40 @@ class ProductHelper extends AbstractHelper
             $importer->importSimpleProduct($product);
             //}
             return;
+        }
+        $categoryIds = [];
+        $customAttrbutes = [];
+        if (isset($data->ItemDetail->ManufacturerName)) {
+            $customAttrbutes['brand'] = strval($data->ItemDetail->ManufacturerName);
+        }
+        $categories = $this->utilityHelper->parseObject($data->ItemDetail->Classifications->Classification);
+        unset($categories['@attributes']);
+        $lastCat = '';
+        $level = 0;
+        foreach (array_values($categories) as $categoryName) {
+            $catName = strtolower($categoryName . self::SEPERATOR . $lastCat);
+            if ($level <= 2) {
+                $existingXitCategoryIds = $this->existingXitCategoryIds[$catName] ?? [];
+                if ($existingXitCategoryIds) {
+                    $categoryIds = array_merge($categoryIds, explode(",", $existingXitCategoryIds));
+                }
+                $useAsAttribute = $this->existingXitCategoryAttributeIds[$catName] ?? "";
+                if ($useAsAttribute) {
+                    $customAttrbutes[$useAsAttribute] = $categoryName;
+                }
+            } else {
+                //$customAttrbutes[$useAsAttribute] = $categoryName;
+            }
+
+            $lastCat = $categoryName;
+            if ($level > 2) {
+                break;
+            }
+            $level++;
+        }
+        if ($categoryIds) {
+            $categoryIds = array_filter(array_unique($categoryIds));
+            $product->addCategoryIds($categoryIds);
         }
         if ($customAttrbutes) {
             foreach ($customAttrbutes as $attrbuteCode => $optionName) {

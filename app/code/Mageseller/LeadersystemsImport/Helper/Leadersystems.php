@@ -38,8 +38,8 @@ class Leadersystems extends AbstractHelper
     const XML_TMP_FILENAME = 'vendor-file-tmp.xml';
     const DOWNLOAD_FOLDER = 'supplier/leadersystems';
     const LEADERSYSTEMS_IMPORTCONFIG_IS_ENABLE = 'leadersystems/importconfig/is_enable';
-    const CATEGORY_NAME = 'CATEGORY NAME';
-    const SUBCATEGORY_NAME = 'SUBCATEGORY NAME';
+    const PRIMARY_CATEGORY = 'CATEGORY NAME';
+    const SECONDARY_CATEGORY = 'SUBCATEGORY NAME';
     const SEPERATOR = " ---|--- ";
     /**
      * /**
@@ -412,11 +412,10 @@ class Leadersystems extends AbstractHelper
         $process->output(__('Downloading file...'), true);
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
-        $xml = simplexml_load_file($filepath, null, LIBXML_NOCDATA);
-        if ($xml instanceof SimpleXMLElement) {
-            $items = $xml->xpath("/Catalogue/Items/Item");
-            $this->dickerDataProductHelper->processProducts($items, $process, $since, $sendReport);
-        }
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $file = $directoryRead->openFile(self::CSV_FILENAME);
+        $this->leadersystemsProductHelper->processProducts($file, $process, $since, $sendReport);
     }
     public function importLeadersystemsImages(Process $process, $since, $sendReport = true)
     {
@@ -460,8 +459,8 @@ class Leadersystems extends AbstractHelper
         $file = $directoryRead->openFile(self::CSV_FILENAME);
         $headers = array_flip($file->readCsv());
         while (false !== ($row = $file->readCsv())) {
-            $categoryLevel1 = $row[$headers[self::CATEGORY_NAME]] ?? "";
-            $categoryLevel2 = $row[$headers[self::SUBCATEGORY_NAME]] ?? "";
+            $categoryLevel1 = $row[$headers[self::PRIMARY_CATEGORY]] ?? "";
+            $categoryLevel2 = $row[$headers[self::SECONDARY_CATEGORY]] ?? "";
             $level = implode(self::SEPERATOR, [$categoryLevel1,$categoryLevel2]);
             if ($categoryLevel1) {
                 $categoriesWithParents[$categoryLevel1 . self::SEPERATOR . ''] = $level;

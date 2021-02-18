@@ -56,8 +56,14 @@
 				<field id="button_products" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="button_label">
 					<frontend_model>Mageseller\DickerdataImport\Block\Adminhtml\System\Config\Button\Sync\Products</frontend_model>
 				</field>
+				<field id="backorder_option" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Backorder options</label>
+					<frontend_model>Mageseller\Utility\Block\Adminhtml\Form\Field\BackorderOptions</frontend_model>
+					<backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+					<comment>Add possible backorder values</comment>
+				</field>
 			</group>
-			<group id="product_import_indexing" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="90" translate="label">
+			<!--<group id="product_import_indexing" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="90" translate="label">
 				<depends>
 					<field id="dickerdata/importconfig/is_enable">1</field>
 				</depends>
@@ -75,7 +81,7 @@
 						<field id="enable_indexing_import">0</field>
 					</depends>
 				</field>
-			</group>
+			</group>-->
 		</section>
 	</system>
 </config>

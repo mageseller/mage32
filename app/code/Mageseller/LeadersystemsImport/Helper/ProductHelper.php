@@ -11,306 +11,166 @@
 
 namespace Mageseller\LeadersystemsImport\Helper;
 
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ProductFactory;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
-use Magento\Catalog\Model\ResourceModel\ProductFactory as ProductResourceFactory;
-use Magento\Eav\Model\Config as EavConfig;
-use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\DB\Adapter\AdapterInterface;
-use Magento\Framework\DB\Select;
-use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
-use Magento\InventoryCache\Model\FlushCacheByProductIds;
-use Mageseller\Process\Helper\Product\Import\Url;
+use Magento\Framework\App\Helper\Context;
+use Mageseller\LeadersystemsImport\Logger\LeadersystemsImport;
 use Mageseller\Process\Model\Process;
-use Mageseller\Process\Model\Product\Import\Indexer\Indexer;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
+use Mageseller\ProductImport\Api\Data\ProductStockItem;
 use Mageseller\ProductImport\Api\Data\ProductStoreView;
 use Mageseller\ProductImport\Api\Data\SimpleProduct;
 use Mageseller\ProductImport\Api\ImportConfig;
-use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
-use Mageseller\ProductImport\Model\Resource\MetaData;
-use Mageseller\LeadersystemsImport\Helper\Product\Import\Inventory as InventoryHelper;
+use Mageseller\ProductImport\Api\ImporterFactory;
 
 class ProductHelper extends AbstractHelper
 {
-    const FILENAME = 'vendor-file.xml';
-    const TMP_FILENAME = 'vendor-file-tmp.xml';
-    const DOWNLOAD_FOLDER = 'supplier/leadersystems';
-    const LEADERSYSTEMS_IMPORTCONFIG_IS_ENABLE = 'leadersystems/importconfig/is_enable';
-    const ATTRIBUTE_PRODUCT_SKU = 'sku';
-    const LEADERSYSTEMS_CATEGORY_TABLE = "mageseller_leadersystemsimport_leadersystemscategory";
-    const PDF_FOLDER = 'devicesPdf';
-    const SUPPLIER = 'leadersystemsdistribution';
+    const SUPPLIER = 'leadersystems';
+    const SEPERATOR = " ---|--- ";
+    const STOCK_CODE = 'STOCK CODE';
+    const STOCK_DESCRIPTION = 'StockDescription';
+
     /**
-     * /**
-     *
-     * @var \Magento\Framework\Filesystem\Directory\WriteInterface
-     */
-    protected $_mediaDirectory;
-    /**
-     * @var \Magento\Store\Model\StoreManager
-     */
-    protected $_storeManager;
-    /**
-     *
-     * @var unknown
-     */
-    protected $_dirReader;
-    /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     */
-    protected $scopeConfig;
-    /**
-     * @var \Magento\Framework\Filesystem\Io\File
-     */
-    protected $fileFactory;
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
-     */
-    protected $_dateTime;
-    /**
-     *
-     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
-     */
-    protected $_productCollectionFactory;
-    /**
-     * @var \Mageseller\LeadersystemsImport\Logger\LeadersystemsImport
+     * @var LeadersystemsImport
      */
     protected $leadersystemsimportLogger;
-    /**
-     * @var ProductCollectionFactory
-     */
-    protected $productCollectionFactory;
-    /**
-     * @var Indexer
-     */
-    protected $indexer;
     /**
      * @var ProcessResourceFactory
      */
     protected $processResourceFactory;
     /**
-     * @var ResourceConnection
-     */
-    protected $resource;
-    /**
-     * @var AdapterInterface
-     */
-    protected $connection;
-    /**
-     * @var EavConfig
-     */
-    protected $eavConfig;
-    /**
-     * @var ProductFactory
-     */
-    protected $productFactory;
-    /**
-     * @var ProductResourceFactory
-     */
-    protected $productResourceFactory;
-    /**
-     * @var InventoryHelper
-     */
-    protected $inventoryHelper;
-    /**
-     * @var \Magento\Framework\DB\Adapter\AdapterInterface
-     */
-    protected $leadersystemsCategoryIdsWithName;
-    /**
-     * @var \Magento\Framework\Indexer\IndexerRegistry
-     */
-    protected $indexerRegistry;
-    /**
-     * @var \Magento\CatalogInventory\Model\Indexer\Stock\Processor
-     */
-    protected $stockIndexerProcessor;
-    /**
-     * @var \Magento\Catalog\Model\Indexer\Product\Price\Processor
-     */
-    protected $priceIndexer;
-    /**
-     * @var \Magento\Catalog\Model\Indexer\Product\Eav\Processor
-     */
-    protected $_productEavIndexerProcessor;
-    /**
-     * @var FlushCacheByProductIds
-     */
-    private $flushCacheByProductIds;
-
-    /**
-     * @var \Mageseller\LeadersystemsImport\Model\LeadersystemsCategoryFactory
-     */
-    private $leadersystemsCategoryFactory;
-    /**
-     * @var \Magento\Catalog\Model\CategoryFactory
-     */
-    private $categoryFactory;
-    /**
-     * @var CollectionFactory
-     */
-    private $categoryCollectionFactory;
-    /**
-     * @var ResourceConnection
-     */
-    private $resourceConnection;
-    private $supplierCategories;
-    /**
-     * @var StoreInterface[]
-     */
-    private $stores;
-    private $websiteIds;
-    private $urlHelper;
-    /**
-     * @var \Mageseller\ProductImport\Api\ImporterFactory
+     * @var ImporterFactory
      */
     private $importerFactory;
     /**
-     * @var Magento2DbConnection 
-     */
-    protected $db;
-    /**
-     * @var MetaData 
-     */
-    protected $metaData;
-    private $existingLeadersystemsCategoryIds;
-    private $existingSkus;
-    private $mediaUrl;
-
-    /**
      * @var float|string
      */
-    private $start;
+    protected $start;
+    /**
+     * @var array
+     */
+    protected $productIdsToReindex;
+    /**
+     * @var array
+     */
+    protected $existingLeadersystemsCategoryAttributeIds;
 
     /**
-     * @param  \Magento\Framework\App\Helper\Context                              $context
-     * @param  \Magento\Framework\Filesystem                                      $filesystem
-     * @param  \Magento\Store\Model\StoreManager                                  $storeManager
-     * @param  \Magento\Framework\Filesystem\DirectoryList                        $dirReader
-     * @param  \Magento\Framework\Filesystem\Io\File                              $fileFactory
-     * @param  \Magento\Framework\Stdlib\DateTime\DateTime                        $dateTime
-     * @param  MessageManagerInterface                                            $messageManager
-     * @param  \Mageseller\LeadersystemsImport\Logger\LeadersystemsImport         $leadersystemsimportLogger
-     * @param  \Mageseller\LeadersystemsImport\Model\LeadersystemsCategoryFactory $leadersystemsCategoryFactory
-     * @param  CollectionFactory                                                  $categoryCollectionFactory
-     * @param  ResourceConnection                                                 $resourceConnection
-     * @param  Indexer                                                            $indexer
-     * @param  ProcessResourceFactory                                             $processResourceFactory
-     * @param  ResourceConnection                                                 $resource
-     * @param  EavConfig                                                          $eavConfig
-     * @param  ProductFactory                                                     $productFactory
-     * @param  ProductResourceFactory                                             $productResourceFactory
-     * @param  \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory     $productCollectionFactory
-     * @param  InventoryHelper                                                    $inventoryHelper
-     * @param  Url                                                                $urlHelper
-     * @param  \Mageseller\ProductImport\Api\ImporterFactory                      $importerFactory
-     * @param  \Magento\Framework\Indexer\IndexerRegistry                         $indexerRegistry
-     * @param  \Magento\CatalogInventory\Model\Indexer\Stock\Processor            $stockIndexerProcessor
-     * @param  \Magento\Catalog\Model\Indexer\Product\Price\Processor             $priceIndexer
-     * @param  \Magento\Catalog\Model\Indexer\Product\Eav\Processor               $productEavIndexerProcessor
-     * @param  Magento2DbConnection                                               $db
-     * @param  MetaData                                                           $metaData
-     * @param  FlushCacheByProductIds                                             $flushCacheByProductIds
-     * @param  \Magento\Catalog\Model\CategoryFactory                             $categoryFactory
-     * @throws \Magento\Framework\Exception\FileSystemException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @var array|mixed|string|null
+     */
+    protected $optionReplaceMents;
+    /**
+     * @var \Mageseller\Utility\Helper\Data
+     */
+    protected $utilityHelper;
+    /**
+     * @var array|string
+     */
+    protected $backOrderValues;
+    /**
+     * @var array
+     */
+    protected $existingSkusWithSupplier;
+    /**
+     * @var array
+     */
+    protected $existingLeadersystemsCategoryIds;
+    /**
+     * @var array
+     */
+    protected $existingSkus;
+    /**
+     * @var array
+     */
+    protected $headers;
+
+    /**
+     * @param Context $context
+     * @param LeadersystemsImport $leadersystemsimportLogger
+     * @param ProcessResourceFactory $processResourceFactory
+     * @param ImporterFactory $importerFactory
+     * @param \Mageseller\Utility\Helper\Data $utilityHelper
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\Filesystem $filesystem,
-        \Magento\Store\Model\StoreManager $storeManager,
-        \Magento\Framework\Filesystem\DirectoryList $dirReader,
-        \Magento\Framework\Filesystem\Io\File $fileFactory,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        MessageManagerInterface $messageManager,
-        \Mageseller\LeadersystemsImport\Logger\LeadersystemsImport $leadersystemsimportLogger,
-        \Mageseller\LeadersystemsImport\Model\LeadersystemsCategoryFactory $leadersystemsCategoryFactory,
-        CollectionFactory $categoryCollectionFactory,
-        ResourceConnection $resourceConnection,
-        Indexer $indexer,
+        Context $context,
+        LeadersystemsImport $leadersystemsimportLogger,
         ProcessResourceFactory $processResourceFactory,
-        ResourceConnection $resource,
-        EavConfig $eavConfig,
-        ProductFactory $productFactory,
-        ProductResourceFactory $productResourceFactory,
-        ProductCollectionFactory $productCollectionFactory,
-        InventoryHelper $inventoryHelper,
-        \Mageseller\Process\Helper\Product\Import\Url $urlHelper,
-        \Mageseller\ProductImport\Api\ImporterFactory $importerFactory,
-        \Magento\Framework\Indexer\IndexerRegistry $indexerRegistry,
-        \Magento\CatalogInventory\Model\Indexer\Stock\Processor $stockIndexerProcessor,
-        \Magento\Catalog\Model\Indexer\Product\Price\Processor $priceIndexer,
-        \Magento\Catalog\Model\Indexer\Product\Eav\Processor $productEavIndexerProcessor,
-        Magento2DbConnection $db,
-        MetaData $metaData,
-        FlushCacheByProductIds $flushCacheByProductIds,
-        \Magento\Catalog\Model\CategoryFactory $categoryFactory
+        ImporterFactory $importerFactory,
+        \Mageseller\Utility\Helper\Data $utilityHelper
     ) {
         parent::__construct($context);
-        $this->_dateTime = $dateTime;
-        $this->fileFactory = $fileFactory;
-        $this->scopeConfig = $context->getScopeConfig();
-        $this->_dirReader = $dirReader;
-        $this->_mediaDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
-        $this->_storeManager = $storeManager;
-        $this->_productCollectionFactory = $productCollectionFactory;
         $this->leadersystemsimportLogger = $leadersystemsimportLogger;
-        $this->leadersystemsCategoryFactory = $leadersystemsCategoryFactory;
-        $this->categoryCollectionFactory = $categoryCollectionFactory;
-        $this->categoryFactory = $categoryFactory;
-        $this->resourceConnection = $resourceConnection;
-        $this->indexer = $indexer;
         $this->processResourceFactory = $processResourceFactory;
-        $this->resource = $resource;
-        $this->connection = $resource->getConnection();
-        $this->eavConfig = $eavConfig;
-        $this->productFactory = $productFactory;
-        $this->productResourceFactory = $productResourceFactory;
-        $this->productCollectionFactory = $productCollectionFactory;
-        $this->inventoryHelper = $inventoryHelper;
-        $this->urlHelper = $urlHelper;
         $this->importerFactory = $importerFactory;
-        $this->indexerRegistry = $indexerRegistry;
-        $this->stockIndexerProcessor = $stockIndexerProcessor;
-        $this->priceIndexer = $priceIndexer;
-        $this->_productEavIndexerProcessor = $productEavIndexerProcessor;
-        $this->flushCacheByProductIds = $flushCacheByProductIds;
-        $this->db = $db;
-        $this->metaData = $metaData;
-        $this->mediaUrl = $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+        $this->utilityHelper = $utilityHelper;
     }
 
-    public function processProducts($items, Process $process, $since, $sendReport = true)
+    public function processProducts($file, Process $process, $since, $sendReport = true)
     {
         try {
-            $allLeadersystemsSkus = $this->getAllLeadersystemsSkus();
+            /*
+             Array
+            (
+                [STOCK CODE] => 0
+                [CATEGORY CODE] => 1
+                [CATEGORY NAME] => 2
+                [SUBCATEGORY NAME] => 3
+                [SHORT DESCRIPTION] => 4
+                [LONG DESCRIPTION] => 5
+                [BAR CODE] => 6
+                [DBP] => 7
+                [RRP] => 8
+                [IMAGE] => 9
+                [MANUFACTURER] => 10
+                [MANUFACTURER SKU] => 11
+                [WEIGHT] => 12
+                [LENGTH] => 13
+                [WIDTH] => 14
+                [HEIGHT] => 15
+                [WARRANTY] => 16
+                [AT] => 17
+                [AA] => 18
+                [AQ] => 19
+                [AN] => 20
+                [AV] => 21
+                [AW] => 22
+                [ETAA] => 23
+                [ETAQ] => 24
+                [ETAN] => 25
+                [ETAV] => 26
+                [ETAW] => 27
+                [ALTERNATIVE REPLACEMENTS] => 28
+                [OPTIONAL ACCESSORIES] => 29
+            )*/
+            $allLeadersystemsSkus = $this->utilityHelper->getAllSkus(self::SUPPLIER);
             $allSkus = [];
-            $allCategoryNames = [];
-            foreach ($items as $item) {
-                $allSkus[] = (string)$item->ItemDetail->ManufacturerPartID;
-                $categories = $this->parseObject($item->ItemDetail->Classifications->Classification);
-                unset($categories['@attributes']);
-                //$categories = [];
-                $allCategoryNames = array_unique(array_merge($allCategoryNames, $categories));
-            }
-            $disableSkus = array_diff($allLeadersystemsSkus, $allSkus);
 
-            $this->existingLeadersystemsCategoryIds = $this->getExistingLeadersystemsCategoryIds($allCategoryNames);
-            $this->existingSkus = $this->getExistingSkus($allSkus);
-            // Disable or not the indexing when UpdateOnSave mode
-            $this->indexer->initIndexers();
+            $this->headers = array_flip($file->readCsv());
+
+            $items = [];
+            while (false !== ($row = $file->readCsv())) {
+                $items[] = $row;
+
+                $allSkus[] = $row[$this->headers[self::STOCK_CODE]];
+            }
+
+            $this->existingSkusWithSupplier = $this->utilityHelper->getExistingSkusWithSupplier($allSkus);
+            $this->existingSkus = $this->utilityHelper->getExistingSkus($allSkus);
+            $this->existingLeadersystemsCategoryIds = $this->utilityHelper->getExistingCategoryIds('leadersystems');
+            $this->existingLeadersystemsCategoryAttributeIds = $this->utilityHelper->getExistingCategoryAttributeIds('leadersystems');
+            $this->optionReplaceMents =  $this->utilityHelper->getOptionReplaceMents();
+            $this->backOrderValues = $this->utilityHelper->getBackOrderValues('leadersystems');
+
+            $attributes = array_values($this->existingLeadersystemsCategoryAttributeIds);
+            $attributes[] = "brand";
+
             $config = new ImportConfig();
+            $config->autoCreateOptionAttributes = array_unique($attributes);
             $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SERIAL;
-            $productIdsToReindex = [];
             // a callback function to postprocess imported products
-            $config->resultCallback = function (\Mageseller\ProductImport\Api\Data\Product $product) use (&$process, &$productIdsToReindex, &$importer) {
+            $config->resultCallback = function (\Mageseller\ProductImport\Api\Data\Product $product) use (&$process, &$importer) {
                 $time = round(microtime(true) - $this->start, 2);
                 if ($product->isOk()) {
-                    $productIdsToReindex[] = $product->id;
+                    $this->productIdsToReindex[] = $product->id;
                     $message = sprintf("%s: success! sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
                 } else {
                     $message = sprintf("%s: failed! sku = %s error = %s ( $time s)\n", $product->lineNumber, $product->getSku(), implode('; ', $product->getErrors()));
@@ -320,7 +180,10 @@ class ProductHelper extends AbstractHelper
                 }
                 $this->start = microtime(true);
             };
+            /*Disabling product start */
+            $this->productIdsToReindex = [];
             $importer = $this->importerFactory->createImporter($config);
+            $disableSkus = array_values(array_diff($allLeadersystemsSkus, $allSkus));
             foreach ($disableSkus as $lineNumber => $sku) {
                 $product = new SimpleProduct($sku);
                 $product->lineNumber = $lineNumber;
@@ -328,15 +191,19 @@ class ProductHelper extends AbstractHelper
                 $importer->importSimpleProduct($product);
             }
             $importer->flush();
+            /*Disabling product ends */
 
-            $importer = $this->importerFactory->createImporter($config);
+            /* Importing Products starts */
+            $this->productIdsToReindex = [];
             $isFlush = false;
+            $importer = $this->importerFactory->createImporter($config);
+
             $processResource = $this->processResourceFactory->create();
             $processResource->save($process);
             $i = 0; // Line number
             $j = 0; // Line number
             foreach ($items as $item) {
-                $sku = (string)$item->ItemDetail->ManufacturerPartID;
+                $sku = $item[$this->headers[self::STOCK_CODE]];
                 try {
                     ++$i;
                     $this->start = microtime(true);
@@ -373,73 +240,130 @@ class ProductHelper extends AbstractHelper
             //}
             // Reindex
             $process->output(__('Reindexing...'), true);
-            $this->reindexProducts($productIdsToReindex);
-            //$this->indexer->reindex();
+            $this->utilityHelper->reindexProducts($this->productIdsToReindex);
         }
 
         $process->output(__('Done!'));
     }
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-        $sku = (string)$data->ItemDetail->ManufacturerPartID;
-        $price = (string)$data->ItemDetail->UnitPrice;
-        $price = floatval(preg_replace('/[^\d.]/', '', $price));
-        $taxRate = (string)$data->ItemDetail->TaxRate;
-        $updatedAt = (string)$data->UpdatedAt;
-        $currentUpdateAT = date_parse($updatedAt);
-        $oldUpdateAt = date_parse($since->format('Y-m-d H:i:s'));
-
-        $availibilities = $data->Availability->Warehouse;
-        $quantity = 0;
-        foreach ($availibilities as $avail) {
-            $v = (string)$avail->StockLevel;
-            if (strtolower($v) == 'call') {
-                $quantity = '999999';
-                continue;
-            }
-            if (strtolower($v) == 'on order') {
-                $quantity = '999999';
-                continue;
-            }
-            $trimmedQty = trim($v, '+');
-            if ($trimmedQty) {
-                $quantity =  $trimmedQty;
-            }
-        }
+        $sku = $data[$this->headers[self::STOCK_CODE]];
 
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;
 
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
-        $global->setPrice($price);
-        if (isset($data->ItemDetail->RRP)) {
-            $specialPrice = (string)$data->ItemDetail->RRP;
+
+        /* TODO: Adding price margin from this file app\code\Aalogics\Dropship\Model\Supplier\Xitdistribution.php*/
+        /* Adding price starts*/
+        $price = $data[$this->headers['RRP']];
+        $price = floatval(preg_replace('/[^\d.]/', '', $price));
+        if (isset($data[$this->headers['DBP']])) {
+            $specialPrice = $data[$this->headers['DBP']];
             $specialPrice = $specialPrice ? floatval(preg_replace('/[^\d.]/', '', $specialPrice)) : null;
-            $global->setSpecialPrice($specialPrice);
+            if ($price > $specialPrice) {
+                $global->setSpecialPrice($specialPrice);
+            } else {
+                $price = $specialPrice;
+                $global->setSpecialPrice($price);
+            }
         }
+        $global->setPrice($price);
+        /* Adding price ends*/
+
+        /* Adding quantity starts*/
+        $quantity = $data[$this->headers['AT']];
+        $isBackOrder = false;
+        if (in_array(strtolower($quantity), $this->backOrderValues)) {
+            $isBackOrder = true;
+        } else {
+            $trimmedQty = preg_replace("/[^0-9.]/", "", $quantity);
+            if ($trimmedQty) {
+                $quantity =  $trimmedQty;
+            }
+        }
+
         $isInStock = $quantity > 0;
-        $product->sourceItem("default")->setQuantity($quantity);
-        $product->sourceItem("default")->setStatus($isInStock);
 
         $stock = $product->defaultStockItem();
-        $stock->setQty($quantity);
-        $stock->setIsInStock($isInStock);
-        $stock->setMaximumSaleQuantity(10000.0000);
-        $stock->setNotifyStockQuantity(1);
-        $stock->setManageStock(true);
-        $stock->setQuantityIncrements(1);
+        if ($isBackOrder) {
+            $product->sourceItem("default")->setQuantity(0);
+            $product->sourceItem("default")->setStatus(1);
+            $stock->setQty(0);
+            $stock->setIsInStock(1);
+            $stock->setBackorders(ProductStockItem::BACKORDERS_ALLOW_QTY_BELOW_0_AND_NOTIFY_CUSTOMER);
+            $stock->setUseConfigBackorders(false);
+        } else {
+            $product->sourceItem("default")->setQuantity($quantity);
+            $product->sourceItem("default")->setStatus($isInStock);
+            $stock->setQty($quantity);
+            $stock->setIsInStock($isInStock);
+            $stock->setMaximumSaleQuantity(10000.0000);
+            $stock->setNotifyStockQuantity(1);
+            $stock->setManageStock(true);
+            $stock->setQuantityIncrements(1);
+        }
+        /* Adding quantity ends */
 
         if (isset($this->existingSkus[$sku])) {
-            if ($oldUpdateAt <= $currentUpdateAT) {
-                $j++;
-                $importer->importSimpleProduct($product);
-            }
+            $j++;
+            $importer->importSimpleProduct($product);
             return;
         }
 
-        $name = (string)$data->ItemDetail->Title;
-        $description = (string)$data->ItemDetail->Description;
+        $categoryIds = [];
+        $customAttrbutes = [];
+        if ($data[$this->headers['MANUFACTURER']]) {
+            $customAttrbutes['brand'] = strval($data[$this->headers['MANUFACTURER']]);
+        }
+        $categories = [];
+        $categories[] = $row[$this->headers[Leadersystems::PRIMARY_CATEGORY]] ?? "";
+        $categories[] = $row[$this->headers[Leadersystems::SECONDARY_CATEGORY]] ?? "";
+        $lastCat = '';
+        $level = 0;
+        foreach (array_values($categories) as $categoryName) {
+            if ($level <= 1) {
+                $catName = strtolower($categoryName . self::SEPERATOR . $lastCat);
+                $existingLeadersystemsCategoryIds = $this->existingLeadersystemsCategoryIds[$catName] ?? [];
+                if ($existingLeadersystemsCategoryIds) {
+                    $categoryIds = array_merge($categoryIds, explode(",", $existingLeadersystemsCategoryIds));
+                }
+                $useAsAttribute = $this->existingLeadersystemsCategoryAttributeIds[$catName] ?? "";
+                if ($useAsAttribute) {
+                    $customAttrbutes[$useAsAttribute] = $categoryName;
+                }
+            }
+            $lastCat = $categoryName;
+            if ($level > 1) {
+                break;
+            }
+            $level++;
+        }
+        if ($categoryIds) {
+            $categoryIds = array_filter(array_unique($categoryIds));
+            $product->addCategoryIds($categoryIds);
+        }
+        if ($customAttrbutes) {
+            foreach ($customAttrbutes as $attrbuteCode => $optionName) {
+                if (isset($this->optionReplaceMents[$attrbuteCode][$optionName])) {
+                    $optionId = $this->optionReplaceMents[$attrbuteCode][$optionName];
+                    $global->setSelectAttributeOptionId($attrbuteCode, $optionId);
+                } else {
+                    $global->setSelectAttribute($attrbuteCode, $optionName);
+                }
+            }
+        }
+
+        $name = $data[$this->headers['SHORT DESCRIPTION']];
+        $shortDescription = $data[$this->headers['SHORT DESCRIPTION']];
+        $description = $data[$this->headers['LONG DESCRIPTION']];
+
+        $weight = round($data[$this->headers['WEIGHT']], 2);
+        $length = $data[$this->headers['LENGTH']];
+        $width = $data[$this->headers['WIDTH']];
+        $height = $data[$this->headers['HEIGHT']];
+        $warranty = $data[$this->headers['WARRANTY']];
         $taxClassName = 'Taxable Goods';
         $attributeSetName = "Default";
 
@@ -448,43 +372,18 @@ class ProductHelper extends AbstractHelper
 
         $global->setName($name);
         $global->setDescription($description);
+        $global->setShortDescription($shortDescription);
         $global->setPrice($price);
         $global->setTaxClassName($taxClassName);
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
         $global->setVisibility(ProductStoreView::VISIBILITY_BOTH);
         $global->generateUrlKey();
 
-        if (isset($data->ItemDetail->ShippingWeight)) {
-            $weight = (string)$data->ItemDetail->ShippingWeight;
-            $global->setWeight($weight);
-        }
-        if (isset($data->ItemDetail->Height)) {
-            $height = (string)$data->ItemDetail->Height;
-            $global->setCustomAttribute('ts_dimensions_height', $height);
-        }
-        if (isset($data->ItemDetail->Width)) {
-            $width = (string)$data->ItemDetail->Width;
-            $global->setCustomAttribute('ts_dimensions_width', $width);
-        }
-        if (isset($data->ItemDetail->Length)) {
-            $length = (string)$data->ItemDetail->Length;
-            $global->setCustomAttribute('ts_dimensions_length', $length);
-        }
+        $global->setWeight($weight);
+        $global->setCustomAttribute('ts_dimensions_height', $height);
+        $global->setCustomAttribute('ts_dimensions_width', $width);
+        $global->setCustomAttribute('ts_dimensions_length', $length);
         $global->setSelectAttribute('supplier', self::SUPPLIER);
-
-        $categories = $this->parseObject($data->ItemDetail->Classifications->Classification);
-        unset($categories['@attributes']);
-        $categoryIds = [];
-        foreach ($categories as $categoryName) {
-            $existingLeadersystemsCategoryIds = $this->existingLeadersystemsCategoryIds[$categoryName] ?? [];
-            if ($existingLeadersystemsCategoryIds) {
-                $categoryIds = array_merge($categoryIds, explode(",", $existingLeadersystemsCategoryIds));
-            }
-        }
-        if ($categoryIds) {
-            $categoryIds = array_filter(array_unique($categoryIds));
-            $product->addCategoryIds($categoryIds);
-        }
 
         //brochure_url
         /*// German eav attributes
@@ -494,150 +393,5 @@ class ProductHelper extends AbstractHelper
 
         $j++;
         $importer->importSimpleProduct($product);
-    }
-    private function getExistingLeadersystemsCategoryIds($allCategoryNames)
-    {
-        if (empty($allCategoryNames)) {
-            return [];
-        }
-        $leadersystemsCategoryTable = $this->db->getFullTableName(self::LEADERSYSTEMS_CATEGORY_TABLE);
-        $categoryCollection = $this->categoryCollectionFactory->create();
-        $categoryCollection->addAttributeToSelect('leadersystems_category_ids', 'left');
-        $select = $categoryCollection->getSelect();
-        $select->reset(Select::COLUMNS)->columns('GROUP_CONCAT(`e`.`entity_id`)');
-        $select->where("FIND_IN_SET(`{$leadersystemsCategoryTable}`.`leadersystemscategory_id`, `at_leadersystems_category_ids`.`value`)");
-        return $this->db->fetchMap(
-            "
-            SELECT `name`, ({$select}) as `category_ids`  
-            FROM `{$leadersystemsCategoryTable}`
-            WHERE BINARY `name` IN (" . $this->db->getMarks($allCategoryNames) . ")
-        ", array_values($allCategoryNames)
-        );
-    }
-    protected function loadOptionValues(string $attributeCode)
-    {
-        $options = $this->db->fetchMap(
-            "
-            SELECT V.`value`, O.`option_id`
-            FROM {$this->metaData->attributeTable} A
-            INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
-            INNER JOIN {$this->metaData->attributeOptionValueTable} V ON V.option_id = O.option_id
-            WHERE A.`attribute_code` = ? AND A.`entity_type_id` = ? AND V.store_id = 0
-        ", [
-            $attributeCode,
-            $this->metaData->productEntityTypeId
-            ]
-        );
-        return $options;
-    }
-    private function getAllLeadersystemsSkus()
-    {
-        $option = $this->loadOptionValues('supplier');
-        $leadersystemsOptionId = $option['leadersystemsdistribution'] ?? "";
-        if ($leadersystemsOptionId) {
-            $productCollection = $this->_productCollectionFactory->create();
-            $productCollection->addAttributeToFilter('supplier', ['eq' => $leadersystemsOptionId ], 'left');
-            $select = $productCollection->getSelect();
-            $select->reset(Select::COLUMNS)->columns(['sku']);
-            return $this->db->fetchSingleColumn($select);
-        }
-    }
-    /**
-     * Returns an sku => id map for all existing skus.
-     *
-     * @param  string[] $skus
-     * @return array
-     */
-    public function getExistingSkus(array $skus)
-    {
-        if (empty($skus)) {
-            return [];
-        }
-
-        return $this->db->fetchMap(
-            "
-            SELECT `sku`, `entity_id` 
-            FROM `{$this->metaData->productEntityTable}`
-            WHERE BINARY `sku` IN (" . $this->db->getMarks($skus) . ")
-        ", array_values($skus)
-        );
-    }
-    /**
-     * Initiate product reindex by product ids
-     *
-     * @param  array $productIdsToReindex
-     * @return void
-     */
-    private function reindexProducts($productIdsToReindex = [])
-    {
-        $indexer = $this->indexerRegistry->get(\Magento\Catalog\Model\Indexer\Product\Category::INDEXER_ID);
-        if (is_array($productIdsToReindex) && count($productIdsToReindex) > 0 && !$indexer->isScheduled()) {
-            $indexer->reindexList($productIdsToReindex);
-            //$this->_productEavIndexerProcessor->reindexList($productIdsToReindex);
-            $this->stockIndexerProcessor->reindexList($productIdsToReindex);
-            $this->priceIndexer->reindexList($productIdsToReindex);
-            $this->flushCacheByProductIds->execute($productIdsToReindex);
-        }
-    }
-
-    public function parseValue($value)
-    {
-        return isset($value) ? trim($value) : "";
-    }
-
-    public function cleanData($a)
-    {
-        if (is_numeric($a)) {
-            $a = preg_replace('/[^0-9,]/s', '', $a);
-        }
-
-        return $a;
-    }
-    public function parseObject($value)
-    {
-        return isset($value) ? is_object($value) ? array_filter(
-            json_decode(json_encode($value), true), function ($value) {
-                return !is_array($value) && $value !== '';
-            }
-        ) : $value : [];
-    }
-
-    /**
-     * Returns website ids to enable for product import
-     *
-     * @return array
-     */
-    private function getWebsiteIds()
-    {
-        if ($this->websiteIds == null) {
-            if ($this->_storeManager->isSingleStoreMode()) {
-                $this->websiteIds[] = $this->_storeManager->getDefaultStoreView()->getWebsiteId();
-            } else {
-                foreach ($this->getStores() as $store) {
-                    if ($websiteId = $store->getWebsiteId()) {
-                        $this->websiteIds[] = $websiteId;
-                    }
-                }
-            }
-            $this->websiteIds = array_unique($this->websiteIds);
-        }
-        return $this->websiteIds;
-    }
-
-    /**
-     * Returns stores used for product import
-     *
-     * @return StoreInterface[]
-     */
-    public function getStores()
-    {
-        if (null === $this->stores) {
-            $this->stores = [];
-            foreach ($this->_storeManager->getStores(true) as $store) {
-                $this->stores[] = $store;
-            }
-        }
-
-        return $this->stores;
     }
 }

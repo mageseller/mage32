@@ -17,6 +17,7 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
 class Data extends AbstractHelper
 {
     const SEPERATOR = " ---|--- ";
+
     /**
      * @var Magento2DbConnection
      */

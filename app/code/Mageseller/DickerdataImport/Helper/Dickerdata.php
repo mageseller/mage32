@@ -46,7 +46,6 @@ class Dickerdata extends AbstractHelper
     const DICKERDATA_IMPORTCONFIG_IS_ENABLE = 'dickerdata/importconfig/is_enable';
     const PRIMARY_CATEGORY = 'PrimaryCategory';
     const SECONDARY_CATEGORY = 'SecondaryCategory';
-    const STOCK_CODE = 'StockCode';
     const SUPPLIER = 'dickerdata';
     const TERTIARY_CATEGORY = 'TertiaryCategory';
     const SEPERATOR = " ---|--- ";
