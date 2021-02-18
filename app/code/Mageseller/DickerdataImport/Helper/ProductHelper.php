@@ -305,8 +305,8 @@ class ProductHelper extends AbstractHelper
             $customAttrbutes['brand'] = strval($data[$this->headers['Vendor']]);
         }
         $categories = [];
-        $categories[] = $row[$this->headers[Dickerdata::PRIMARY_CATEGORY]] ?? "";
-        $categories[] = $row[$this->headers[Dickerdata::SECONDARY_CATEGORY]] ?? "";
+        $categories[] = $data[$this->headers[Dickerdata::PRIMARY_CATEGORY]] ?? "";
+        $categories[] = $data[$this->headers[Dickerdata::SECONDARY_CATEGORY]] ?? "";
         $lastCat = '';
         $level = 0;
         foreach (array_values($categories) as $categoryName) {

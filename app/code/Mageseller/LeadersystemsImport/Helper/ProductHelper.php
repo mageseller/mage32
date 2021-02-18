@@ -318,8 +318,8 @@ class ProductHelper extends AbstractHelper
             $customAttrbutes['brand'] = strval($data[$this->headers['MANUFACTURER']]);
         }
         $categories = [];
-        $categories[] = $row[$this->headers[Leadersystems::PRIMARY_CATEGORY]] ?? "";
-        $categories[] = $row[$this->headers[Leadersystems::SECONDARY_CATEGORY]] ?? "";
+        $categories[] = $data[$this->headers[Leadersystems::PRIMARY_CATEGORY]] ?? "";
+        $categories[] = $data[$this->headers[Leadersystems::SECONDARY_CATEGORY]] ?? "";
         $lastCat = '';
         $level = 0;
         foreach (array_values($categories) as $categoryName) {

@@ -14,13 +14,12 @@ namespace Mageseller\IngrammicroImport\Console\Command;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
 use Mageseller\IngrammicroImport\Helper\Ingrammicro;
+use Mageseller\IngrammicroImport\Helper\Product\Import\Process as ImportProcess;
+use Mageseller\Process\Console\Command\CommandTrait;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Mageseller\Process\Console\Command\CommandTrait;
-use Mageseller\IngrammicroImport\Helper\Product\Import\Process as ImportProcess;
 
 class IngrammicroProductImport extends Command
 {
@@ -32,9 +31,9 @@ class IngrammicroProductImport extends Command
     private $appState;
 
     /**
-     * @var Ingrammicro
+     * @var \Mageseller\Utility\Helper\Data
      */
-    private $ingrammicroHelper;
+    private $utilityHelper;
 
     /**
      * @var ImportProcess
@@ -44,20 +43,20 @@ class IngrammicroProductImport extends Command
     /**
      * IngrammicroCategoryImport constructor.
      *
-     * @param State         $state
-     * @param Ingrammicro   $ingrammicroHelper
+     * @param State $state
+     * @param \Mageseller\Utility\Helper\Data $utilityHelper
      * @param ImportProcess $importProcess
-     * @param string|null   $name
+     * @param string|null $name
      */
     public function __construct(
         State $state,
-        Ingrammicro $ingrammicroHelper,
+        \Mageseller\Utility\Helper\Data $utilityHelper,
         ImportProcess $importProcess,
         string $name = null
     ) {
         parent::__construct($name);
         $this->appState        = $state;
-        $this->ingrammicroHelper = $ingrammicroHelper;
+        $this->utilityHelper = $utilityHelper;
         $this->importProcess   = $importProcess;
     }
 
@@ -76,7 +75,7 @@ class IngrammicroProductImport extends Command
         $updatedSince = $input->getOption(self::UPDATED_SINCE_OPTION);
 
         if (empty($updatedSince)) {
-            $updatedSince = $this->ingrammicroHelper->getSyncDate('product');
+            $updatedSince = $this->utilityHelper->getSyncDate('ingrammicro', 'product');
         } else {
             $updatedSince = new \DateTime($updatedSince);
         }

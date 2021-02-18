@@ -11,12 +11,9 @@
 
 namespace Mageseller\IngrammicroImport\Helper;
 
-use Exception;
-use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Mageseller\IngrammicroImport\Logger\IngrammicroImport;
-use Mageseller\Process\Helper\Product\Import\Url;
 use Mageseller\Process\Model\Process;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
 use Mageseller\ProductImport\Api\Data\ProductStockItem;
@@ -24,13 +21,13 @@ use Mageseller\ProductImport\Api\Data\ProductStoreView;
 use Mageseller\ProductImport\Api\Data\SimpleProduct;
 use Mageseller\ProductImport\Api\ImportConfig;
 use Mageseller\ProductImport\Api\ImporterFactory;
-use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
-use Mageseller\ProductImport\Model\Resource\MetaData;
 
 class ProductHelper extends AbstractHelper
 {
     const SUPPLIER = 'ingrammicro';
     const SEPERATOR = " ---|--- ";
+    const STOCK_CODE = 'Vendor Part Number';
+    const STOCK_DESCRIPTION = 'StockDescription';
 
     /**
      * @var IngrammicroImport
@@ -81,6 +78,10 @@ class ProductHelper extends AbstractHelper
      * @var array
      */
     protected $existingSkus;
+    /**
+     * @var array
+     */
+    protected $headers;
 
     /**
      * @param Context $context
@@ -103,14 +104,100 @@ class ProductHelper extends AbstractHelper
         $this->utilityHelper = $utilityHelper;
     }
 
-    public function processProducts($items, Process $process, $since, $sendReport = true)
+    public function processProducts($file, Process $process, $since, $sendReport = true)
     {
         try {
+            /*
+            Array
+            (
+                [Ingram Part Number] => 0
+                [Ingram Part Description] => 1
+                [Customer Part Number] => 2
+                [Vendor Part Number] => 3
+                [EANUPC Code] => 4
+                [Plant] => 5
+                [Vendor Number] => 6
+                [Vendor Name] => 7
+                [Size] => 8
+                [Weight] => 9
+                [Volume] => 10
+                [Unit] => 11
+                [Category ID] => 12
+                [Customer Price] => 13
+                [Retail Price] => 14
+                [Availability Flag] => 15
+                [Available Quantity] => 16
+                [Backlog Information] => 17
+                [Backlog ETA] => 18
+                [License Flag] => 19
+                [BOM Flag] => 20
+                [Warranty Flag] => 21
+                [Bulk Freight Flag] => 22
+                [Material Long Description] => 23
+                [Length] => 24
+                [Width] => 25
+                [Height] => 26
+                [Dimension Unit] => 27
+                [Weight Unit] => 28
+                [Volume Unit] => 29
+                [Category] => 30
+                [Material Creation Reason code] => 31
+                [Media Code] => 32
+                [Material Language Code] => 33
+                [Substitute Material] => 34
+                [Superseded Material] => 35
+                [Manufacturer Vendor Number] => 36
+                [Sub-Category] => 37
+                [Product Family] => 38
+                [Purchasing Vendor] => 39
+                [Material Change Code] => 40
+                [Action code] => 41
+                [Price Status] => 42
+                [New Material Flag] => 43
+                [Vendor Subrange] => 44
+                [Case Qty] => 45
+                [Pallet Qty] => 46
+                [Direct Order identifier] => 47
+                [Material Status] => 48
+                [Discontinued / Obsoleted date] => 49
+                [Release Date] => 50
+                [Fulfilment type] => 51
+                [Music Copyright Fees] => 52
+                [Recycling Fees] => 53
+                [Document Copyright Fees] => 54
+                [Battery Fees] => 55
+                [Customer Price with Tax] => 56
+                [Retail Price with Tax] => 57
+                [Tax Percent] => 58
+                [Discount in Percent] => 59
+                [Customer Reservation Number] => 60
+                [Customer Reservation Qty] => 61
+                [Agreement ID] => 62
+                [Level ID] => 63
+                [Period] => 64
+                [Points] => 65
+                [Company code] => 66
+                [Company code Currency] => 67
+                [Customer Currency Code] => 68
+                [Customer Price Change Flag] => 69
+                [Substitute Flag] => 70
+                [Creation Reason Type] => 71
+                [Creation Reason Value] => 72
+                [Plant 01 Available Quantity] => 73
+                [Plant 02 Available Quantity] => 74
+            )
+            */
             $allIngrammicroSkus = $this->utilityHelper->getAllSkus(self::SUPPLIER);
             $allSkus = [];
-            foreach ($items as $item) {
-                $allSkus[] = (string)$item->ItemDetail->ManufacturerPartID;
+
+            $this->headers = array_flip($file->readCsv());
+            $items = [];
+            while (false !== ($row = $file->readCsv())) {
+                $items[] = $row;
+
+                $allSkus[] = $row[$this->headers[self::STOCK_CODE]];
             }
+
             $this->existingSkusWithSupplier = $this->utilityHelper->getExistingSkusWithSupplier($allSkus);
             $this->existingSkus = $this->utilityHelper->getExistingSkus($allSkus);
             $this->existingIngrammicroCategoryIds = $this->utilityHelper->getExistingCategoryIds('ingrammicro');
@@ -120,6 +207,7 @@ class ProductHelper extends AbstractHelper
 
             $attributes = array_values($this->existingIngrammicroCategoryAttributeIds);
             $attributes[] = "brand";
+
             $config = new ImportConfig();
             $config->autoCreateOptionAttributes = array_unique($attributes);
             $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SERIAL;
@@ -137,7 +225,6 @@ class ProductHelper extends AbstractHelper
                 }
                 $this->start = microtime(true);
             };
-
             /*Disabling product start */
             $this->productIdsToReindex = [];
             $importer = $this->importerFactory->createImporter($config);
@@ -161,7 +248,7 @@ class ProductHelper extends AbstractHelper
             $i = 0; // Line number
             $j = 0; // Line number
             foreach ($items as $item) {
-                $sku = (string)$item->ItemDetail->ManufacturerPartID;
+                $sku = $item[$this->headers[self::STOCK_CODE]];
                 try {
                     ++$i;
                     $this->start = microtime(true);
@@ -182,14 +269,13 @@ class ProductHelper extends AbstractHelper
                 } catch (WarningException $e) {
                     $message = __("Warning on sku %1: {$e->getMessage()}", $sku);
                     $process->output($message);
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $error = __("Error for sku %1: {$e->getMessage()}", $sku);
 
                     $process->output($error);
                 }
             }
-            /* Importing Products ends */
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $process->fail($e->getMessage());
             throw $e;
         } finally {
@@ -204,64 +290,23 @@ class ProductHelper extends AbstractHelper
 
         $process->output(__('Done!'));
     }
-
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-        $categoryIds = [];
-        $customAttrbutes = [];
-        if (isset($data->ItemDetail->ManufacturerName)) {
-            $customAttrbutes['brand'] = strval($data->ItemDetail->ManufacturerName);
-        }
-        $categories = $this->utilityHelper->parseObject($data->ItemDetail->Classifications->Classification);
-        unset($categories['@attributes']);
-        $lastCat = '';
-        $level = 0;
-        foreach (array_values($categories) as $categoryName) {
-            $catName = strtolower($categoryName . self::SEPERATOR . $lastCat);
-            if ($level <= 2) {
-                $existingIngrammicroCategoryIds = $this->existingIngrammicroCategoryIds[$catName] ?? [];
-                if ($existingIngrammicroCategoryIds) {
-                    $categoryIds = array_merge($categoryIds, explode(",", $existingIngrammicroCategoryIds));
-                }
-                $useAsAttribute = $this->existingIngrammicroCategoryAttributeIds[$catName] ?? "";
-                if ($useAsAttribute) {
-                    $customAttrbutes[$useAsAttribute] = $categoryName;
-                }
-            } else {
-                //$customAttrbutes[$useAsAttribute] = $categoryName;
-            }
-
-            $lastCat = $categoryName;
-            if ($level > 2) {
-                break;
-            }
-            $level++;
-        }
-
-        $sku = (string) $data->ItemDetail->ManufacturerPartID;
-        $taxRate = (string) $data->ItemDetail->TaxRate;
-        $updatedAt = (string) $data->UpdatedAt;
-        $currentUpdateAT = date_parse($updatedAt);
-        $oldUpdateAt = date_parse($since->format('Y-m-d H:i:s'));
+        $sku = $data[$this->headers[self::STOCK_CODE]];
 
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;
 
-        if ($categoryIds) {
-            $categoryIds = array_filter(array_unique($categoryIds));
-            $product->addCategoryIds($categoryIds);
-        }
-
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
 
-        /* TODO: Adding price margin from this file app\code\Aalogics\Dropship\Model\Supplier\Ingrammicrodistribution.php*/
-
+        /* TODO: Adding price margin from this file app\code\Aalogics\Dropship\Model\Supplier\Xitdistribution.php*/
         /* Adding price starts*/
-        $price = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->UnitPrice)));
-        if (isset($data->ItemDetail->RRP)) {
-            $price = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->RRP)));
-            $specialPrice = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->UnitPrice)));
+        $price = $data[$this->headers['Retail Price with Tax']];
+        $price = floatval(preg_replace('/[^\d.]/', '', $price));
+        if (isset($data[$this->headers['Customer Price with Tax']])) {
+            $specialPrice = $data[$this->headers['Customer Price with Tax']];
+            $specialPrice = $specialPrice ? floatval(preg_replace('/[^\d.]/', '', $specialPrice)) : null;
             if ($price > $specialPrice) {
                 $global->setSpecialPrice($specialPrice);
             } else {
@@ -273,21 +318,17 @@ class ProductHelper extends AbstractHelper
         /* Adding price ends*/
 
         /* Adding quantity starts*/
-        $availibilities = $data->Availability->Warehouse;
-        $quantity = 0;
+        $quantity = $data[$this->headers['Pallet Qty']];
         $isBackOrder = false;
-        foreach ($availibilities as $avail) {
-            $v = (string)$avail->StockLevel;
-            if (in_array(strtolower($v), $this->backOrderValues)) {
-                $isBackOrder = true;
-                continue;
-            }
-            $trimmedQty = trim($v, '+');
+        if (in_array(strtolower($quantity), $this->backOrderValues)) {
+            $isBackOrder = true;
+        } else {
+            $trimmedQty = preg_replace("/[^0-9.]/", "", $quantity);
             if ($trimmedQty) {
                 $quantity =  $trimmedQty;
-                $isBackOrder = false;
             }
         }
+
         $isInStock = $quantity > 0;
 
         $stock = $product->defaultStockItem();
@@ -308,15 +349,42 @@ class ProductHelper extends AbstractHelper
             $stock->setManageStock(true);
             $stock->setQuantityIncrements(1);
         }
-
         /* Adding quantity ends */
 
         if (isset($this->existingSkus[$sku])) {
-            //if ($oldUpdateAt <= $currentUpdateAT) {
             $j++;
             $importer->importSimpleProduct($product);
-            //}
             return;
+        }
+
+        $categoryIds = [];
+        $customAttrbutes = [];
+        if ($data[$this->headers['Vendor Name']]) {
+            $customAttrbutes['brand'] = strval($data[$this->headers['Vendor Name']]);
+        }
+        $categories = [];
+        if ($data[$this->headers[Ingrammicro::CATEGORY]]) {
+            $categories[] = '1' . $data[$this->headers[Ingrammicro::CATEGORY]];
+        }
+        if ($data[$this->headers[Ingrammicro::SUB_CATEGORY]]) {
+            $categories[] = '2' . $data[$this->headers[Ingrammicro::SUB_CATEGORY]];
+        }
+        if ($data[$this->headers[Ingrammicro::CATEGORY_ID]]) {
+            $categories[] = '3' . $data[$this->headers[Ingrammicro::CATEGORY_ID]];
+        }
+        foreach (array_values($categories) as $categoryName) {
+            $existingIngrammicroCategoryIds = $this->existingIngrammicroCategoryIds[$categoryName] ?? [];
+            if ($existingIngrammicroCategoryIds) {
+                $categoryIds = array_merge($categoryIds, explode(",", $existingIngrammicroCategoryIds));
+            }
+            $useAsAttribute = $this->existingIngrammicroCategoryAttributeIds[$categoryName] ?? "";
+            if ($useAsAttribute) {
+                $customAttrbutes[$useAsAttribute] = $categoryName;
+            }
+        }
+        if ($categoryIds) {
+            $categoryIds = array_filter(array_unique($categoryIds));
+            $product->addCategoryIds($categoryIds);
         }
         if ($customAttrbutes) {
             foreach ($customAttrbutes as $attrbuteCode => $optionName) {
@@ -328,8 +396,16 @@ class ProductHelper extends AbstractHelper
                 }
             }
         }
-        $name = (string)$data->ItemDetail->Title;
-        $description = (string)$data->ItemDetail->Description;
+
+        $name = $data[$this->headers['Ingram Part Description']];
+        //$shortDescription = $data[$this->headers['Ingram Part Description']];
+        $description = $data[$this->headers['Material Long Description']];
+
+        $weight = round($data[$this->headers['Weight']], 2);
+        $length = $data[$this->headers['Length']];
+        $width = $data[$this->headers['Width']];
+        $height = $data[$this->headers['Height']];
+        //$warranty = $data[$this->headers['WARRANTY']];
         $taxClassName = 'Taxable Goods';
         $attributeSetName = "Default";
 
@@ -338,28 +414,16 @@ class ProductHelper extends AbstractHelper
 
         $global->setName($name);
         $global->setDescription($description);
-        $global->setPrice($price);
+        //$global->setShortDescription($shortDescription);
         $global->setTaxClassName($taxClassName);
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
         $global->setVisibility(ProductStoreView::VISIBILITY_BOTH);
         $global->generateUrlKey();
 
-        if (isset($data->ItemDetail->ShippingWeight)) {
-            $weight = (string)$data->ItemDetail->ShippingWeight;
-            $global->setWeight($weight);
-        }
-        if (isset($data->ItemDetail->Height)) {
-            $height = (string)$data->ItemDetail->Height;
-            $global->setCustomAttribute('ts_dimensions_height', $height);
-        }
-        if (isset($data->ItemDetail->Width)) {
-            $width = (string)$data->ItemDetail->Width;
-            $global->setCustomAttribute('ts_dimensions_width', $width);
-        }
-        if (isset($data->ItemDetail->Length)) {
-            $length = (string)$data->ItemDetail->Length;
-            $global->setCustomAttribute('ts_dimensions_length', $length);
-        }
+        $global->setWeight($weight);
+        $global->setCustomAttribute('ts_dimensions_height', $height);
+        $global->setCustomAttribute('ts_dimensions_width', $width);
+        $global->setCustomAttribute('ts_dimensions_length', $length);
         $global->setSelectAttribute('supplier', self::SUPPLIER);
 
         //brochure_url

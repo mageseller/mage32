@@ -24,6 +24,8 @@ use Magento\Framework\Filesystem\File\ReadInterface;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Mageseller\Process\Model\Process;
+use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
 
 class Ingrammicro extends AbstractHelper
 {
@@ -107,23 +109,47 @@ class Ingrammicro extends AbstractHelper
      * @var AttributeCollectionFactory
      */
     private $attributeFactory;
+    /**
+     * @var \Mageseller\Utility\Helper\Data
+     */
+    protected $utilityHelper;
+    /**
+     * @var ProcessResourceFactory
+     */
+    protected $processResourceFactory;
+    /**
+     * @var StoreManagerInterface
+     */
+    private $storeManager;
+    /**
+     * @var ProductHelper
+     */
+    private $ingrammicroProductHelper;
+    /**
+     * @var ImageHelper
+     */
+    private $ingrammicroImageHelper;
 
     /**
-     * @param  \Magento\Framework\App\Helper\Context                          $context
-     * @param  \Magento\Framework\Filesystem                                  $filesystem
-     * @param  \Magento\Framework\Filesystem\DirectoryList                    $dirReader
-     * @param  \Magento\Framework\Filesystem\Io\File                          $fileFactory
-     * @param  \Magento\Framework\Stdlib\DateTime\DateTime                    $dateTime
-     * @param  MessageManagerInterface                                        $messageManager
-     * @param  \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param  \Mageseller\IngrammicroImport\Logger\IngrammicroImport         $ingrammicroimportLogger
-     * @param  \Mageseller\IngrammicroImport\Model\IngrammicroCategoryFactory $ingrammicroCategoryFactory
-     * @param  CollectionFactory                                              $categoryCollectionFactory
-     * @param  ResourceConnection                                             $resourceConnection
-     * @param  StoreManagerInterface                                          $storeManager
-     * @param  \Magento\Catalog\Model\CategoryFactory                         $categoryFactory
-     * @param  AttributeCollectionFactory                                     $attributeFactory
-     * @param  Config                                                         $eavConfig
+     * @param \Magento\Framework\App\Helper\Context $context
+     * @param \Magento\Framework\Filesystem $filesystem
+     * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
+     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
+     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
+     * @param MessageManagerInterface $messageManager
+     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param \Mageseller\IngrammicroImport\Logger\IngrammicroImport $ingrammicroimportLogger
+     * @param \Mageseller\IngrammicroImport\Model\IngrammicroCategoryFactory $ingrammicroCategoryFactory
+     * @param CollectionFactory $categoryCollectionFactory
+     * @param ProductHelper $ingrammicroProductHelper
+     * @param ImageHelper $ingrammicroImageHelper
+     * @param ResourceConnection $resourceConnection
+     * @param StoreManagerInterface $storeManager
+     * @param \Magento\Catalog\Model\CategoryFactory $categoryFactory
+     * @param AttributeCollectionFactory $attributeFactory
+     * @param Config $eavConfig
+     * @param ProcessResourceFactory $processResourceFactory
+     * @param \Mageseller\Utility\Helper\Data $utilityHelper
      * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function __construct(
@@ -137,11 +163,15 @@ class Ingrammicro extends AbstractHelper
         \Mageseller\IngrammicroImport\Logger\IngrammicroImport $ingrammicroimportLogger,
         \Mageseller\IngrammicroImport\Model\IngrammicroCategoryFactory $ingrammicroCategoryFactory,
         CollectionFactory $categoryCollectionFactory,
+        \Mageseller\IngrammicroImport\Helper\ProductHelper $ingrammicroProductHelper,
+        \Mageseller\IngrammicroImport\Helper\ImageHelper $ingrammicroImageHelper,
         ResourceConnection $resourceConnection,
         StoreManagerInterface $storeManager,
         \Magento\Catalog\Model\CategoryFactory $categoryFactory,
         AttributeCollectionFactory $attributeFactory,
-        Config $eavConfig
+        Config $eavConfig,
+        ProcessResourceFactory $processResourceFactory,
+        \Mageseller\Utility\Helper\Data $utilityHelper
     ) {
         parent::__construct($context);
         $this->_dateTime = $dateTime;
@@ -159,6 +189,10 @@ class Ingrammicro extends AbstractHelper
         $this->resourceConnection = $resourceConnection;
         $this->eavConfig = $eavConfig;
         $this->attributeFactory = $attributeFactory;
+        $this->processResourceFactory = $processResourceFactory;
+        $this->utilityHelper = $utilityHelper;
+        $this->ingrammicroProductHelper = $ingrammicroProductHelper;
+        $this->ingrammicroImageHelper = $ingrammicroImageHelper;
     }
     public function getAllProductAttributes()
     {
@@ -209,6 +243,59 @@ class Ingrammicro extends AbstractHelper
 
         return $directoryRead->openFile($fileName);
     }
+    public function importIngrammicroProducts(Process $process, $since, $sendReport = true)
+    {
+        if (!$since && ($lastSyncDate = $this->utilityHelper->getSyncDate('ingrammicrom', 'product'))) {
+            $since = $lastSyncDate;
+        }
+
+        // Save last synchronization date now if file download is too long
+        $this->utilityHelper->setSyncDate('ingrammicrom', 'product');
+        if ($since) {
+            $process->output(__('Downloading products from Ingrammicrofeed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
+            $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];
+        } else {
+            $process->output(__('Downloading products from Ingrammicro feed to Magento'), true);
+        }
+
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
+        $process->output(__('Downloading file...'), true);
+        $apiUrl = $this->getApiUrl();
+        $filepath = $this->downloadFile();
+        $fileName = self::FILENAME;
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $file =  $directoryRead->openFile($fileName);
+        $this->ingrammicroProductHelper->processProducts($file, $process, $since, $sendReport);
+    }
+    public function importIngrammicroImages(Process $process, $since, $sendReport = true)
+    {
+        if (!$since && ($lastSyncDate = $this->utilityHelper->getSyncDate('ingrammicrom', 'images'))) {
+            $since = $lastSyncDate;
+        }
+
+        // Save last synchronization date now if file download is too long
+        $this->utilityHelper->setSyncDate('ingrammicrom', 'images');
+        if ($since) {
+            $process->output(__('Downloading images from Ingrammicro feed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
+            $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];
+        } else {
+            $process->output(__('Downloading images from Ingrammicro feed to Magento'), true);
+        }
+
+        ini_set("memory_limit", "-1");
+        set_time_limit(0);
+        $process->output(__('Downloading file...'), true);
+        $apiUrl = $this->getApiUrl();
+        $filepath = $this->downloadFile();
+        $fileName = self::FILENAME;
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $file =  $directoryRead->openFile($fileName);
+        $this->ingrammicroImageHelper->processProductImages($file, $process, $since, $sendReport);
+    }
+
     public function importIngrammicroCategory()
     {
         if (empty($_FILES['groups']['tmp_name']['importconfig']['fields']['import_category_file']['value'])) {
@@ -357,7 +444,7 @@ class Ingrammicro extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
-
+        return;
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);
@@ -475,7 +562,8 @@ class Ingrammicro extends AbstractHelper
     public function parseObject($value)
     {
         return isset($value) ? is_object($value) ? array_filter(
-            json_decode(json_encode($value), true), function ($value) {
+            json_decode(json_encode($value), true),
+            function ($value) {
                 return !is_array($value) && $value !== '';
             }
         ) : $value : [];

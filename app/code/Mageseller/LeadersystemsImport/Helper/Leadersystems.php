@@ -437,11 +437,10 @@ class Leadersystems extends AbstractHelper
         $process->output(__('Downloading file...'), true);
         $apiUrl = $this->getApiUrl();
         $filepath = $this->downloadFile($apiUrl);
-        $xml = simplexml_load_file($filepath, null, LIBXML_NOCDATA);
-        if ($xml instanceof SimpleXMLElement) {
-            $items = $xml->xpath("/Catalogue/Items/Item");
-            $this->dickerDataImageHelper->processProductImages($items, $process, $since, $sendReport);
-        }
+        $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
+        $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
+        $file = $directoryRead->openFile(self::CSV_FILENAME);
+        $this->leadersystemsImageHelper->processProductImages($file, $process, $since, $sendReport);
     }
     public function secureRip(string $str): string
     {
@@ -478,7 +477,8 @@ class Leadersystems extends AbstractHelper
                 'name' => $names[0],
                 'parent_name' => $names[1]
                 ] : [];
-            }, array_keys($categoriesWithParents)
+            },
+            array_keys($categoriesWithParents)
         );
         $allCategories = array_filter($allCategories);
         $collection = $this->leadersystemsCategoryFactory->create()->getCollection();
@@ -602,7 +602,8 @@ class Leadersystems extends AbstractHelper
     public function parseObject($value)
     {
         return isset($value) ? is_object($value) ? array_filter(
-            json_decode(json_encode($value), true), function ($value) {
+            json_decode(json_encode($value), true),
+            function ($value) {
                 return !is_array($value) && $value !== '';
             }
         ) : $value : [];

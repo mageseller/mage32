@@ -3,14 +3,17 @@
 use Magento\Catalog\Model\Product as ProductEntityType;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
 use Magento\Eav\Api\Data\AttributeInterface;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory as AttributeCollectionFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DB\Select;
 use Magento\InventoryCache\Model\FlushCacheByProductIds;
+use Magento\Store\Model\ScopeInterface;
 use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
 use Mageseller\ProductImport\Model\Resource\MetaData;
 
@@ -79,6 +82,10 @@ class Data extends AbstractHelper
      * @var EavConfig
      */
     private $eavConfig;
+    /**
+     * @var MagentoConfig
+     */
+    protected $configuration;
 
     /**
      * Data constructor.
@@ -97,6 +104,7 @@ class Data extends AbstractHelper
      * @param \Magento\Store\Model\StoreManager $storeManager
      * @param ProductCollectionFactory $productCollectionFactory
      * @param EavConfig $eavConfig
+     * @param MagentoConfig $configuration
      */
     public function __construct(
         Context $context,
@@ -113,7 +121,8 @@ class Data extends AbstractHelper
         FlushCacheByProductIds $flushCacheByProductIds,
         \Magento\Store\Model\StoreManager $storeManager,
         ProductCollectionFactory $productCollectionFactory,
-        EavConfig $eavConfig
+        EavConfig $eavConfig,
+        MagentoConfig $configuration
     ) {
         parent::__construct($context);
         $this->db = $db;
@@ -130,6 +139,7 @@ class Data extends AbstractHelper
         $this->_storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
+        $this->configuration = $configuration;
     }
     /**
      * Get config value
@@ -301,8 +311,10 @@ class Data extends AbstractHelper
     {
         $backorderOption = $this->getSerializedConfigValue($type . '/product/backorder_option');
         $backorderOptions = [];
-        foreach ($backorderOption as $option) {
-            $backorderOptions[] = $option['options'];
+        if (isset($backorderOption) && $backorderOption) {
+            foreach ($backorderOption as $option) {
+                $backorderOptions[] = $option['options'];
+            }
         }
         return $backorderOptions;
     }
@@ -315,6 +327,12 @@ class Data extends AbstractHelper
         $select->reset(Select::COLUMNS)->columns('GROUP_CONCAT(`e`.`entity_id`)');
         $select->where("FIND_IN_SET(`{$supplierCategoryTable}`.`" . $type . "category_id`, `at_" . $type . "_category_ids`.`value`)");
 
+        if ($type == "ingrammicro") {
+            return $this->db->fetchMap(
+                "SELECT {$type}category_id, ({$select}) as `category_ids`  
+            FROM `{$supplierCategoryTable}`"
+            );
+        }
         return $this->db->fetchMap(
             "SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), ({$select}) as `category_ids`  
             FROM `{$supplierCategoryTable}`"
@@ -324,8 +342,12 @@ class Data extends AbstractHelper
     {
         $supplierCategoryTable = $this->db->getFullTableName("mageseller_" . $type . "import_" . $type . "category");
         $eavAttributeTable = $this->db->getFullTableName('eav_attribute');
+        $key = "LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name))";
+        if ($type == "ingrammicro") {
+            $key = "{$type}category_id";
+        }
         return $this->db->fetchMap(
-            "SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), `attribute_code`  
+            "SELECT $key, `attribute_code`  
             FROM `{$supplierCategoryTable}` AS `" . $type . "`
             LEFT JOIN `{$eavAttributeTable}` AS `eav`
             ON `" . $type . "`.`attribute_id` = `eav`.`attribute_id`
@@ -418,5 +440,182 @@ class Data extends AbstractHelper
         }
 
         return $this->stores;
+    }
+
+    /********************************************/
+    /**
+     * @return int
+     */
+    public function getCurrentStoreId()
+    {
+        return $this->_storeManager->getStore()->getId();
+    }
+
+    /**
+     * @return int
+     */
+    public function getCurrentWebsiteId()
+    {
+        return $this->_storeManager->getStore()->getWebsiteId();
+    }
+
+    /**
+     * Returns a config flag
+     *
+     * @param  string $path
+     * @param  mixed  $store
+     * @return bool
+     */
+    public function getFlag($path, $store = null)
+    {
+        return $this->scopeConfig->isSetFlag($path, ScopeInterface::SCOPE_STORE, $store);
+    }
+
+    /**
+     * Returns store locale
+     *
+     * @param  mixed $store
+     * @return string
+     */
+    public function getLocale($store = null)
+    {
+        return $this->getValue('general/locale/code', $store);
+    }
+
+    /**
+     * Get tax class id specified for shipping tax estimation
+     *
+     * @param  mixed $store
+     * @return int
+     */
+    public function getShippingTaxClass($store = null)
+    {
+        return $this->getValue(\Magento\Tax\Model\Config::CONFIG_XML_PATH_SHIPPING_TAX_CLASS, $store);
+    }
+
+    /**
+     * Reads the configuration directly from the database
+     *
+     * @param  string $path
+     * @param  string $scope
+     * @param  int    $scopeId
+     * @return string|false
+     */
+    public function getRawValue($path, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0)
+    {
+        $connection = $this->configuration->getConnection();
+
+        $select = $connection->select()
+            ->from($this->configuration->getMainTable(), 'value')
+            ->where('path = ?', $path)
+            ->where('scope = ?', $scope)
+            ->where('scope_id = ?', $scopeId);
+
+        return $connection->fetchOne($select);
+    }
+
+    /**
+     * Returns a config value
+     *
+     * @param  string $path
+     * @param  mixed  $store
+     * @return mixed
+     */
+    public function getValue($path, $store = null)
+    {
+        return $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $store);
+    }
+
+    /**
+     * Returns store name if defined
+     *
+     * @param  mixed $store
+     * @return string
+     */
+    public function getStoreName($store = null)
+    {
+        return $this->getValue(\Magento\Store\Model\Information::XML_PATH_STORE_INFO_NAME, $store);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSingleStoreMode()
+    {
+        return $this->_storeManager->hasSingleStore();
+    }
+    /**
+     * @param  string $entity
+     * @param  mixed  $store
+     * @return \DateTime|null
+     */
+    public function getSyncDate($type, $entity, $store = null)
+    {
+        //$type = "leadersystems";
+        $path = "$type/$entity/last_sync_$entity";
+
+        if (null === $store) {
+            $date = $this->getRawValue($path);
+        } else {
+            $scopeId = $this->_storeManager->getStore($store)->getId();
+            $date = $this->getRawValue($path, ScopeInterface::SCOPE_STORES, $scopeId);
+        }
+
+        return !empty($date) ? new \DateTime($date) : null;
+    }
+
+    /**
+     * @return $this
+     */
+    protected function resetConfig()
+    {
+        $this->_storeManager->getStore()->resetConfig();
+
+        return $this;
+    }
+
+    /**
+     * @param  string $entity
+     * @return $this
+     */
+    public function resetSyncDate($type, $entity)
+    {
+        $this->setValue("$type/$entity/last_sync_$entity", null);
+
+        return $this->resetConfig();
+    }
+
+    /**
+     * @param  string $entity
+     * @param  string $time
+     * @return $this
+     */
+    public function setSyncDate($type, $entity, $time = 'now')
+    {
+        $datetime = new \DateTime($time);
+        $this->setValue("$type/$entity/last_sync_$entity", $datetime->format(\DateTime::ISO8601));
+
+        return $this->resetConfig();
+    }
+    /**
+     * Set a config value
+     *
+     * @param string $path
+     * @param string $value
+     * @param string $scope
+     * @param int    $scopeId
+     */
+    public function setValue($path, $value, $scope = 'default', $scopeId = 0)
+    {
+        $this->configuration->saveConfig($path, $value, $scope, $scopeId);
+    }
+
+    /**
+     * @param string $str
+     * @return string
+     */
+    public function secureRip(string $str): string
+    {
+        return mb_convert_encoding($str, "UTF-8", "UTF-16LE");
     }
 }
