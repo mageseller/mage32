@@ -223,6 +223,7 @@ class Data extends AbstractHelper
             $select->reset(Select::COLUMNS)->columns(['sku']);
             return $this->db->fetchSingleColumn($select);
         }
+        return [];
     }
     /**
      * Returns an sku => id map for all existing skus.

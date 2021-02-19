@@ -161,6 +161,7 @@ class ProductHelper extends AbstractHelper
             $this->backOrderValues = $this->utilityHelper->getBackOrderValues('leadersystems');
 
             $attributes = array_values($this->existingLeadersystemsCategoryAttributeIds);
+            $attributes[] = "supplier";
             $attributes[] = "brand";
 
             $config = new ImportConfig();

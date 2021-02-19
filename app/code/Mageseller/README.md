@@ -27,4 +27,10 @@
 10) Use 4th category as attribute option in Xit and 3rd category as attribute option in Dickerdata.
 11) While importing price need price margin 
 12) Add lowest price if sku is from different supplier and update supplier.
+13) For importing large products :  
 
+    [mysqld]
+    sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+    innodb_data_file_path=ibdata1:10M:autoextend
+    tmp_table_size=4G
+    max_heap_table_size=4G

@@ -116,6 +116,7 @@ class ProductHelper extends AbstractHelper
             $this->backOrderValues = $this->utilityHelper->getBackOrderValues('xit');
 
             $attributes = array_values($this->existingXitCategoryAttributeIds);
+            $attributes[] = "supplier";
             $attributes[] = "brand";
             $config = new ImportConfig();
             $config->autoCreateOptionAttributes = array_unique($attributes);

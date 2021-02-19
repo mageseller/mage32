@@ -206,6 +206,7 @@ class ProductHelper extends AbstractHelper
             $this->backOrderValues = $this->utilityHelper->getBackOrderValues('ingrammicro');
 
             $attributes = array_values($this->existingIngrammicroCategoryAttributeIds);
+            $attributes[] = "supplier";
             $attributes[] = "brand";
 
             $config = new ImportConfig();

@@ -148,6 +148,7 @@ class ProductHelper extends AbstractHelper
             $this->backOrderValues = $this->utilityHelper->getBackOrderValues('dickerdata');
 
             $attributes = array_values($this->existingDickerdataCategoryAttributeIds);
+            $attributes[] = "supplier";
             $attributes[] = "brand";
 
             $config = new ImportConfig();
