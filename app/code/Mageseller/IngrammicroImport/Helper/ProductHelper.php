@@ -40,7 +40,7 @@ class ProductHelper extends AbstractHelper
     /**
      * @var ImporterFactory
      */
-    private $importerFactory;
+    protected $importerFactory;
     /**
      * @var float|string
      */

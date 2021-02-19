@@ -30,6 +30,7 @@ use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFact
 class Ingrammicro extends AbstractHelper
 {
     const FILENAME = 'vendor-file.csv';
+    const IMAGEFILENAME = 'vendor-image-file.csv';
     const TMP_FILENAME = 'vendor-file-tmp.csv';
     const DOWNLOAD_FOLDER = 'supplier/ingrammicro';
     const INGRAMMICRO_IMPORTCONFIG_IS_ENABLE = 'ingrammicro/importconfig/is_enable';
@@ -39,6 +40,8 @@ class Ingrammicro extends AbstractHelper
     const PRODUCT_GROUP_CODE = 'ProductGroupCode';
     const DESCRIPTION = 'Description';
     const SEPERATOR = " ---|--- ";
+    const PRODIMAGES = "PRODIMAGES.CIF.zip";
+    const STDPRICE_FULL = "STDPRICE_FULL.TXT.zip";
     /**
      * /**
      *
@@ -72,25 +75,25 @@ class Ingrammicro extends AbstractHelper
      * @var \Mageseller\IngrammicroImport\Logger\IngrammicroImport
      */
     protected $ingrammicroimportLogger;
-    private $apiUrl;
+    protected $apiUrl;
     /**
      * @var \Mageseller\IngrammicroImport\Model\IngrammicroCategoryFactory
      */
-    private $ingrammicroCategoryFactory;
+    protected $ingrammicroCategoryFactory;
     /**
      * @var \Magento\Catalog\Model\CategoryFactory
      */
-    private $categoryFactory;
+    protected $categoryFactory;
     /**
      * @var CollectionFactory
      */
-    private $categoryCollectionFactory;
+    protected $categoryCollectionFactory;
     /**
      * @var ResourceConnection
      */
-    private $resourceConnection;
+    protected $resourceConnection;
 
-    private $supplierCategories;
+    protected $supplierCategories;
     /**
      * Filesystem instance
      *
@@ -98,17 +101,17 @@ class Ingrammicro extends AbstractHelper
      * @since 100.1.0
      */
     protected $filesystem;
-    private $conn;
-    private $dir;
-    private $sftp;
+    protected $conn;
+    protected $dir;
+    protected $sftp;
     /**
      * @var Config
      */
-    private $eavConfig;
+    protected $eavConfig;
     /**
      * @var AttributeCollectionFactory
      */
-    private $attributeFactory;
+    protected $attributeFactory;
     /**
      * @var \Mageseller\Utility\Helper\Data
      */
@@ -120,15 +123,15 @@ class Ingrammicro extends AbstractHelper
     /**
      * @var StoreManagerInterface
      */
-    private $storeManager;
+    protected $storeManager;
     /**
      * @var ProductHelper
      */
-    private $ingrammicroProductHelper;
+    protected $ingrammicroProductHelper;
     /**
      * @var ImageHelper
      */
-    private $ingrammicroImageHelper;
+    protected $ingrammicroImageHelper;
 
     /**
      * @param \Magento\Framework\App\Helper\Context $context
@@ -261,12 +264,12 @@ class Ingrammicro extends AbstractHelper
         ini_set("memory_limit", "-1");
         set_time_limit(0);
         $process->output(__('Downloading file...'), true);
-        $apiUrl = $this->getApiUrl();
-        $filepath = $this->downloadFile();
-        $fileName = self::FILENAME;
+
+        $filepath = $this->downloadFile(self::STDPRICE_FULL);
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
-        $file =  $directoryRead->openFile($fileName);
+        $file =  $directoryRead->openFile(self::FILENAME);
+
         $this->ingrammicroProductHelper->processProducts($file, $process, $since, $sendReport);
     }
     public function importIngrammicroImages(Process $process, $since, $sendReport = true)
@@ -287,12 +290,12 @@ class Ingrammicro extends AbstractHelper
         ini_set("memory_limit", "-1");
         set_time_limit(0);
         $process->output(__('Downloading file...'), true);
-        $apiUrl = $this->getApiUrl();
-        $filepath = $this->downloadFile();
-        $fileName = self::FILENAME;
+
+        $filepath = $this->downloadFile(self::PRODIMAGES, self::IMAGEFILENAME);
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
-        $file =  $directoryRead->openFile($fileName);
+        $file =  $directoryRead->openFile(self::IMAGEFILENAME);
+
         $this->ingrammicroImageHelper->processProductImages($file, $process, $since, $sendReport);
     }
 
@@ -305,7 +308,7 @@ class Ingrammicro extends AbstractHelper
         ini_set("memory_limit", "-1");
         set_time_limit(0);
         $filePath = $_FILES['groups']['tmp_name']['importconfig']['fields']['import_category_file']['value'];
-        $this->downloadFile();
+        $this->downloadFile(self::STDPRICE_FULL);
         /**
          * @var ReadInterface $object
          */
@@ -438,10 +441,8 @@ class Ingrammicro extends AbstractHelper
         return $this->getConfig('ingrammicro/importconfig/url');
     }
 
-    public function downloadFile()
+    public function downloadFile($prodFileName = self::STDPRICE_FULL, $fileName = self::FILENAME)
     {
-        $fileName = self::FILENAME;
-        $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
         return;
@@ -454,10 +455,10 @@ class Ingrammicro extends AbstractHelper
         $ftpUser = $this->getConfig('ingrammicro/importconfig/username');
         $ftpPass = $this->getConfig('ingrammicro/importconfig/password');
         $tmpLocation = $downloadFolder;
-        $prodFileName = "STDPRICE_FULL.TXT.zip";
-        /*$this->setRemoteDirectory($ftpRemoteDir);
+
+        $this->setRemoteDirectory($ftpRemoteDir);
         $this->ftpConnect($ftpHost, $ftpUser, $ftpPass);
-        $this->downloadFileFromFtp($tmpLocation . "/" . $prodFileName, $prodFileName, $ftpRemoteDir);*/
+        $this->downloadFileFromFtp($tmpLocation . "/" . $prodFileName, $prodFileName, $ftpRemoteDir);
         // Checking the download file extension
         $fileObj = new \SplFileInfo($tmpLocation . "/" . $prodFileName);
 
