@@ -13,7 +13,7 @@ namespace Mageseller\DickerdataImport\Console\Command;
 
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
-use Mageseller\DickerdataImport\Helper\Dickerdata;
+use Mageseller\Utility\Helper\Data;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,9 +32,9 @@ class DickerdataProductImageImport extends Command
     private $appState;
 
     /**
-     * @var Dickerdata
+     * @var Data
      */
-    private $dickerdataHelper;
+    private $utilityHelper;
 
     /**
      * @var ImportImageProcess
@@ -45,19 +45,19 @@ class DickerdataProductImageImport extends Command
      * DickerdataCategoryImport constructor.
      *
      * @param State              $state
-     * @param Dickerdata         $dickerdataHelper
+     * @param Data         $utilityHelper
      * @param ImportImageProcess $importImageProcess
      * @param string|null        $name
      */
     public function __construct(
         State $state,
-        Dickerdata $dickerdataHelper,
+        Data $utilityHelper,
         ImportImageProcess $importImageProcess,
         string $name = null
     ) {
         parent::__construct($name);
         $this->appState        = $state;
-        $this->dickerdataHelper = $dickerdataHelper;
+        $this->utilityHelper = $utilityHelper;
         $this->importImageProcess   = $importImageProcess;
     }
 
@@ -76,7 +76,7 @@ class DickerdataProductImageImport extends Command
         $updatedSince = $input->getOption(self::UPDATED_SINCE_OPTION);
 
         if (empty($updatedSince)) {
-            $updatedSince = $this->DickerdataHelper->getSyncDate('images');
+            $updatedSince = $this->utilityHelper->getSyncDate('dickerdata', 'images');
         } else {
             $updatedSince = new \DateTime($updatedSince);
         }

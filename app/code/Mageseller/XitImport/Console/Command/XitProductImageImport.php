@@ -13,7 +13,7 @@ namespace Mageseller\XitImport\Console\Command;
 
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
-use Mageseller\XitImport\Helper\Xit;
+use Mageseller\Utility\Helper\Data;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,9 +32,9 @@ class XitProductImageImport extends Command
     private $appState;
 
     /**
-     * @var Xit
+     * @var Data
      */
-    private $xitHelper;
+    private $utilityHelper;
 
     /**
      * @var ImportImageProcess
@@ -45,19 +45,19 @@ class XitProductImageImport extends Command
      * XitCategoryImport constructor.
      *
      * @param State              $state
-     * @param Xit                $xitHelper
+     * @param Data                $utilityHelper
      * @param ImportImageProcess $importImageProcess
      * @param string|null        $name
      */
     public function __construct(
         State $state,
-        Xit $xitHelper,
+        Data $utilityHelper,
         ImportImageProcess $importImageProcess,
         string $name = null
     ) {
         parent::__construct($name);
         $this->appState        = $state;
-        $this->xitHelper = $xitHelper;
+        $this->utilityHelper = $utilityHelper;
         $this->importImageProcess   = $importImageProcess;
     }
 
@@ -76,7 +76,7 @@ class XitProductImageImport extends Command
         $updatedSince = $input->getOption(self::UPDATED_SINCE_OPTION);
 
         if (empty($updatedSince)) {
-            $updatedSince = $this->xitHelper->getSyncDate('images');
+            $updatedSince = $this->utilityHelper->getSyncDate('xit', 'images');
         } else {
             $updatedSince = new \DateTime($updatedSince);
         }

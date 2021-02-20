@@ -11,13 +11,9 @@
 
 namespace Mageseller\IngrammicroImport\Helper;
 
-use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Helper\Context;
-use Magento\Store\Api\Data\StoreInterface;
 use Mageseller\IngrammicroImport\Logger\IngrammicroImport;
-use Mageseller\Process\Helper\Product\Import\Url;
 use Mageseller\Process\Model\Process;
-use Mageseller\Process\Model\Product\Import\Indexer\Indexer;
 use Mageseller\Process\Model\ResourceModel\ProcessFactory as ProcessResourceFactory;
 use Mageseller\ProductImport\Api\Data\ProductStoreView;
 use Mageseller\ProductImport\Api\Data\SimpleProduct;
@@ -26,13 +22,7 @@ use Mageseller\ProductImport\Api\ImporterFactory;
 
 class ImageHelper extends ProductHelper
 {
-    const FILENAME = 'vendor-file.xml';
-    const TMP_FILENAME = 'vendor-file-tmp.xml';
-    const DOWNLOAD_FOLDER = 'supplier/ingrammicro';
-    const INGRAMMICRO_IMPORTCONFIG_IS_ENABLE = 'ingrammicro/importconfig/is_enable';
-    const ATTRIBUTE_PRODUCT_SKU = 'sku';
-    const PDF_FOLDER = 'devicesPdf';
-
+    const BASE_SOURCE_URL = "https://www.imvendorportal.com/prodpictures/";
     /**
      * @var
      */
@@ -45,6 +35,14 @@ class ImageHelper extends ProductHelper
      * @var \Magento\Store\Model\StoreManager
      */
     protected $_storeManager;
+    /**
+     * @var \Magento\Framework\Filesystem\Io\File
+     */
+    protected $fileFactory;
+    /**
+     * @var array
+     */
+    protected $supplierPartId;
 
     /**
      * ImageHelper constructor.
@@ -55,6 +53,7 @@ class ImageHelper extends ProductHelper
      * @param \Mageseller\Utility\Helper\Data $utilityHelper
      * @param \Magento\Store\Model\StoreManager $storeManager
      * @param \Magento\Framework\Filesystem\DirectoryList $dirReader
+     * @param \Magento\Framework\Filesystem\Io\File $fileFactory
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function __construct(
@@ -64,25 +63,36 @@ class ImageHelper extends ProductHelper
         ImporterFactory $importerFactory,
         \Mageseller\Utility\Helper\Data $utilityHelper,
         \Magento\Store\Model\StoreManager $storeManager,
-        \Magento\Framework\Filesystem\DirectoryList $dirReader
+        \Magento\Framework\Filesystem\DirectoryList $dirReader,
+        \Magento\Framework\Filesystem\Io\File $fileFactory
     ) {
         parent::__construct($context, $ingrammicroimportLogger, $processResourceFactory, $importerFactory, $utilityHelper);
         $this->_storeManager = $storeManager;
         $this->mediaUrl = $this->_storeManager->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
         $this->_dirReader = $dirReader;
+        $this->fileFactory = $fileFactory;
     }
 
-    public function processProductImages($items, Process $process, $since, $sendReport = true)
+    public function processProductImages($file, Process $process, $since, $sendReport = true)
     {
+        $this->supplierPartId = $this->utilityHelper->getAllSkusWithSupplierPartId(self::SUPPLIER);
         $isFlush = false;
         try {
+            /*
+            Array
+            (
+                [product_id] => 0
+                [sequence_id] => 1
+                [image_path] => 2
+            )
+            */
             $oldUpdateAt = $since ? date_parse($since->format('Y-m-d H:i:s')) : 0;
-            // Disable or not the indexing when UpdateOnSave mode
-            $this->indexer->initIndexers();
+            $allIngrammicroSkus = $this->utilityHelper->getAllSkus(self::SUPPLIER);
             $config = new ImportConfig();
             $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SERIAL;
             $config->existingImageStrategy = ImportConfig::EXISTING_IMAGE_STRATEGY_CHECK_IMPORT_DIR;
-            $config->existingImageStrategy = ImportConfig::EXISTING_IMAGE_STRATEGY_HTTP_CACHING;
+            $config->existingSslVersion = ImportConfig::SSL_VERSION_1;
+            //$config->existingImageStrategy = ImportConfig::EXISTING_IMAGE_STRATEGY_HTTP_CACHING;
             $productIdsToReindex = [];
             // a callback function to postprocess imported products
             $config->resultCallback = function (\Mageseller\ProductImport\Api\Data\Product $product) use (&$process,&$time,&$productIdsToReindex,&$importer) {
@@ -104,43 +114,24 @@ class ImageHelper extends ProductHelper
             $processResource->save($process);
             $i = 0; // Line number
             $j = 0; // Line number
-            foreach ($items as $item) {
+            $this->headers = array_flip($file->readCsv(0, "\t"));
+            while (false !== ($row = $file->readCsv(0, "\t"))) {
                 try {
                     ++$i;
                     $this->start = microtime(true);
-
-                    //$this->importImages($item, $j, $importer);
-                    $sku =  (string) $item->ItemDetail->ManufacturerPartID;
+                    $sku = $this->supplierPartId[$row[$this->headers['product_id']]] ?? "";
+                    if (!in_array($sku, $allIngrammicroSkus)) {
+                        continue;
+                    }
                     $flag = false;
                     $product = new SimpleProduct($sku);
-                    /* if (isset($item->Images->Image->URL)) {
-                         foreach ($item->Images as $node) {
-                             $updatedAt = (string)$node->Image->UpdatedAt;
-                             $currentUpdateAT = date_parse($updatedAt);
-                             if ($oldUpdateAt <= $currentUpdateAT) {
-                                 $imageUrl = (string) $node->Image->URL;
-                                 if ($imageUrl) {
-                                     $image = $product->addImage($imageUrl);
-                                     $product->global()->setImageRole($image, ProductStoreView::BASE_IMAGE);
-                                     $product->global()->setImageRole($image, ProductStoreView::THUMBNAIL_IMAGE);
-                                     $product->global()->setImageRole($image, ProductStoreView::SMALL_IMAGE);
-                                     $flag = true;
-                                 }
-                             }
-                         }
-                     }*/
-                    if (isset($item->Brochures->Brochure->URL)) {
-                        $brochureSourceUrl = (string)$item->Brochures->Brochure->URL;
-                        $process->output(__("Downloading Brochure : $brochureSourceUrl"));
-                        $path_parts = pathinfo($brochureSourceUrl);
-                        if ($brochureSourceUrl) {
-                            $brochureUrl = $this->mediaUrl . self::PDF_FOLDER . '/' . $path_parts['basename'];
-                            $isDownloaded = $this->downloadPdfFile($brochureSourceUrl, $path_parts['basename']);
-                            if ($isDownloaded) {
-                                $product->global()->setCustomAttribute('brochure_url', $brochureUrl);
-                                $flag = true;
-                            }
-                        }
+                    $imageUrl = self::BASE_SOURCE_URL . $row[$this->headers['image_path']];
+                    if ($imageUrl) {
+                        $image = $product->addImage($imageUrl);
+                        $product->global()->setImageRole($image, ProductStoreView::BASE_IMAGE);
+                        $product->global()->setImageRole($image, ProductStoreView::THUMBNAIL_IMAGE);
+                        $product->global()->setImageRole($image, ProductStoreView::SMALL_IMAGE);
+                        $flag = true;
                     }
                     if ($flag) {
                         $product->lineNumber = $j + 1;
@@ -182,26 +173,5 @@ class ImageHelper extends ProductHelper
             $this->utilityHelper->reindexProducts($productIdsToReindex);
         }
         $process->output(__('Done!'));
-    }
-    public function downloadPdfFile($source, $fileName)
-    {
-        $downloadFolderPdf = $this->_dirReader->getPath('pub') . '/media/' . self::PDF_FOLDER;
-        //check if directory exists
-        if (!is_dir($downloadFolderPdf)) {
-            $this->fileFactory->mkdir($downloadFolderPdf, 0775);
-        }
-        $filepath = $downloadFolderPdf . '/' . $fileName;
-        //@todo check if file is changed or not
-        if (!$this->fileFactory->fileExists($filepath)) {
-            $ch = curl_init($source);
-            $fp = fopen($filepath, 'wb');
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_exec($ch);
-            curl_close($ch);
-            fclose($fp);
-            return true;
-        }
-        return false;
     }
 }

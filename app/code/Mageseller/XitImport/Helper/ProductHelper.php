@@ -39,7 +39,7 @@ class ProductHelper extends AbstractHelper
     /**
      * @var ImporterFactory
      */
-    private $importerFactory;
+    protected $importerFactory;
     /**
      * @var float|string
      */
@@ -77,7 +77,6 @@ class ProductHelper extends AbstractHelper
      * @var array
      */
     protected $existingSkus;
-
 
     /**
      * @param Context $context
@@ -118,9 +117,10 @@ class ProductHelper extends AbstractHelper
             $attributes = array_values($this->existingXitCategoryAttributeIds);
             $attributes[] = "supplier";
             $attributes[] = "brand";
+
             $config = new ImportConfig();
             $config->autoCreateOptionAttributes = array_unique($attributes);
-            $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SERIAL;
+            $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SKU;
             // a callback function to postprocess imported products
             $config->resultCallback = function (\Mageseller\ProductImport\Api\Data\Product $product) use (&$process, &$importer) {
                 $time = round(microtime(true) - $this->start, 2);
@@ -205,7 +205,6 @@ class ProductHelper extends AbstractHelper
 
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-
         $sku = (string) $data->ItemDetail->ManufacturerPartID;
         $taxRate = (string) $data->ItemDetail->TaxRate;
         $updatedAt = (string) $data->UpdatedAt;
@@ -214,8 +213,6 @@ class ProductHelper extends AbstractHelper
 
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;
-
-
 
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
@@ -240,22 +237,34 @@ class ProductHelper extends AbstractHelper
         /* Adding quantity starts*/
         $availibilities = $data->Availability->Warehouse;
         $quantity = 0;
-        $isBackOrder = false;
+        $stock = $product->defaultStockItem();
         foreach ($availibilities as $avail) {
             $v = (string)$avail->StockLevel;
+            $stockType = strtolower((string)$avail->Title);
             if (in_array(strtolower($v), $this->backOrderValues)) {
-                $isBackOrder = true;
-                continue;
+                $isInStock = true;
+                $quantity = 0;
+                $stock->setBackorders(ProductStockItem::BACKORDERS_ALLOW_QTY_BELOW_0_AND_NOTIFY_CUSTOMER);
+                $stock->setUseConfigBackorders(false);
+            } else {
+                $trimmedQty = trim($v, '+');
+                if ($trimmedQty) {
+                    $quantity =  $trimmedQty;
+                }
+                $isInStock = $quantity > 0;
             }
-            $trimmedQty = trim($v, '+');
-            if ($trimmedQty) {
-                $quantity =  $trimmedQty;
-                $isBackOrder = false;
-            }
-        }
-        $isInStock = $quantity > 0;
 
-        $stock = $product->defaultStockItem();
+            $product->sourceItem($stockType)->setQuantity($quantity);
+            $product->sourceItem($stockType)->setStatus($isInStock);
+            //$stock->setQty($quantity);
+            $stock->setIsInStock($isInStock);
+            $stock->setMaximumSaleQuantity(10000.0000);
+            $stock->setNotifyStockQuantity(1);
+            $stock->setManageStock(true);
+            $stock->setQuantityIncrements(1);
+        }
+
+        /*$stock = $product->defaultStockItem();
         if ($isBackOrder) {
             $product->sourceItem("default")->setQuantity(0);
             $product->sourceItem("default")->setStatus(1);
@@ -272,7 +281,7 @@ class ProductHelper extends AbstractHelper
             $stock->setNotifyStockQuantity(1);
             $stock->setManageStock(true);
             $stock->setQuantityIncrements(1);
-        }
+        }*/
 
         /* Adding quantity ends */
 

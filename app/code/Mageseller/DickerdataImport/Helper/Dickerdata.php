@@ -12,15 +12,11 @@
 namespace Mageseller\DickerdataImport\Helper;
 
 use Magento\Catalog\Model\CategoryFactory;
-use Magento\Catalog\Model\Product as ProductEntityType;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
-use Magento\Eav\Api\Data\AttributeInterface;
 use Magento\Eav\Model\Config;
-use Magento\Eav\Model\Entity;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory as AttributeCollectionFactory;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -135,27 +131,32 @@ class Dickerdata extends AbstractHelper
      * @var AttributeCollectionFactory
      */
     private $attributeFactory;
+    /**
+     * @var \Mageseller\Utility\Helper\Data
+     */
+    private $utilityHelper;
 
     /**
-     * @param  Context                    $context
-     * @param  Filesystem                 $filesystem
-     * @param  Filesystem\DirectoryList   $dirReader
-     * @param  File                       $fileFactory
-     * @param  DateTime                   $dateTime
-     * @param  MessageManagerInterface    $messageManager
-     * @param  ResourceConnection         $resourceConnection
-     * @param  MagentoConfig              $configuration
-     * @param  AttributeCollectionFactory $attributeFactory
-     * @param  Config                     $eavConfig
-     * @param  StoreManagerInterface      $storeManager
-     * @param  CategoryFactory            $categoryFactory
-     * @param  ProductCollectionFactory   $productCollectionFactory
-     * @param  CollectionFactory          $categoryCollectionFactory
-     * @param  DickerdataImport           $dickerdataimportLogger
-     * @param  DickerdataCategoryFactory  $dickerdataCategoryFactory
-     * @param  ProductHelper              $dickerdataProductHelper
-     * @param  ImageHelper                $dickerdataImageHelper
-     * @param  ProcessResourceFactory     $processResourceFactory
+     * @param Context $context
+     * @param Filesystem $filesystem
+     * @param Filesystem\DirectoryList $dirReader
+     * @param File $fileFactory
+     * @param DateTime $dateTime
+     * @param MessageManagerInterface $messageManager
+     * @param ResourceConnection $resourceConnection
+     * @param MagentoConfig $configuration
+     * @param AttributeCollectionFactory $attributeFactory
+     * @param Config $eavConfig
+     * @param StoreManagerInterface $storeManager
+     * @param CategoryFactory $categoryFactory
+     * @param ProductCollectionFactory $productCollectionFactory
+     * @param CollectionFactory $categoryCollectionFactory
+     * @param DickerdataImport $dickerdataimportLogger
+     * @param DickerdataCategoryFactory $dickerdataCategoryFactory
+     * @param ProductHelper $dickerdataProductHelper
+     * @param ImageHelper $dickerdataImageHelper
+     * @param ProcessResourceFactory $processResourceFactory
+     * @param \Mageseller\Utility\Helper\Data $utilityHelper
      * @throws FileSystemException
      */
     public function __construct(
@@ -177,7 +178,8 @@ class Dickerdata extends AbstractHelper
         DickerdataCategoryFactory $dickerdataCategoryFactory,
         ProductHelper $dickerdataProductHelper,
         ImageHelper $dickerdataImageHelper,
-        ProcessResourceFactory $processResourceFactory
+        ProcessResourceFactory $processResourceFactory,
+        \Mageseller\Utility\Helper\Data $utilityHelper
     ) {
         parent::__construct($context);
         $this->_dateTime = $dateTime;
@@ -199,189 +201,14 @@ class Dickerdata extends AbstractHelper
         $this->dickerdataCategoryFactory = $dickerdataCategoryFactory;
         $this->dickerdataProductHelper = $dickerdataProductHelper;
         $this->dickerdataImageHelper = $dickerdataImageHelper;
-    }
-    /**
-     * @return int
-     */
-    public function getCurrentStoreId()
-    {
-        return $this->storeManager->getStore()->getId();
+        $this->utilityHelper = $utilityHelper;
     }
 
-    /**
-     * @return int
-     */
-    public function getCurrentWebsiteId()
-    {
-        return $this->storeManager->getStore()->getWebsiteId();
-    }
-
-    /**
-     * Returns a config flag
-     *
-     * @param  string $path
-     * @param  mixed  $store
-     * @return bool
-     */
-    public function getFlag($path, $store = null)
-    {
-        return $this->scopeConfig->isSetFlag($path, ScopeInterface::SCOPE_STORE, $store);
-    }
-
-    /**
-     * Returns store locale
-     *
-     * @param  mixed $store
-     * @return string
-     */
-    public function getLocale($store = null)
-    {
-        return $this->getValue('general/locale/code', $store);
-    }
     public function getAllProductAttributes()
     {
-        $collection = $this->attributeFactory->create();
-        $collection
-            ->addFieldToFilter('entity_type_id', $this->eavConfig->getEntityType(ProductEntityType::ENTITY)->getEntityTypeId())
-            ->addFieldToFilter('frontend_input', 'select')
-            ->setOrder('attribute_id', 'desc');
-
-        $attributeCodes = [];
-        foreach ($collection->getData() as $attributes) {
-            $attributeCodes[] = [
-                'id' => $attributes[AttributeInterface::ATTRIBUTE_ID],
-                'value' => $attributes[AttributeInterface::ATTRIBUTE_CODE],
-                'label' => $attributes[AttributeInterface::FRONTEND_LABEL]
-            ];
-        }
-        return $attributeCodes;
-    }
-    /**
-     * Get tax class id specified for shipping tax estimation
-     *
-     * @param  mixed $store
-     * @return int
-     */
-    public function getShippingTaxClass($store = null)
-    {
-        return $this->getValue(\Magento\Tax\Model\Config::CONFIG_XML_PATH_SHIPPING_TAX_CLASS, $store);
+        return $this->utilityHelper->getAllProductAttributes();
     }
 
-    /**
-     * Reads the configuration directly from the database
-     *
-     * @param  string $path
-     * @param  string $scope
-     * @param  int    $scopeId
-     * @return string|false
-     */
-    public function getRawValue($path, $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $scopeId = 0)
-    {
-        $connection = $this->configuration->getConnection();
-
-        $select = $connection->select()
-            ->from($this->configuration->getMainTable(), 'value')
-            ->where('path = ?', $path)
-            ->where('scope = ?', $scope)
-            ->where('scope_id = ?', $scopeId);
-
-        return $connection->fetchOne($select);
-    }
-
-    /**
-     * Returns a config value
-     *
-     * @param  string $path
-     * @param  mixed  $store
-     * @return mixed
-     */
-    public function getValue($path, $store = null)
-    {
-        return $this->scopeConfig->getValue($path, ScopeInterface::SCOPE_STORE, $store);
-    }
-
-    /**
-     * Returns store name if defined
-     *
-     * @param  mixed $store
-     * @return string
-     */
-    public function getStoreName($store = null)
-    {
-        return $this->getValue(\Magento\Store\Model\Information::XML_PATH_STORE_INFO_NAME, $store);
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSingleStoreMode()
-    {
-        return $this->storeManager->hasSingleStore();
-    }
-    /**
-     * @param  string $entity
-     * @param  mixed  $store
-     * @return \DateTime|null
-     */
-    public function getSyncDate($entity, $store = null)
-    {
-        $path = "dickerdata/$entity/last_sync_$entity";
-
-        if (null === $store) {
-            $date = $this->getRawValue($path);
-        } else {
-            $scopeId = $this->storeManager->getStore($store)->getId();
-            $date = $this->getRawValue($path, ScopeInterface::SCOPE_STORES, $scopeId);
-        }
-
-        return !empty($date) ? new \DateTime($date) : null;
-    }
-
-    /**
-     * @return $this
-     */
-    protected function resetConfig()
-    {
-        $this->storeManager->getStore()->resetConfig();
-
-        return $this;
-    }
-
-    /**
-     * @param  string $entity
-     * @return $this
-     */
-    public function resetSyncDate($entity)
-    {
-        $this->setValue("dickerdata/$entity/last_sync_$entity", null);
-
-        return $this->resetConfig();
-    }
-
-    /**
-     * @param  string $entity
-     * @param  string $time
-     * @return $this
-     */
-    public function setSyncDate($entity, $time = 'now')
-    {
-        $datetime = new \DateTime($time);
-        $this->setValue("dickerdata/$entity/last_sync_$entity", $datetime->format(\DateTime::ISO8601));
-
-        return $this->resetConfig();
-    }
-    /**
-     * Set a config value
-     *
-     * @param string $path
-     * @param string $value
-     * @param string $scope
-     * @param int    $scopeId
-     */
-    public function setValue($path, $value, $scope = 'default', $scopeId = 0)
-    {
-        $this->configuration->saveConfig($path, $value, $scope, $scopeId);
-    }
     /**
      * @return mixed
      */
@@ -401,12 +228,12 @@ class Dickerdata extends AbstractHelper
     }
     public function importDickerdataProducts(Process $process, $since, $sendReport = true)
     {
-        if (!$since && ($lastSyncDate = $this->getSyncDate('product'))) {
+        if (!$since && ($lastSyncDate = $this->utilityHelper->getSyncDate('dickerdata', 'product'))) {
             $since = $lastSyncDate;
         }
 
         // Save last synchronization date now if file download is too long
-        $this->setSyncDate('product');
+        $this->utilityHelper->setSyncDate('dickerdata', 'product');
         if ($since) {
             $process->output(__('Downloading products from Dickerdatafeed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
             $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];
@@ -487,7 +314,8 @@ class Dickerdata extends AbstractHelper
                 'name' => $names[0],
                 'parent_name' => $names[1]
                 ] : [];
-            }, array_keys($categoriesWithParents)
+            },
+            array_keys($categoriesWithParents)
         );
         $allCategories = array_filter($allCategories);
         $collection = $this->dickerdataCategoryFactory->create()->getCollection();
@@ -549,7 +377,6 @@ class Dickerdata extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
-        return $filepath;
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);
@@ -584,7 +411,8 @@ class Dickerdata extends AbstractHelper
     public function parseObject($value)
     {
         return isset($value) ? is_object($value) ? array_filter(
-            json_decode(json_encode($value), true), function ($value) {
+            json_decode(json_encode($value), true),
+            function ($value) {
                 return !is_array($value) && $value !== '';
             }
         ) : $value : [];

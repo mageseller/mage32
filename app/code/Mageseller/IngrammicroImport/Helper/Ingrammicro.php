@@ -11,9 +11,7 @@
 
 namespace Mageseller\IngrammicroImport\Helper;
 
-use Magento\Catalog\Model\Product as ProductEntityType;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
-use Magento\Eav\Api\Data\AttributeInterface;
 use Magento\Eav\Model\Config;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory as AttributeCollectionFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
@@ -199,21 +197,7 @@ class Ingrammicro extends AbstractHelper
     }
     public function getAllProductAttributes()
     {
-        $collection = $this->attributeFactory->create();
-        $collection
-            ->addFieldToFilter('entity_type_id', $this->eavConfig->getEntityType(ProductEntityType::ENTITY)->getEntityTypeId())
-            ->addFieldToFilter('frontend_input', 'select')
-            ->setOrder('attribute_id', 'desc');
-
-        $attributeCodes = [];
-        foreach ($collection->getData() as $attributes) {
-            $attributeCodes[] = [
-                'id' => $attributes[AttributeInterface::ATTRIBUTE_ID],
-                'value' => $attributes[AttributeInterface::ATTRIBUTE_CODE],
-                'label' => $attributes[AttributeInterface::FRONTEND_LABEL]
-            ];
-        }
-        return $attributeCodes;
+        return $this->getAllProductAttributes();
     }
     /**
      * @return mixed
@@ -445,7 +429,7 @@ class Ingrammicro extends AbstractHelper
     {
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
-        return;
+
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);

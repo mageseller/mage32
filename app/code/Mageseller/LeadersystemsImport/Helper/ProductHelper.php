@@ -40,7 +40,7 @@ class ProductHelper extends AbstractHelper
     /**
      * @var ImporterFactory
      */
-    private $importerFactory;
+    protected $importerFactory;
     /**
      * @var float|string
      */
@@ -274,37 +274,62 @@ class ProductHelper extends AbstractHelper
         /* Adding price ends*/
 
         /* Adding quantity starts*/
-        $quantity = $data[$this->headers['AT']];
-        $isBackOrder = false;
-        if (in_array(strtolower($quantity), $this->backOrderValues)) {
-            $isBackOrder = true;
-        } else {
-            $trimmedQty = preg_replace("/[^0-9.]/", "", $quantity);
-            if ($trimmedQty) {
-                $quantity =  $trimmedQty;
-            }
-        }
+        $quantities = [];
 
-        $isInStock = $quantity > 0;
-
+        /*
+         * AA = SA
+         * AW = WA
+         * AQ = QLD
+         * AN = NSW
+         * AV = VIC
+         * */
+        $quantities['sa'] = $data[$this->headers['AT']];
+        $quantities['sa'] = $data[$this->headers['AW']];
+        $quantities['sa'] = $data[$this->headers['AQ']];
+        $quantities['sa'] = $data[$this->headers['AN']];
+        $quantities['sa'] = $data[$this->headers['AV']];
         $stock = $product->defaultStockItem();
-        if ($isBackOrder) {
-            $product->sourceItem("default")->setQuantity(0);
-            $product->sourceItem("default")->setStatus(1);
-            $stock->setQty(0);
-            $stock->setIsInStock(1);
-            $stock->setBackorders(ProductStockItem::BACKORDERS_ALLOW_QTY_BELOW_0_AND_NOTIFY_CUSTOMER);
-            $stock->setUseConfigBackorders(false);
-        } else {
-            $product->sourceItem("default")->setQuantity($quantity);
-            $product->sourceItem("default")->setStatus($isInStock);
-            $stock->setQty($quantity);
+        foreach ($quantities as $stockType => $quantity) {
+            if (in_array(strtolower($quantity), $this->backOrderValues)) {
+                $isInStock = true;
+                $quantity = 0;
+                $stock->setBackorders(ProductStockItem::BACKORDERS_ALLOW_QTY_BELOW_0_AND_NOTIFY_CUSTOMER);
+                $stock->setUseConfigBackorders(false);
+            } else {
+                $trimmedQty = preg_replace("/[^0-9.]/", "", $quantity);
+                if ($trimmedQty) {
+                    $quantity =  $trimmedQty;
+                }
+                $isInStock = $quantity > 0;
+            }
+            $product->sourceItem($stockType)->setQuantity($quantity);
+            $product->sourceItem($stockType)->setStatus($isInStock);
+            //$stock->setQty($quantity);
             $stock->setIsInStock($isInStock);
             $stock->setMaximumSaleQuantity(10000.0000);
             $stock->setNotifyStockQuantity(1);
             $stock->setManageStock(true);
             $stock->setQuantityIncrements(1);
         }
+
+        /* $isInStock = $quantity > 0;
+        if ($isBackOrder) {
+             $product->sourceItem("default")->setQuantity(0);
+             $product->sourceItem("default")->setStatus(1);
+             $stock->setQty(0);
+             $stock->setIsInStock(1);
+             $stock->setBackorders(ProductStockItem::BACKORDERS_ALLOW_QTY_BELOW_0_AND_NOTIFY_CUSTOMER);
+             $stock->setUseConfigBackorders(false);
+         } else {
+             $product->sourceItem("default")->setQuantity($quantity);
+             $product->sourceItem("default")->setStatus($isInStock);
+             $stock->setQty($quantity);
+             $stock->setIsInStock($isInStock);
+             $stock->setMaximumSaleQuantity(10000.0000);
+             $stock->setNotifyStockQuantity(1);
+             $stock->setManageStock(true);
+             $stock->setQuantityIncrements(1);
+         }*/
         /* Adding quantity ends */
 
         if (isset($this->existingSkus[$sku])) {

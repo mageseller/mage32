@@ -225,6 +225,24 @@ class Data extends AbstractHelper
         }
         return [];
     }
+    public function getAllSkusWithSupplierPartId($supplierName)
+    {
+        $option = $this->loadOptionValues('supplier');
+        $optionId = $option[$supplierName] ?? "";
+        if ($optionId) {
+            $productCollection = $this->_productCollectionFactory->create();
+            $productCollection->addAttributeToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, 'left');
+            $productCollection->addAttributeToFilter('supplier', ['eq' => $optionId ], 'left');
+            $productCollection->addAttributeToSelect('supplier_product_id', 'left');
+            $select = $productCollection->getSelect();
+            $select->reset(Select::COLUMNS);
+
+
+            $select->columns(['supplier_product_id' => new \Zend_Db_Expr("REPLACE(LTRIM(REPLACE(at_supplier_product_id.value, '0', ' ')),' ', '0')"),'sku']);
+            return $this->db->fetchMap($select);
+        }
+        return [];
+    }
     /**
      * Returns an sku => id map for all existing skus.
      *
@@ -376,6 +394,10 @@ class Data extends AbstractHelper
             }
             if (!$this->priceIndexer->isIndexerScheduled()) {
                 $this->priceIndexer->reindexList($productIdsToReindex);
+            }
+            $searchIndexer =  $this->indexerRegistry->get(\Magento\CatalogSearch\Model\Indexer\Fulltext::INDEXER_ID);
+            if (!$searchIndexer->isScheduled()) {
+                $searchIndexer->reindexList($productIdsToReindex);
             }
             $this->flushCacheByProductIds->execute($productIdsToReindex);
         }
@@ -618,5 +640,23 @@ class Data extends AbstractHelper
     public function secureRip(string $str): string
     {
         return mb_convert_encoding($str, "UTF-8", "UTF-16LE");
+    }
+    public function getAllProductAttributes()
+    {
+        $collection = $this->attributeFactory->create();
+        $collection
+            ->addFieldToFilter('entity_type_id', $this->eavConfig->getEntityType(ProductEntityType::ENTITY)->getEntityTypeId())
+            ->addFieldToFilter('frontend_input', 'select')
+            ->setOrder('attribute_id', 'desc');
+
+        $attributeCodes = [];
+        foreach ($collection->getData() as $attributes) {
+            $attributeCodes[] = [
+                'id' => $attributes[AttributeInterface::ATTRIBUTE_ID],
+                'value' => $attributes[AttributeInterface::ATTRIBUTE_CODE],
+                'label' => $attributes[AttributeInterface::FRONTEND_LABEL]
+            ];
+        }
+        return $attributeCodes;
     }
 }

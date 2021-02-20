@@ -160,6 +160,22 @@ class ImportConfig
     const EXISTING_IMAGE_STRATEGY_HTTP_CACHING = 'http-caching';
 
     /**
+     * Set SSL version for Curl while downloading images:
+     *
+     * @var string
+     */
+
+    public $existingSslVersion = self::SSL_VERSION_3;
+
+    const SSL_VERSION_0 = CURL_SSLVERSION_DEFAULT;
+    const SSL_VERSION_1 = CURL_SSLVERSION_TLSv1;
+    const SSL_VERSION_2 = CURL_SSLVERSION_SSLv2;
+    const SSL_VERSION_3 = CURL_SSLVERSION_SSLv3;
+    const SSL_VERSION_4 = CURL_SSLVERSION_TLSv1_0;
+    const SSL_VERSION_5 = CURL_SSLVERSION_TLSv1_1;
+    const SSL_VERSION_6 = CURL_SSLVERSION_TLSv1_2;
+
+    /**
      * How to deal with the imported images?
      * - add: only add new images and replace existing images with the same name
      * - set: like add, but delete existing images that are not named in the import

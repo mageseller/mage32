@@ -13,7 +13,7 @@ namespace Mageseller\LeadersystemsImport\Console\Command;
 
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
-use Mageseller\LeadersystemsImport\Helper\Leadersystems;
+use Mageseller\Utility\Helper\Data;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -34,7 +34,7 @@ class LeadersystemsProductImageImport extends Command
     /**
      * @var Leadersystems
      */
-    private $leadersystemsHelper;
+    private $utilityHelper;
 
     /**
      * @var ImportImageProcess
@@ -45,19 +45,19 @@ class LeadersystemsProductImageImport extends Command
      * LeadersystemsCategoryImport constructor.
      *
      * @param State              $state
-     * @param Leadersystems      $leadersystemsHelper
+     * @param Data      $utilityHelper
      * @param ImportImageProcess $importImageProcess
      * @param string|null        $name
      */
     public function __construct(
         State $state,
-        Leadersystems $leadersystemsHelper,
+        Data $utilityHelper,
         ImportImageProcess $importImageProcess,
         string $name = null
     ) {
         parent::__construct($name);
         $this->appState        = $state;
-        $this->leadersystemsHelper = $leadersystemsHelper;
+        $this->utilityHelper = $utilityHelper;
         $this->importImageProcess   = $importImageProcess;
     }
 
@@ -76,7 +76,7 @@ class LeadersystemsProductImageImport extends Command
         $updatedSince = $input->getOption(self::UPDATED_SINCE_OPTION);
 
         if (empty($updatedSince)) {
-            $updatedSince = $this->leadersystemsHelper->getSyncDate('images');
+            $updatedSince = $this->utilityHelper->getSyncDate('leadersystems', 'images');
         } else {
             $updatedSince = new \DateTime($updatedSince);
         }

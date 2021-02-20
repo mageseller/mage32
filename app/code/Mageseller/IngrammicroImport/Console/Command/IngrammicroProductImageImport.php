@@ -13,14 +13,13 @@ namespace Mageseller\IngrammicroImport\Console\Command;
 
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
-use Mageseller\IngrammicroImport\Helper\Ingrammicro;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Mageseller\Process\Console\Command\CommandTrait;
 use Mageseller\IngrammicroImport\Helper\Product\Import\Image\Process as ImportImageProcess;
+use Mageseller\Process\Console\Command\CommandTrait;
+use Mageseller\Utility\Helper\Data;
 
 class IngrammicroProductImageImport extends Command
 {
@@ -32,9 +31,9 @@ class IngrammicroProductImageImport extends Command
     private $appState;
 
     /**
-     * @var Ingrammicro
+     * @var Data
      */
-    private $ingrammicroHelper;
+    private $utilityHelper;
 
     /**
      * @var ImportImageProcess
@@ -45,19 +44,19 @@ class IngrammicroProductImageImport extends Command
      * IngrammicroCategoryImport constructor.
      *
      * @param State              $state
-     * @param Ingrammicro        $ingrammicroHelper
+     * @param Data        $utilityHelper
      * @param ImportImageProcess $importImageProcess
      * @param string|null        $name
      */
     public function __construct(
         State $state,
-        Ingrammicro $ingrammicroHelper,
+        Data $utilityHelper,
         ImportImageProcess $importImageProcess,
         string $name = null
     ) {
         parent::__construct($name);
         $this->appState        = $state;
-        $this->ingrammicroHelper = $ingrammicroHelper;
+        $this->utilityHelper = $utilityHelper;
         $this->importImageProcess   = $importImageProcess;
     }
 
@@ -76,7 +75,7 @@ class IngrammicroProductImageImport extends Command
         $updatedSince = $input->getOption(self::UPDATED_SINCE_OPTION);
 
         if (empty($updatedSince)) {
-            $updatedSince = $this->ingrammicroHelper->getSyncDate('images');
+            $updatedSince = $this->utilityHelper->getSyncDate('ingrammicro', 'images');
         } else {
             $updatedSince = new \DateTime($updatedSince);
         }

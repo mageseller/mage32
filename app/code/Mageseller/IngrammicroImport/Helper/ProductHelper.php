@@ -294,13 +294,13 @@ class ProductHelper extends AbstractHelper
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
         $sku = $data[$this->headers[self::STOCK_CODE]];
-
+        $supplierPartId = $data[$this->headers['Ingram Part Number']];
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;
 
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
-
+        $global->setCustomAttribute('supplier_product_id', $supplierPartId);
         /* TODO: Adding price margin from this file app\code\Aalogics\Dropship\Model\Supplier\Xitdistribution.php*/
         /* Adding price starts*/
         $price = $data[$this->headers['Retail Price with Tax']];

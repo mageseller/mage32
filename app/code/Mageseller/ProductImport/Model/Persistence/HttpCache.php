@@ -60,7 +60,7 @@ class HttpCache
             }
         }
 
-        list($error, $responseHeaders) = $this->downloadFromUrl($imagePath, $temporaryStoragePath, $conditions);
+        list($error, $responseHeaders) = $this->downloadFromUrl($imagePath, $temporaryStoragePath, $conditions, $config);
 
         if ($useHttpCache) {
             if ($error === "") {
@@ -132,7 +132,7 @@ class HttpCache
         return false;
     }
 
-    public function downloadFromUrl(string $url, string $localTargetFile, array $conditions = null)
+    public function downloadFromUrl(string $url, string $localTargetFile, array $conditions = null, ImportConfig $config = null)
     {
         $responseHeaders = [
             self::UNIX_TIME => time(),
@@ -155,13 +155,17 @@ class HttpCache
         $ch = curl_init($url);
 
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 500);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10000);
         //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSLVERSION, 3);
+        //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        //curl_setopt($ch, CURLOPT_SSLVERSION, 3);
+        curl_setopt($ch, CURLOPT_SSLVERSION, $config->existingSslVersion);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt(
-            $ch, CURLOPT_HEADERFUNCTION, function ($curlResource, $header) use (&$responseHeaders) {
+            $ch,
+            CURLOPT_HEADERFUNCTION,
+            function ($curlResource, $header) use (&$responseHeaders) {
                 if (preg_match('/^([^:]+):(.*)/', $header, $matches)) {
                     $key = trim(strtolower($matches[1]));
                     $value = trim($matches[2]);
@@ -194,8 +198,11 @@ class HttpCache
                 }
                 rename($tempFile, $localTargetFile);
             } else {
-                unlink($tempFile);
+
             }
+        }
+        if (file_exists($tempFile) && filesize($tempFile) < 1) {
+            unlink($tempFile);
         }
 
         if ($error) {

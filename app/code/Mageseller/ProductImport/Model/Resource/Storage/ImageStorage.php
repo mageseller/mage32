@@ -32,8 +32,8 @@ class ImageStorage
     public function __construct(
         Magento2DbConnection $db,
         MetaData $metaData,
-        HttpCache $httpCache)
-    {
+        HttpCache $httpCache
+    ) {
         $this->db = $db;
         $this->metaData = $metaData;
         $this->httpCache = $httpCache;
@@ -51,7 +51,6 @@ class ImageStorage
 
         foreach ($products as $product) {
             foreach ($product->getImages() as $image) {
-
                 $imagePath = $image->getImagePath();
 
                 $temporaryStoragePath = $this->getTemporaryStoragePath($product, $imagePath, $config);
@@ -93,7 +92,7 @@ class ImageStorage
             $imagePath = $config->imageSourceDir . DIRECTORY_SEPARATOR . $imagePath;
         }
 
-        if (!preg_match('/\.(png|jpg|jpeg|gif)$/i', $imagePath)) {
+        if (!preg_match('/\.(webp|bmp|png|jpg|jpeg|gif)$/i', $imagePath)) {
             $product->addError("Filetype not allowed (use .jpg, .png or .gif): " . $imagePath);
         }
 
@@ -101,7 +100,7 @@ class ImageStorage
 
         // keep temporary file?
         if (file_exists($temporaryStoragePath)) {
-            if ($config->existingImageStrategy === ImportConfig::EXISTING_IMAGE_STRATEGY_CHECK_IMPORT_DIR) {
+            if (filesize($temporaryStoragePath) > 0 && $config->existingImageStrategy === ImportConfig::EXISTING_IMAGE_STRATEGY_CHECK_IMPORT_DIR) {
                 // yes: use it!
                 return $temporaryStoragePath;
             } elseif ($config->existingImageStrategy === ImportConfig::EXISTING_IMAGE_STRATEGY_HTTP_CACHING) {
@@ -113,7 +112,6 @@ class ImageStorage
         }
 
         if (preg_match(self::URL_PATTERN, $imagePath)) {
-
             $error = $this->httpCache->fetchFromUrl($imagePath, $temporaryStoragePath, $config);
             if ($error !== '') {
                 $product->addError($error);
@@ -151,7 +149,6 @@ class ImageStorage
         } elseif (preg_match(ImageStorage::URL_PATTERN, $fileOrUrl)) {
             return null;
         } else {
-
             $temporaryStoragePath = $config->imageCacheDir . '/' . uniqid() . basename($fileOrUrl);
 
             if ($fileOrUrl && $fileOrUrl[0] !== DIRECTORY_SEPARATOR) {
@@ -172,7 +169,7 @@ class ImageStorage
             if (!file_exists($temporaryStoragePath)) {
                 $product->addError("File was not copied to temporary storage: " . $fileOrUrl);
                 return null;
-            } else if (filesize($temporaryStoragePath) === 0) {
+            } elseif (filesize($temporaryStoragePath) === 0) {
                 $product->addError("File is empty: " . $fileOrUrl);
                 unlink($temporaryStoragePath);
                 return null;
@@ -245,7 +242,6 @@ class ImageStorage
 
         // walk through existing raw database information
         foreach ($imageData as $imageDatum) {
-
             $storagePath = $imageDatum['value'];
 
             // check if available in current import (new or update)
@@ -294,7 +290,6 @@ class ImageStorage
                     // remove from file system
                     @unlink(self::PRODUCT_IMAGE_PATH . $storagePath);
                 }
-
             }
         }
 
@@ -336,11 +331,9 @@ class ImageStorage
         $newImages = [];
 
         foreach ($product->getImages() as $image) {
-
             $found = false;
 
             foreach ($imageData as $imageDatum) {
-
                 $storagePath = $imageDatum['value'];
                 $simpleStoragePath = preg_replace('/_\d+\.([^\.]+)$/', '.$1', $storagePath);
 
@@ -379,7 +372,6 @@ class ImageStorage
         $actualStoragePath = $defaultStoragePath;
 
         if (file_exists(self::PRODUCT_IMAGE_PATH . $actualStoragePath)) {
-
             preg_match('/^(.*)\.([^.]+)$/', $actualStoragePath, $matches);
             $rest = $matches[1];
             $ext = $matches[2];
@@ -419,14 +411,11 @@ class ImageStorage
 
             // only if the file is different in content will the old file be removed
             if (!$this->filesAreEqual($targetPath, $image->getTemporaryStoragePath())) {
-
                 unlink($targetPath);
 
                 // link image from its temporary position to its final position
                 link($image->getTemporaryStoragePath(), $targetPath);
-
             }
-
         } else {
 
             // the file that should have been there was removed
@@ -484,7 +473,6 @@ class ImageStorage
         $disabled = $imageGalleryInformation->isEnabled() ? '0' : '1';
 
         if ($recordId !== null) {
-
             $this->db->execute("
                 UPDATE {$this->metaData->mediaGalleryValueTable}
                 SET `label` = ?, `position` = ?, `disabled` = ?   
@@ -495,9 +483,7 @@ class ImageStorage
                 $disabled,
                 $recordId
             ]);
-
         } else {
-
             $this->db->execute("
                 INSERT INTO {$this->metaData->mediaGalleryValueTable}
                 SET 
@@ -531,7 +517,6 @@ class ImageStorage
         foreach ($products as $product) {
             foreach ($product->getStoreViews() as $storeView) {
                 foreach ($storeView->getImageRoles() as $attributeCode => $image) {
-
                     $values[] = $product->id;
                     $values[] = $this->metaData->productEavAttributeInfo[$attributeCode]->attributeId;
                     $values[] = $storeView->getStoreViewId();
@@ -540,8 +525,13 @@ class ImageStorage
             }
         }
 
-        $this->db->insertMultipleWithUpdate($tableName, ['entity_id', 'attribute_id', 'store_id', 'value'], $values,
-            Magento2DbConnection::_1_KB, "`value` = VALUES(`value`)");
+        $this->db->insertMultipleWithUpdate(
+            $tableName,
+            ['entity_id', 'attribute_id', 'store_id', 'value'],
+            $values,
+            Magento2DbConnection::_1_KB,
+            "`value` = VALUES(`value`)"
+        );
     }
 
     /**
