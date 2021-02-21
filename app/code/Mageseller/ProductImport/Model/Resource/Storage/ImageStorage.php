@@ -234,20 +234,29 @@ class ImageStorage
             $this->removeObsoleteImages($product, $existingImages, $imageData);
         }
 
+        $notLinkingImages = [];
         // stores images and metadata
         // add valueId and actualStoragePath to new images
         foreach ($newImages as $image) {
-            $this->insertImage($product, $image);
+            $result =  $this->insertImage($product, $image);
+            if (!$result) {
+                $notLinkingImages[] = $image->getActualStoragePath();
+            }
         }
 
         // updates image metadata
         foreach ($existingImages as $image) {
-            $this->updateImage($image);
+            $result = $this->updateImage($image);
+            if (!$result) {
+                $notLinkingImages[] = $image->getActualStoragePath();
+            }
         }
-
         foreach ($product->getStoreViews() as $storeView) {
             foreach ($storeView->getImageGalleryInformation() as $imageGalleryInformation) {
-                $this->upsertImageGalleryInformation($product->id, $storeView->getStoreViewId(), $imageGalleryInformation);
+                $actualImagePath = $imageGalleryInformation->getImage()->getActualStoragePath();
+                if (!in_array($actualImagePath, $notLinkingImages)) {
+                    $this->upsertImageGalleryInformation($product->id, $storeView->getStoreViewId(), $imageGalleryInformation);
+                }
             }
         }
     }
@@ -361,7 +370,7 @@ class ImageStorage
                 $storagePath = $imageDatum['value'];
                 $simpleStoragePath = preg_replace('/_\d+\.([^\.]+)$/', '.$1', $storagePath);
 
-                if ($simpleStoragePath === $image->getDefaultStoragePath()) {
+                if ($simpleStoragePath === strtolower($image->getDefaultStoragePath())) {
                     $found = true;
                     $image->valueId = $imageDatum['value_id'];
                     $image->setActualStoragePath($storagePath);
@@ -382,18 +391,22 @@ class ImageStorage
     public function insertImage(Product $product, Image $image)
     {
         $actualStoragePath = $this->move($image->getTemporaryStoragePath(), $image->getDefaultStoragePath());
+        if ($actualStoragePath) {
+            // first link the image (important to do this before storing the record)
+            // then create the database record
+            $imageValueId = $this->createImageValue($product->id, $actualStoragePath, $image->isEnabled());
 
-        // first link the image (important to do this before storing the record)
-        // then create the database record
-        $imageValueId = $this->createImageValue($product->id, $actualStoragePath, $image->isEnabled());
-
-        $image->valueId = $imageValueId;
-        $image->setActualStoragePath($actualStoragePath);
+            $image->valueId = $imageValueId;
+            $image->setActualStoragePath($actualStoragePath);
+        } else {
+            return false;
+        }
+        return true;
     }
 
     public function move(string $temporaryStoragePath, $defaultStoragePath)
     {
-        $actualStoragePath = $defaultStoragePath;
+        $actualStoragePath = strtolower($defaultStoragePath);
 
         if (file_exists(self::PRODUCT_IMAGE_PATH . $actualStoragePath)) {
             preg_match('/^(.*)\.([^.]+)$/', $actualStoragePath, $matches);
@@ -411,12 +424,14 @@ class ImageStorage
         if (!file_exists($targetDir)) {
             mkdir($targetDir, 0777, true);
         }
+        if (!file_exists(self::PRODUCT_IMAGE_PATH . $actualStoragePath)) {
+            // link image from its temporary position to its final position
+            link($temporaryStoragePath, self::PRODUCT_IMAGE_PATH . $actualStoragePath);
 
-        // link image from its temporary position to its final position
-        link($temporaryStoragePath, self::PRODUCT_IMAGE_PATH . $actualStoragePath);
-
-        $this->uploadToS3($actualStoragePath);
-
+            $this->uploadToS3($actualStoragePath);
+        } else {
+            return false;
+        }
         return $actualStoragePath;
     }
 
@@ -430,8 +445,9 @@ class ImageStorage
             $image->isEnabled() ? '0' : '1',
             $image->valueId
         ]);
+        $actualStoragePath = strtolower($image->getActualStoragePath());
 
-        $targetPath = self::PRODUCT_IMAGE_PATH . $image->getActualStoragePath();
+        $targetPath = self::PRODUCT_IMAGE_PATH . $actualStoragePath;
 
         if (file_exists($targetPath)) {
 
@@ -441,7 +457,9 @@ class ImageStorage
 
                 // link image from its temporary position to its final position
                 link($image->getTemporaryStoragePath(), $targetPath);
-                $this->uploadToS3($image->getActualStoragePath());
+                $this->uploadToS3($actualStoragePath);
+            } else {
+                return false;
             }
         } else {
 
@@ -450,10 +468,14 @@ class ImageStorage
             if (!file_exists($targetDir)) {
                 mkdir($targetDir, 0777, true);
             }
-
-            link($image->getTemporaryStoragePath(), $targetPath);
-            $this->uploadToS3($image->getActualStoragePath());
+            if (!file_exists($targetPath)) {
+                link($image->getTemporaryStoragePath(), $targetPath);
+                $this->uploadToS3($actualStoragePath);
+            } else {
+                return false;
+            }
         }
+        return true;
     }
     public function uploadToS3($actualPath)
     {

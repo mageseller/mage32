@@ -65,3 +65,9 @@
 15) also, please make sure we don't have duplicate brand name
     
     once supplier has HP and other one has Hewlett Packard so we need to make sure to use it as ONE brand name
+
+
+UPDATE `catalog_product_entity_varchar` SET `value`=LCASE(`value`) WHERE `attribute_id` IN (87,88,89) AND `entity_id` in (SELECT `entity_id` FROM `catalog_product_entity_media_gallery_value_to_entity` WHERE `value_id` IN (SELECT `value_id` FROM `catalog_product_entity_media_gallery` WHERE `value_id` > '110364844' AND `value` in (SELECT `value` FROM `catalog_product_entity_media_gallery` WHERE `value_id` < '110364844')));
+
+
+SELECT * FROM `catalog_product_entity_varchar` WHERE `attribute_id` IN (87,88,89) AND `entity_id` in (SELECT `entity_id` FROM `catalog_product_entity_media_gallery_value_to_entity` WHERE `value_id` IN (SELECT `value_id` FROM `catalog_product_entity_media_gallery` WHERE `value_id` > '110364844' AND `value` in (SELECT `value` FROM `catalog_product_entity_media_gallery` WHERE `value_id` < '110364844'))) LIMIT 50
