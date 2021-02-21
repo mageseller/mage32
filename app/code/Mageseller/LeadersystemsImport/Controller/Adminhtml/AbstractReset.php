@@ -3,7 +3,7 @@ namespace Mageseller\LeadersystemsImport\Controller\Adminhtml;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Mageseller\LeadersystemsImport\Helper\Leadersystems as ConnectorConfig;
+use Mageseller\Utility\Helper\Data as ConnectorConfig;
 use Mageseller\Process\Controller\Adminhtml\RedirectRefererTrait;
 
 abstract class AbstractReset extends Action

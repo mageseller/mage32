@@ -12,7 +12,10 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\DB\Select;
+use Magento\Framework\Module\Manager;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\InventoryCache\Model\FlushCacheByProductIds;
+use Magento\MediaStorage\Helper\File\Storage\Database;
 use Magento\Store\Model\ScopeInterface;
 use Mageseller\ProductImport\Model\Persistence\Magento2DbConnection;
 use Mageseller\ProductImport\Model\Resource\MetaData;
@@ -86,6 +89,20 @@ class Data extends AbstractHelper
      * @var MagentoConfig
      */
     protected $configuration;
+    /**
+     * @var Manager
+     */
+    protected $moduleManager;
+    /**
+     * @var ObjectManagerInterface
+     */
+    protected $objectManager;
+    /**
+     * Core file storage database
+     *
+     * @var Database
+     */
+    protected $fileStorageDb;
 
     /**
      * Data constructor.
@@ -122,7 +139,9 @@ class Data extends AbstractHelper
         \Magento\Store\Model\StoreManager $storeManager,
         ProductCollectionFactory $productCollectionFactory,
         EavConfig $eavConfig,
-        MagentoConfig $configuration
+        MagentoConfig $configuration,
+        Manager $moduleManager,
+        ObjectManagerInterface $objectManager
     ) {
         parent::__construct($context);
         $this->db = $db;
@@ -140,6 +159,11 @@ class Data extends AbstractHelper
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->configuration = $configuration;
+        $this->moduleManager = $moduleManager;
+        $this->objectManager = $objectManager;
+        if ($this->moduleManager->isEnabled('Thai_S3')) {
+            $this->fileStorageDb = $this->objectManager->get(\Magento\MediaStorage\Helper\File\Storage\Database::class);
+        }
     }
     /**
      * Get config value
@@ -237,7 +261,6 @@ class Data extends AbstractHelper
             $select = $productCollection->getSelect();
             $select->reset(Select::COLUMNS);
 
-
             $select->columns(['supplier_product_id' => new \Zend_Db_Expr("REPLACE(LTRIM(REPLACE(at_supplier_product_id.value, '0', ' ')),' ', '0')"),'sku']);
             return $this->db->fetchMap($select);
         }
@@ -257,7 +280,7 @@ class Data extends AbstractHelper
 
         return $this->db->fetchMap(
             "
-            SELECT `sku`, `entity_id` 
+            SELECT `sku`, `entity_id`
             FROM `{$this->metaData->productEntityTable}`
             WHERE BINARY `sku` IN (" . $this->db->getMarks($skus) . ")
         ",
@@ -348,12 +371,12 @@ class Data extends AbstractHelper
 
         if ($type == "ingrammicro") {
             return $this->db->fetchMap(
-                "SELECT {$type}category_id, ({$select}) as `category_ids`  
+                "SELECT {$type}category_id, ({$select}) as `category_ids`
             FROM `{$supplierCategoryTable}`"
             );
         }
         return $this->db->fetchMap(
-            "SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), ({$select}) as `category_ids`  
+            "SELECT LOWER(CONCAT(name,'" . self::SEPERATOR . "',parent_name)), ({$select}) as `category_ids`
             FROM `{$supplierCategoryTable}`"
         );
     }
@@ -366,7 +389,7 @@ class Data extends AbstractHelper
             $key = "{$type}category_id";
         }
         return $this->db->fetchMap(
-            "SELECT $key, `attribute_code`  
+            "SELECT $key, `attribute_code`
             FROM `{$supplierCategoryTable}` AS `" . $type . "`
             LEFT JOIN `{$eavAttributeTable}` AS `eav`
             ON `" . $type . "`.`attribute_id` = `eav`.`attribute_id`
@@ -658,5 +681,11 @@ class Data extends AbstractHelper
             ];
         }
         return $attributeCodes;
+    }
+    public function uploadToS3($actualPath)
+    {
+        if ($this->fileStorageDb) {
+            $this->fileStorageDb->saveFile( $actualPath);
+        }
     }
 }

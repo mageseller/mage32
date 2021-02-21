@@ -3,7 +3,7 @@ namespace Mageseller\IngrammicroImport\Controller\Adminhtml;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Mageseller\IngrammicroImport\Helper\Ingrammicro as ConnectorConfig;
+use Mageseller\Utility\Helper\Data as ConnectorConfig;
 use Mageseller\Process\Controller\Adminhtml\RedirectRefererTrait;
 
 abstract class AbstractReset extends Action

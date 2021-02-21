@@ -22,6 +22,22 @@
 
    **Stock + Price:** all at 5AM every day and DD every 3 hours
    
+    00 22 * * *  php -dmemory_limit=3G  bin\magento mageseller_xitimport:xitproductimport
+    00 23 * * *  php -dmemory_limit=3G bin\magento mageseller_xitimport:xitproductimageimport
+    
+    00 00 * * *  php -dmemory_limit=3G  bin\magento mageseller_dickerdataimport:dickerdataproductimport
+    
+    00 01 * * *  php -dmemory_limit=3G  bin\magento mageseller_leadersystemsimport:leadersystemsproductimport
+    00 02 * * *  php -dmemory_limit=3G bin\magento mageseller_leadersystemsimport:leadersystemsproductimageimport
+
+    00 15 * * *  php -dmemory_limit=3G  bin\magento mageseller_ingrammicroimport:ingrammicroproductimport
+    00 17 * * *  php -dmemory_limit=3G bin\magento mageseller_ingrammicroimport:ingrammicroproductimageimport
+
+    00 05 * * *  php -dmemory_limit=3G  bin\magento mageseller_xitimport:xitproductimport
+    00 05 * * *  php -dmemory_limit=3G  bin\magento mageseller_dickerdataimport:dickerdataproductimport
+    00 05 * * *  php -dmemory_limit=3G  bin\magento mageseller_leadersystemsimport:leadersystemsproductimport
+    00 05 * * *  php -dmemory_limit=3G  bin\magento mageseller_ingrammicroimport:ingrammicroproductimport
+    
 8) Assign Supplier Category Ids to product while import. -> done
 9) Use category as attribute while import -> done
 10) Use 4th category as attribute option in Xit and 3rd category as attribute option in Dickerdata.
@@ -34,3 +50,18 @@
     innodb_data_file_path=ibdata1:10M:autoextend
     tmp_table_size=4G
     max_heap_table_size=4G
+
+    --------------------------------------------------------------
+    innodb_data_file_path = ibdata1:10M:autoextend:max:512M
+    max_allowed_packet = 5000M
+    tmp_table_size=2048M
+    max_heap_table_size=2048M
+
+
+14) Please see attached Pivot tables for XIT and DD.
+    for XIT, please use 3 level and 4th is attribute
+    for DD, please use only 2 level and 3rd is attribute
+
+15) also, please make sure we don't have duplicate brand name
+    
+    once supplier has HP and other one has Hewlett Packard so we need to make sure to use it as ONE brand name

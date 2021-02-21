@@ -10,7 +10,7 @@ class Images extends AbstractReset
      */
     public function execute()
     {
-        $this->connectorConfig->resetSyncDate('images');
+        $this->connectorConfig->resetSyncDate('leadersystems', 'images');
 
         $this->messageManager->addSuccessMessage(__('Last image synchronization date has been reset successfully.'));
 

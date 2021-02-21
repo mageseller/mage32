@@ -3,7 +3,7 @@ namespace Mageseller\XitImport\Controller\Adminhtml;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Mageseller\XitImport\Helper\Xit as ConnectorConfig;
+use Mageseller\Utility\Helper\Data as ConnectorConfig;
 use Mageseller\Process\Controller\Adminhtml\RedirectRefererTrait;
 
 abstract class AbstractReset extends Action

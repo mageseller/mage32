@@ -244,12 +244,12 @@ class Xit extends AbstractHelper
     }
     public function importXitImages(Process $process, $since, $sendReport = true)
     {
-        if (!$since && ($lastSyncDate = $this->getSyncDate('images'))) {
+        if (!$since && ($lastSyncDate = $this->utilityHelper->getSyncDate('xit', 'images'))) {
             $since = $lastSyncDate;
         }
 
         // Save last synchronization date now if file download is too long
-        $this->setSyncDate('images');
+        $this->utilityHelper->setSyncDate('xit', 'images');
         if ($since) {
             $process->output(__('Downloading images from Xit feed to Magento since %1', $since->format('Y-m-d H:i:s')), true);
             $importParams = ['updated_since' => $since->format(\DateTime::ATOM)];

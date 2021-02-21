@@ -405,10 +405,10 @@ class ProductHelper extends AbstractHelper
         $global->setVisibility(ProductStoreView::VISIBILITY_BOTH);
         $global->generateUrlKey();
 
-        $global->setWeight($weight);
-        $global->setCustomAttribute('ts_dimensions_height', $height);
-        $global->setCustomAttribute('ts_dimensions_width', $width);
-        $global->setCustomAttribute('ts_dimensions_length', $length);
+        $global->setWeight(round($weight, 2));
+        $global->setCustomAttribute('ts_dimensions_height', round($height, 2));
+        $global->setCustomAttribute('ts_dimensions_width', round($width, 2));
+        $global->setCustomAttribute('ts_dimensions_length', round($length, 2));
         $global->setSelectAttribute('supplier', self::SUPPLIER);
 
         //brochure_url

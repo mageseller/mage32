@@ -2,6 +2,9 @@
 
 namespace Mageseller\ProductImport\Model\Resource\Storage;
 
+use Magento\Framework\Module\Manager;
+use Magento\Framework\ObjectManagerInterface;
+use Magento\MediaStorage\Helper\File\Storage\Database;
 use Mageseller\ProductImport\Api\Data\DownloadableProduct;
 use Mageseller\ProductImport\Api\Data\Product;
 use Mageseller\ProductImport\Api\ImportConfig;
@@ -28,15 +31,36 @@ class ImageStorage
 
     /** @var HttpCache */
     protected $httpCache;
+    /**
+     * @var Manager
+     */
+    protected $moduleManager;
+    /**
+     * @var ObjectManagerInterface
+     */
+    protected $objectManager;
+    /**
+     * Core file storage database
+     *
+     * @var Database
+     */
+    protected $fileStorageDb;
 
     public function __construct(
         Magento2DbConnection $db,
         MetaData $metaData,
-        HttpCache $httpCache
+        HttpCache $httpCache,
+        Manager $moduleManager,
+        ObjectManagerInterface $objectManager
     ) {
         $this->db = $db;
         $this->metaData = $metaData;
         $this->httpCache = $httpCache;
+        $this->moduleManager = $moduleManager;
+        $this->objectManager = $objectManager;
+        if ($this->moduleManager->isEnabled('Thai_S3')) {
+            $this->fileStorageDb = $this->objectManager->get(\Magento\MediaStorage\Helper\File\Storage\Database::class);
+        }
     }
 
     /**
@@ -260,7 +284,7 @@ class ImageStorage
                 // remove from all image role attributes
                 $this->db->execute("
                     DELETE FROM `{$this->metaData->productEntityTable}_varchar`
-                    WHERE 
+                    WHERE
                         entity_id = ? AND
                         attribute_id IN (" . $this->db->getMarks($this->metaData->imageAttributeIds) . ") AND
                         value = ?
@@ -275,7 +299,7 @@ class ImageStorage
                 $usageCount = $this->db->fetchSingleCell("
                     SELECT COUNT(*)
                     FROM `{$this->metaData->productEntityTable}_varchar`
-                    WHERE 
+                    WHERE
                         attribute_id IN (" . $this->db->getMarks($this->metaData->imageAttributeIds) . ") AND
                         value = ?
                 ", array_merge(
@@ -306,7 +330,7 @@ class ImageStorage
     protected function loadExistingImageData(Product $product)
     {
         return $this->db->fetchAllAssoc("
-            SELECT M.`value_id`, M.`value`, M.`disabled` 
+            SELECT M.`value_id`, M.`value`, M.`disabled`
             FROM {$this->metaData->mediaGalleryTable} M
             INNER JOIN {$this->metaData->mediaGalleryValueToEntityTable} E ON E.`value_id` = M.`value_id`
             WHERE E.`entity_id` = ? AND M.`attribute_id` = ?
@@ -391,6 +415,8 @@ class ImageStorage
         // link image from its temporary position to its final position
         link($temporaryStoragePath, self::PRODUCT_IMAGE_PATH . $actualStoragePath);
 
+        $this->uploadToS3($actualStoragePath);
+
         return $actualStoragePath;
     }
 
@@ -399,7 +425,7 @@ class ImageStorage
         $this->db->execute("
             UPDATE {$this->metaData->mediaGalleryTable}
             SET `disabled` = ?
-            WHERE `value_id` = ? 
+            WHERE `value_id` = ?
         ", [
             $image->isEnabled() ? '0' : '1',
             $image->valueId
@@ -415,6 +441,7 @@ class ImageStorage
 
                 // link image from its temporary position to its final position
                 link($image->getTemporaryStoragePath(), $targetPath);
+                $this->uploadToS3($image->getActualStoragePath());
             }
         } else {
 
@@ -425,16 +452,22 @@ class ImageStorage
             }
 
             link($image->getTemporaryStoragePath(), $targetPath);
+            $this->uploadToS3($image->getActualStoragePath());
         }
     }
-
+    public function uploadToS3($actualPath)
+    {
+        if ($this->fileStorageDb) {
+            $this->fileStorageDb->saveFile("catalog/product" . $actualPath);
+        }
+    }
     protected function createImageValue($productId, string $storedPath, bool $enabled)
     {
         $attributeId = $this->metaData->mediaGalleryAttributeId;
 
         $this->db->execute("
             INSERT INTO {$this->metaData->mediaGalleryTable}
-            SET `attribute_id` = ?, `value` = ?, `media_type` = 'image', `disabled` = ? 
+            SET `attribute_id` = ?, `value` = ?, `media_type` = 'image', `disabled` = ?
         ", [
             $attributeId,
             $storedPath,
@@ -445,7 +478,7 @@ class ImageStorage
 
         $this->db->execute("
             INSERT INTO {$this->metaData->mediaGalleryValueToEntityTable}
-            SET `value_id` = ?, `entity_id` = ? 
+            SET `value_id` = ?, `entity_id` = ?
         ", [
             $valueId,
             $productId
@@ -475,7 +508,7 @@ class ImageStorage
         if ($recordId !== null) {
             $this->db->execute("
                 UPDATE {$this->metaData->mediaGalleryValueTable}
-                SET `label` = ?, `position` = ?, `disabled` = ?   
+                SET `label` = ?, `position` = ?, `disabled` = ?
                 WHERE `record_id` = ?
             ", [
                 $label,
@@ -486,12 +519,12 @@ class ImageStorage
         } else {
             $this->db->execute("
                 INSERT INTO {$this->metaData->mediaGalleryValueTable}
-                SET 
-                    `value_id` = ?, 
-                    `store_id` = ?, 
-                    `entity_id` = ?, 
-                    `label` = ?, 
-                    `position` = ?, 
+                SET
+                    `value_id` = ?,
+                    `store_id` = ?,
+                    `entity_id` = ?,
+                    `label` = ?,
+                    `position` = ?,
                     `disabled` = ?
             ", [
                 $image->valueId,

@@ -3,7 +3,7 @@ namespace Mageseller\DickerdataImport\Controller\Adminhtml;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Mageseller\DickerdataImport\Helper\Dickerdata as ConnectorConfig;
+use Mageseller\Utility\Helper\Data as ConnectorConfig;
 use Mageseller\Process\Controller\Adminhtml\RedirectRefererTrait;
 
 abstract class AbstractReset extends Action

@@ -11,7 +11,7 @@ class Products extends AbstractReset
     public function execute()
     {
 
-        $this->connectorConfig->resetSyncDate('product');
+        $this->connectorConfig->resetSyncDate('leadersystems', 'product');
 
         $this->messageManager->addSuccessMessage(__('Last products synchronization date has been reset successfully.'));
 

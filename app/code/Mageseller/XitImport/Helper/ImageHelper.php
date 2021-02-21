@@ -211,6 +211,7 @@ class ImageHelper extends ProductHelper
                 curl_exec($ch);
                 curl_close($ch);
                 fclose($fp);
+                $this->utilityHelper->uploadToS3(self::PDF_FOLDER . '/' . $fileName);
                 return true;
             }
             return true;

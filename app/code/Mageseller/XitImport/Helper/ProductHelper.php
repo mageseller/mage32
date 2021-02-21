@@ -285,13 +285,7 @@ class ProductHelper extends AbstractHelper
 
         /* Adding quantity ends */
 
-        if (isset($this->existingSkus[$sku])) {
-            //if ($oldUpdateAt <= $currentUpdateAT) {
-            $j++;
-            $importer->importSimpleProduct($product);
-            //}
-            return;
-        }
+        /** Category and Custom attribute assignment starts */
         $categoryIds = [];
         $customAttrbutes = [];
         if (isset($data->ItemDetail->ManufacturerName)) {
@@ -336,6 +330,15 @@ class ProductHelper extends AbstractHelper
                 }
             }
         }
+        /** Category and Custom attribute assignment ends */
+        if (isset($this->existingSkus[$sku])) {
+            //if ($oldUpdateAt <= $currentUpdateAT) {
+            $j++;
+            $importer->importSimpleProduct($product);
+            //}
+            return;
+        }
+
         $name = (string)$data->ItemDetail->Title;
         $description = (string)$data->ItemDetail->Description;
         $taxClassName = 'Taxable Goods';
@@ -354,19 +357,19 @@ class ProductHelper extends AbstractHelper
 
         if (isset($data->ItemDetail->ShippingWeight)) {
             $weight = (string)$data->ItemDetail->ShippingWeight;
-            $global->setWeight($weight);
+            $global->setWeight(round($weight, 2));
         }
         if (isset($data->ItemDetail->Height)) {
             $height = (string)$data->ItemDetail->Height;
-            $global->setCustomAttribute('ts_dimensions_height', $height);
+            $global->setCustomAttribute('ts_dimensions_height', round($height, 2));
         }
         if (isset($data->ItemDetail->Width)) {
             $width = (string)$data->ItemDetail->Width;
-            $global->setCustomAttribute('ts_dimensions_width', $width);
+            $global->setCustomAttribute('ts_dimensions_width', round($width, 2));
         }
         if (isset($data->ItemDetail->Length)) {
             $length = (string)$data->ItemDetail->Length;
-            $global->setCustomAttribute('ts_dimensions_length', $length);
+            $global->setCustomAttribute('ts_dimensions_length', round($length, 2));
         }
         $global->setSelectAttribute('supplier', self::SUPPLIER);
 

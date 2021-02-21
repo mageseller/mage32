@@ -197,7 +197,7 @@ class Ingrammicro extends AbstractHelper
     }
     public function getAllProductAttributes()
     {
-        return $this->getAllProductAttributes();
+        return $this->utilityHelper->getAllProductAttributes();
     }
     /**
      * @return mixed
