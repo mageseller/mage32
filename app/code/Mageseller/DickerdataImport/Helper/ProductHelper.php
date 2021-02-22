@@ -137,7 +137,7 @@ class ProductHelper extends AbstractHelper
             $items = [];
             while (false !== ($row = $file->readCsv())) {
                 $items[] = $row;
-                $allSkus[] = $row[$this->headers[self::STOCK_CODE]];
+                $allSkus[] = trim($row[$this->headers[self::STOCK_CODE]]);
             }
 
             $this->existingSkusWithSupplier = $this->utilityHelper->getExistingSkusWithSupplier($allSkus);
@@ -159,7 +159,14 @@ class ProductHelper extends AbstractHelper
                 $time = round(microtime(true) - $this->start, 2);
                 if ($product->isOk()) {
                     $this->productIdsToReindex[] = $product->id;
-                    $message = sprintf("%s: success! sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
+                    if ($product->getIsUpdate()) {
+                        $price = $product->global()->getCustomAttribute(ProductStoreView::ATTR_PRICE);
+                        $message = sprintf("%s: successfully updated with  price = %s, sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $price, $product->getSku(), $product->id);
+                    } elseif ($product->getIsDisabled()) {
+                        $message = sprintf("%s: successfully disabled sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
+                    } else {
+                        $message = sprintf("%s: successfully imported sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
+                    }
                 } else {
                     $message = sprintf("%s: failed! sku = %s error = %s ( $time s)\n", $product->lineNumber, $product->getSku(), implode('; ', $product->getErrors()));
                 }
@@ -176,6 +183,7 @@ class ProductHelper extends AbstractHelper
                 $product = new SimpleProduct($sku);
                 $product->lineNumber = $lineNumber;
                 $product->global()->setStatus(ProductStoreView::STATUS_DISABLED);
+                $product->setIsDisabled(true);
                 $importer->importSimpleProduct($product);
             }
             $importer->flush();
@@ -235,13 +243,10 @@ class ProductHelper extends AbstractHelper
     }
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-
         $sku = $data[$this->headers[self::STOCK_CODE]];
 
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;
-
-
 
         $global = $product->global();
         $global->setStatus(ProductStoreView::STATUS_ENABLED);
@@ -250,9 +255,11 @@ class ProductHelper extends AbstractHelper
         /* Adding price starts*/
         $price = $data[$this->headers['RRPEx']];
         $price = floatval(preg_replace('/[^\d.]/', '', $price));
+        $price = $this->utilityHelper->calcPriceMargin($price, 'dickerdata');
         if (isset($data[$this->headers['DealerEx']])) {
             $specialPrice = $data[$this->headers['DealerEx']];
             $specialPrice = $specialPrice ? floatval(preg_replace('/[^\d.]/', '', $specialPrice)) : null;
+            $specialPrice = $this->utilityHelper->calcPriceMargin($specialPrice, 'dickerdata');
             if ($price > $specialPrice) {
                 $global->setSpecialPrice($specialPrice);
             } else {
@@ -295,11 +302,6 @@ class ProductHelper extends AbstractHelper
         }
         /* Adding quantity ends */
 
-        if (isset($this->existingSkus[$sku])) {
-            $j++;
-            $importer->importSimpleProduct($product);
-            return;
-        }
         $categoryIds = [];
         $customAttrbutes = [];
         if ($data[$this->headers['Vendor']]) {
@@ -343,6 +345,12 @@ class ProductHelper extends AbstractHelper
             }
         }
 
+        if (isset($this->existingSkus[$sku])) {
+            $j++;
+            $product->setIsUpdate(true);
+            $importer->importSimpleProduct($product);
+            return;
+        }
         $name = $data[$this->headers['StockDescription']];
         $taxClassName = 'Taxable Goods';
         $attributeSetName = "Default";

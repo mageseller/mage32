@@ -20,72 +20,72 @@ abstract class Product
     const WEEE_ATTRIBUTE = 'weee';
 
     /**
-     * @var int 
+     * @var int
      */
     public $id;
 
     /**
-     * @var int 
+     * @var int
      */
     protected $attribute_set_id;
 
     /**
-     * @var string 64 character 
+     * @var string 64 character
      */
     protected $sku;
 
     /**
-     * @var int[]|null 
+     * @var int[]|null
      */
     protected $category_ids = null;
 
     /**
-     * @var array 
+     * @var array
      */
     protected $website_ids = [];
 
     /**
-     * @var ProductStoreView[] 
+     * @var ProductStoreView[]
      */
     protected $storeViews = [];
 
     /**
-     * @var ProductStockItem[] 
+     * @var ProductStockItem[]
      */
     protected $stockItems = [];
 
     /**
-     * @var SourceItem[] 
+     * @var SourceItem[]
      */
     protected $sourceItems = [];
 
     /**
-     * @var Image[] 
+     * @var Image[]
      */
     protected $images = [];
 
     /**
-     * @var string[][] 
+     * @var string[][]
      */
     protected $linkedProductSkus = [];
 
     /**
-     * @var int[][] 
+     * @var int[][]
      */
     protected $linkedProductIds = [];
 
     /**
-     * @var TierPrice[]|null An array of tier prices. null means: not used in this import 
+     * @var TierPrice[]|null An array of tier prices. null means: not used in this import
      */
     protected $tierPrices = null;
 
     /**
-     * @var Weee[]|null  
+     * @var Weee[]|null
      */
     protected $weees = null;
 
     /**
-     * @var CustomOption[]|null 
+     * @var CustomOption[]|null
      */
     protected $customOptions = null;
 
@@ -102,24 +102,32 @@ abstract class Product
     // =========================================
 
     /**
-     * @var array 
+     * @var array
      */
     protected $errors = [];
 
     /**
-     * @var bool 
+     * @var bool
      */
     protected $placeholder = false;
 
     /**
-     * @var string 
+     * @var string
      */
     public $lineNumber = "";
 
     /**
-     * @var string|null 
+     * @var string|null
      */
     protected $storedType = null;
+    /**
+     * @var int|null
+     */
+    protected $is_update = false;
+    /**
+     * @var int|null
+     */
+    protected $is_disabled = false;
 
     public function __construct(string $sku)
     {
@@ -482,5 +490,37 @@ abstract class Product
     public function setStoredType(string $storedType)
     {
         $this->storedType = $storedType;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getIsUpdate()
+    {
+        return $this->is_update;
+    }
+
+    /**
+     * @param int|null $is_update
+     */
+    public function setIsUpdate($is_update): void
+    {
+        $this->is_update = $is_update;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getIsDisabled()
+    {
+        return $this->is_disabled;
+    }
+
+    /**
+     * @param int|null $is_disabled
+     */
+    public function setIsDisabled($is_disabled): void
+    {
+        $this->is_disabled = $is_disabled;
     }
 }

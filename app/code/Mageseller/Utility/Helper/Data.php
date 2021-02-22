@@ -1,6 +1,7 @@
 <?php namespace Mageseller\Utility\Helper;
 
 use Magento\Catalog\Model\Product as ProductEntityType;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Config\Model\ResourceModel\Config as MagentoConfig;
@@ -103,6 +104,10 @@ class Data extends AbstractHelper
      * @var Database
      */
     protected $fileStorageDb;
+    /**
+     * @var array
+     */
+    protected $marginOptions;
 
     /**
      * Data constructor.
@@ -241,8 +246,9 @@ class Data extends AbstractHelper
         $optionId = $option[$supplierName] ?? "";
         if ($optionId) {
             $productCollection = $this->_productCollectionFactory->create();
-            $productCollection->addAttributeToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, 'left');
+            $productCollection->addAttributeToFilter('status', Status::STATUS_ENABLED, 'left');
             $productCollection->addAttributeToFilter('supplier', ['eq' => $optionId ], 'left');
+
             $select = $productCollection->getSelect();
             $select->reset(Select::COLUMNS)->columns(['sku']);
             return $this->db->fetchSingleColumn($select);
@@ -255,7 +261,7 @@ class Data extends AbstractHelper
         $optionId = $option[$supplierName] ?? "";
         if ($optionId) {
             $productCollection = $this->_productCollectionFactory->create();
-            $productCollection->addAttributeToFilter('status', \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED, 'left');
+            $productCollection->addAttributeToFilter('status', Status::STATUS_ENABLED, 'left');
             $productCollection->addAttributeToFilter('supplier', ['eq' => $optionId ], 'left');
             $productCollection->addAttributeToSelect('supplier_product_id', 'left');
             $select = $productCollection->getSelect();
@@ -359,6 +365,50 @@ class Data extends AbstractHelper
             }
         }
         return $backorderOptions;
+    }
+
+    /**
+     * Return string with json configuration
+     *
+     * @param $type
+     * @return string
+     */
+    public function getMargin($type)
+    {
+        if (!$this->marginOptions) {
+            $marginOption = $this->getSerializedConfigValue($type . '/product/price_margin');
+            $this->marginOptions = [];
+            if (isset($marginOption) && $marginOption) {
+                $this->marginOptions = array_values($marginOption);
+            }
+        }
+        return $this->marginOptions;
+    }
+    public function calcPriceMargin($cost, $type)
+    {
+        $price = $cost;
+        $marginOptions = $this->getMargin($type);
+        $priceMargin = [];
+        foreach ($marginOptions as $option) {
+            $min = $option['min'] ?? 0;
+            $max = $option['max'] ?? 0;
+            if ($cost > $min && $cost > $max) {
+                $priceMargin = $option;
+                break;
+            }
+        }
+        $sign = $priceMargin['sign'] ?? "";
+        $priceMarginValue = $priceMargin['value'] ?? "";
+        if ($sign && $priceMarginValue) {
+            if ($sign == '%') {
+                $price = $cost + ($cost * $priceMarginValue/100);
+            } elseif ($sign == '+') {
+                $price = $cost + $priceMarginValue;
+            } elseif ($sign == '-') {
+                $price = $cost - $priceMarginValue;
+            }
+        }
+        return $price;
     }
     public function getExistingCategoryIds($type)
     {
@@ -685,7 +735,7 @@ class Data extends AbstractHelper
     public function uploadToS3($actualPath)
     {
         if ($this->fileStorageDb) {
-            $this->fileStorageDb->saveFile( $actualPath);
+            $this->fileStorageDb->saveFile($actualPath);
         }
     }
 }

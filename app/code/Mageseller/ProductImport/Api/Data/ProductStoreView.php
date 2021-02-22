@@ -75,52 +75,52 @@ class ProductStoreView
     public $parent;
 
     /**
-     * @var int|null 
+     * @var int|null
      */
     protected $store_view_id;
 
     /**
-     * @var ImageGalleryInformation[] 
+     * @var ImageGalleryInformation[]
      */
     protected $imageGalleryInformation = [];
 
     /**
-     * @var array 
+     * @var array
      */
     protected $imageRoles = [];
 
     /**
-     * @var array 
+     * @var array
      */
     protected $attributes = [];
 
     /**
-     * @var array 
+     * @var array
      */
     protected $unresolvedSelects = [];
 
     /**
-     * @var array 
+     * @var array
      */
     protected $unresolvedMultipleSelects = [];
 
     /**
-     * @var array 
+     * @var array
      */
     protected $unresolvedAttributes = [];
 
     /**
-     * @var CustomOptionTitle[] 
+     * @var CustomOptionTitle[]
      */
     protected $customOptionTitles = [];
 
     /**
-     * @var CustomOptionPrice[] 
+     * @var CustomOptionPrice[]
      */
     protected $customOptionPrices = [];
 
     /**
-     * @var CustomOptionValue[][] 
+     * @var CustomOptionValue[][]
      */
     protected $customOptionValues = [];
 
@@ -356,6 +356,19 @@ class ProductStoreView
     {
         // value is not trimmed, because it may have textarea as input, or it may be null
         $this->attributes[trim($attributeCode)] = $value;
+    }
+
+    /**
+     * Get the value of a user defined attribute.
+     * Apply trim() to $value before calling this function, if necessary.
+     *
+     * @param string $attributeCode
+     * @return mixed
+     */
+    public function getCustomAttribute(string $attributeCode)
+    {
+        // value is not trimmed, because it may have textarea as input, or it may be null
+        return $this->attributes[trim($attributeCode)];
     }
 
     /**

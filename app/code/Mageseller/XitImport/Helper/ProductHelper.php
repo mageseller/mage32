@@ -105,7 +105,7 @@ class ProductHelper extends AbstractHelper
             $allXitSkus = $this->utilityHelper->getAllSkus(self::SUPPLIER);
             $allSkus = [];
             foreach ($items as $item) {
-                $allSkus[] = (string)$item->ItemDetail->ManufacturerPartID;
+                $allSkus[] = trim((string)$item->ItemDetail->ManufacturerPartID);
             }
             $this->existingSkusWithSupplier = $this->utilityHelper->getExistingSkusWithSupplier($allSkus);
             $this->existingSkus = $this->utilityHelper->getExistingSkus($allSkus);
@@ -221,9 +221,12 @@ class ProductHelper extends AbstractHelper
 
         /* Adding price starts*/
         $price = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->UnitPrice)));
+        $price = $this->utilityHelper->calcPriceMargin($price, 'xit');
         if (isset($data->ItemDetail->RRP)) {
+            $specialPrice = $price;
             $price = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->RRP)));
-            $specialPrice = floatval(preg_replace('/[^\d.]/', '', strval($data->ItemDetail->UnitPrice)));
+            $price = $this->utilityHelper->calcPriceMargin($price, 'xit');
+
             if ($price > $specialPrice) {
                 $global->setSpecialPrice($specialPrice);
             } else {
@@ -333,6 +336,7 @@ class ProductHelper extends AbstractHelper
         /** Category and Custom attribute assignment ends */
         if (isset($this->existingSkus[$sku])) {
             //if ($oldUpdateAt <= $currentUpdateAT) {
+            $product->setIsUpdate(true);
             $j++;
             $importer->importSimpleProduct($product);
             //}
