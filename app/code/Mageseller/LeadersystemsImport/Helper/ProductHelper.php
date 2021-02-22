@@ -255,7 +255,7 @@ class ProductHelper extends AbstractHelper
     }
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-        $sku = $data[$this->headers[self::STOCK_CODE]];
+        $sku = trim($data[$this->headers[self::STOCK_CODE]]);
 
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;

@@ -199,7 +199,7 @@ class ProductHelper extends AbstractHelper
             $i = 0; // Line number
             $j = 0; // Line number
             foreach ($items as $item) {
-                $sku = $item[$this->headers[self::STOCK_CODE]];
+                $sku = trim($item[$this->headers[self::STOCK_CODE]]);
                 try {
                     ++$i;
                     $this->start = microtime(true);
@@ -243,7 +243,7 @@ class ProductHelper extends AbstractHelper
     }
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-        $sku = $data[$this->headers[self::STOCK_CODE]];
+        $sku = trim($data[$this->headers[self::STOCK_CODE]]);
 
         $product = new SimpleProduct($sku);
         $product->lineNumber = $j + 1;

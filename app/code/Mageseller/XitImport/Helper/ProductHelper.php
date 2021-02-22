@@ -126,7 +126,14 @@ class ProductHelper extends AbstractHelper
                 $time = round(microtime(true) - $this->start, 2);
                 if ($product->isOk()) {
                     $this->productIdsToReindex[] = $product->id;
-                    $message = sprintf("%s: success! sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
+                    if ($product->getIsUpdate()) {
+                        $price = $product->global()->getCustomAttribute(ProductStoreView::ATTR_PRICE);
+                        $message = sprintf("%s: successfully updated with  price = %s, sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $price, $product->getSku(), $product->id);
+                    } elseif ($product->getIsDisabled()) {
+                        $message = sprintf("%s: successfully disabled sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
+                    } else {
+                        $message = sprintf("%s: successfully imported sku = %s, id = %s  ( $time s)\n", $product->lineNumber, $product->getSku(), $product->id);
+                    }
                 } else {
                     $message = sprintf("%s: failed! sku = %s error = %s ( $time s)\n", $product->lineNumber, $product->getSku(), implode('; ', $product->getErrors()));
                 }
@@ -144,6 +151,7 @@ class ProductHelper extends AbstractHelper
                 $product = new SimpleProduct($sku);
                 $product->lineNumber = $lineNumber;
                 $product->global()->setStatus(ProductStoreView::STATUS_DISABLED);
+                $product->setIsDisabled(true);
                 $importer->importSimpleProduct($product);
             }
             $importer->flush();
@@ -159,7 +167,7 @@ class ProductHelper extends AbstractHelper
             $i = 0; // Line number
             $j = 0; // Line number
             foreach ($items as $item) {
-                $sku = (string)$item->ItemDetail->ManufacturerPartID;
+                $sku = trim((string)$item->ItemDetail->ManufacturerPartID);
                 try {
                     ++$i;
                     $this->start = microtime(true);
@@ -205,7 +213,7 @@ class ProductHelper extends AbstractHelper
 
     private function processImport(&$data, &$j, &$importer, &$since, &$process)
     {
-        $sku = (string) $data->ItemDetail->ManufacturerPartID;
+        $sku = trim((string) $data->ItemDetail->ManufacturerPartID);
         $taxRate = (string) $data->ItemDetail->TaxRate;
         $updatedAt = (string) $data->UpdatedAt;
         $currentUpdateAT = date_parse($updatedAt);
