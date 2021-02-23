@@ -412,7 +412,10 @@ class Data extends AbstractHelper
         if ($sign && $priceMarginValue) {
             if ($sign == '%') {
                 $pricePlusMarginValue = $priceMargin['addition'] ?? 0;
-                $price = $cost + ($cost * $priceMarginValue/100) + $pricePlusMarginValue;
+                if (!$pricePlusMarginValue) {
+                    $pricePlusMarginValue = 0;
+                }
+                $price = $cost + ($cost * $priceMarginValue/100) + floatval($pricePlusMarginValue);
             } elseif ($sign == '+') {
                 $price = $cost + $priceMarginValue;
             } elseif ($sign == '-') {
