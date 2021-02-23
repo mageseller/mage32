@@ -392,7 +392,7 @@ class Data extends AbstractHelper
         foreach ($marginOptions as $option) {
             $min = $option['min'] ?? 0;
             $max = $option['max'] ?? 0;
-            if ($cost > $min && $cost > $max) {
+            if ($cost > $min && $cost < $max) {
                 $priceMargin = $option;
                 break;
             }
