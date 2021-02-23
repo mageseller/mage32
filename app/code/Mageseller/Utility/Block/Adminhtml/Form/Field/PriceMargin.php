@@ -1,6 +1,5 @@
 <?php namespace Mageseller\Utility\Block\Adminhtml\Form\Field;
 
-use Magento\CatalogInventory\Block\Adminhtml\Form\Field\SignOption;
 use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;
 
 class PriceMargin extends AbstractFieldArray
@@ -16,6 +15,7 @@ class PriceMargin extends AbstractFieldArray
         $this->addColumn('max', ['label' => __('Max. Cost'), 'size' => "65",'class' => 'required-entry']);
         $this->addColumn('sign', ['label' => __('Sign'),'size' => "40", 'class' => 'required-entry', 'renderer' => $this->getSignOptions()]);
         $this->addColumn('value', ['label' => __('Value'),'size' => "100", 'class' => 'required-entry']);
+        $this->addColumn('addition', ['label' => __('Addition Value for %'),'size' => "100"]);
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add Margin');
     }
@@ -55,7 +55,7 @@ class PriceMargin extends AbstractFieldArray
             "<style>.accordion .config .value {
                 padding-right: 40px;
                 vertical-align: middle;
-                width: 54%;
+                width: 65%;
             }</style>";
     }
 }

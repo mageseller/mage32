@@ -108,6 +108,10 @@ class Data extends AbstractHelper
      * @var array
      */
     protected $marginOptions;
+    /**
+     * @var array
+     */
+    protected $optionsValues;
 
     /**
      * Data constructor.
@@ -224,20 +228,23 @@ class Data extends AbstractHelper
 
     public function loadOptionValues(string $attributeCode)
     {
-        $options = $this->db->fetchMap(
-            "
+        if (!$this->optionsValues) {
+            $this->optionsValues = $this->db->fetchMap(
+                "
             SELECT V.`value`, O.`option_id`
             FROM {$this->metaData->attributeTable} A
             INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
             INNER JOIN {$this->metaData->attributeOptionValueTable} V ON V.option_id = O.option_id
             WHERE A.`attribute_code` = ? AND A.`entity_type_id` = ? AND V.store_id = 0
         ",
-            [
-                $attributeCode,
-                $this->metaData->productEntityTypeId
-            ]
-        );
-        return $options;
+                [
+                    $attributeCode,
+                    $this->metaData->productEntityTypeId
+                ]
+            );
+        }
+
+        return $this->optionsValues;
     }
     public function getAllSkus($supplierName)
     {
@@ -307,8 +314,10 @@ class Data extends AbstractHelper
         $productCollection = $this->_productCollectionFactory->create();
         $productCollection->getSelect()->reset(Select::COLUMNS)->columns(['sku']);
         $productCollection->addAttributeToSelect('supplier', 'left');
+        $productCollection->addAttributeToSelect('price', 'left');
         $productCollection->getSelect()->where("sku IN (?)", $skus);
-        return $this->db->fetchMap($productCollection->getSelect());
+        $connection = $productCollection->getConnection();
+        return $connection->fetchAssoc($productCollection->getSelect());
     }
     public function getAttributeCode($attributeId)
     {
@@ -398,10 +407,12 @@ class Data extends AbstractHelper
             }
         }
         $sign = $priceMargin['sign'] ?? "";
-        $priceMarginValue = $priceMargin['value'] ?? "";
+        $priceMarginValue = $priceMargin['value'] ?? 0;
+
         if ($sign && $priceMarginValue) {
             if ($sign == '%') {
-                $price = $cost + ($cost * $priceMarginValue/100);
+                $pricePlusMarginValue = $priceMargin['addition'] ?? 0;
+                $price = $cost + ($cost * $priceMarginValue/100) + $pricePlusMarginValue;
             } elseif ($sign == '+') {
                 $price = $cost + $priceMarginValue;
             } elseif ($sign == '-') {

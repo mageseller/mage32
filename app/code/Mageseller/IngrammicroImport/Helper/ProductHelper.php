@@ -82,6 +82,10 @@ class ProductHelper extends AbstractHelper
      * @var array
      */
     protected $headers;
+    /**
+     * @var array
+     */
+    protected $supplierOptionId;
 
     /**
      * @param Context $context
@@ -197,8 +201,10 @@ class ProductHelper extends AbstractHelper
                 $allSkus[] = trim($row[$this->headers[self::STOCK_CODE]]);
             }
 
+            $option = $this->utilityHelper->loadOptionValues('supplier');
+            $this->supplierOptionId = $option[self::SUPPLIER] ?? "";
             $this->existingSkusWithSupplier = $this->utilityHelper->getExistingSkusWithSupplier($allSkus);
-            $this->existingSkus = $this->utilityHelper->getExistingSkus($allSkus);
+            //$this->existingSkus = $this->utilityHelper->getExistingSkus($allSkus);
             $this->existingIngrammicroCategoryIds = $this->utilityHelper->getExistingCategoryIds('ingrammicro');
             $this->existingIngrammicroCategoryAttributeIds = $this->utilityHelper->getExistingCategoryAttributeIds('ingrammicro');
             $this->optionReplaceMents =  $this->utilityHelper->getOptionReplaceMents();
@@ -402,7 +408,16 @@ class ProductHelper extends AbstractHelper
                 }
             }
         }
-        if (isset($this->existingSkus[$sku])) {
+        if (isset($this->existingSkusWithSupplier[$sku])) {
+            $supplier = $this->existingSkusWithSupplier[$sku]['supplier'] ?? "";
+            if (($supplier != $this->supplierOptionId)) {
+                $oldPrice = $this->existingSkusWithSupplier[$sku]['price'] ?? 0;
+                if ($price < $oldPrice) {
+                    $global->setSelectAttribute('supplier', self::SUPPLIER);
+                } else {
+                    return;
+                }
+            }
             $j++;
             $product->setIsUpdate(true);
             $importer->importSimpleProduct($product);

@@ -77,6 +77,10 @@ class ProductHelper extends AbstractHelper
      * @var array
      */
     protected $existingSkus;
+    /**
+     * @var array
+     */
+    protected $supplierOptionId;
 
     /**
      * @param Context $context
@@ -107,8 +111,10 @@ class ProductHelper extends AbstractHelper
             foreach ($items as $item) {
                 $allSkus[] = trim((string)$item->ItemDetail->ManufacturerPartID);
             }
+            $option = $this->utilityHelper->loadOptionValues('supplier');
+            $this->supplierOptionId = $option[self::SUPPLIER] ?? "";
             $this->existingSkusWithSupplier = $this->utilityHelper->getExistingSkusWithSupplier($allSkus);
-            $this->existingSkus = $this->utilityHelper->getExistingSkus($allSkus);
+            //$this->existingSkus = $this->utilityHelper->getExistingSkus($allSkus);
             $this->existingXitCategoryIds = $this->utilityHelper->getExistingCategoryIds('xit');
             $this->existingXitCategoryAttributeIds = $this->utilityHelper->getExistingCategoryAttributeIds('xit');
             $this->optionReplaceMents =  $this->utilityHelper->getOptionReplaceMents();
@@ -342,7 +348,16 @@ class ProductHelper extends AbstractHelper
             }
         }
         /** Category and Custom attribute assignment ends */
-        if (isset($this->existingSkus[$sku])) {
+        if (isset($this->existingSkusWithSupplier[$sku])) {
+            $supplier = $this->existingSkusWithSupplier[$sku]['supplier'] ?? "";
+            if (($supplier != $this->supplierOptionId)) {
+                $oldPrice = $this->existingSkusWithSupplier[$sku]['price'] ?? 0;
+                if ($price < $oldPrice) {
+                    $global->setSelectAttribute('supplier', self::SUPPLIER);
+                } else {
+                    return;
+                }
+            }
             //if ($oldUpdateAt <= $currentUpdateAT) {
             $product->setIsUpdate(true);
             $j++;
