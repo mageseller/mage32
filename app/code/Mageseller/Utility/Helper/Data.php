@@ -315,7 +315,7 @@ class Data extends AbstractHelper
         $productCollection->getSelect()->reset(Select::COLUMNS)->columns(['sku']);
         $productCollection->addAttributeToSelect('supplier', 'left');
         $productCollection->addAttributeToSelect('price', 'left');
-        $productCollection->getSelect()->where("sku IN (?)", $skus);
+        $productCollection->getSelect()->where("e.sku IN (?)", $skus);
         $connection = $productCollection->getConnection();
         $productCollection->getSelect()
             ->joinLeft(
