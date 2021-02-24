@@ -271,11 +271,11 @@ class ProductHelper extends AbstractHelper
         /* TODO: Adding price margin from this file app\code\Aalogics\Dropship\Model\Supplier\Xitdistribution.php*/
         /* Adding price starts*/
         $price = $data[$this->headers['RRP']];
-        $price = floatval(preg_replace('/[^\d.]/', '', $price));
+        $price = round(preg_replace('/[^\d.]/', '', $price), 2);
         $price = $this->utilityHelper->calcPriceMargin($price, 'leadersystems');
         if (isset($data[$this->headers['DBP']])) {
             $specialPrice = $data[$this->headers['DBP']];
-            $specialPrice = $specialPrice ? floatval(preg_replace('/[^\d.]/', '', $specialPrice)) : null;
+            $specialPrice = $specialPrice ? round(preg_replace('/[^\d.]/', '', $specialPrice), 2) : null;
             $specialPrice = $this->utilityHelper->calcPriceMargin($specialPrice, 'leadersystems');
             if ($price > $specialPrice) {
                 $global->setSpecialPrice($specialPrice);
