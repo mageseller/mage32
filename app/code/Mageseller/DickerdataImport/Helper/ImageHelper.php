@@ -365,7 +365,7 @@ class ImageHelper extends AbstractHelper
             }
             // Reindex
             $process->output(__('Reindexing...'), true);
-            $this->reindexProducts($productIdsToReindex);
+            //$this->reindexProducts($productIdsToReindex);
             //$this->indexer->reindex();
         }
 

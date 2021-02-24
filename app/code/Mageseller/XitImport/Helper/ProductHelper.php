@@ -251,7 +251,19 @@ class ProductHelper extends AbstractHelper
         $global->setPrice($price);
         /* Adding price ends*/
 
+        $oldCategoryIds = [];
         /* Adding quantity starts*/
+        $quantityFlag = false;
+        $oldQuantities = [];
+        if (isset($this->existingSkusWithSupplier[$sku])) {
+            $currentProductData = $this->existingSkusWithSupplier[$sku];
+            $sources = explode(",", $currentProductData['source_code']);
+            $quantities = explode(",", $currentProductData['quantity']);
+            $oldCategoryIds = array_unique(explode(",", $currentProductData['category_ids']));
+            foreach ($sources as $k => $source) {
+                $oldQuantities[$source] = $quantities[$k] ?? 0;
+            }
+        }
         $availibilities = $data->Availability->Warehouse;
         $quantity = 0;
         $stock = $product->defaultStockItem();
@@ -270,15 +282,19 @@ class ProductHelper extends AbstractHelper
                 }
                 $isInStock = $quantity > 0;
             }
+            $oldQuantity = $oldQuantities[$stockType] ?? "";
 
-            $product->sourceItem($stockType)->setQuantity($quantity);
-            $product->sourceItem($stockType)->setStatus($isInStock);
-            //$stock->setQty($quantity);
-            $stock->setIsInStock($isInStock);
-            $stock->setMaximumSaleQuantity(10000.0000);
-            $stock->setNotifyStockQuantity(1);
-            $stock->setManageStock(true);
-            $stock->setQuantityIncrements(1);
+            if (!isset($oldQuantities[$stockType]) || (round($oldQuantity) - round($quantity)) != 0) {
+                $quantityFlag = true;
+                $product->sourceItem($stockType)->setQuantity($quantity);
+                $product->sourceItem($stockType)->setStatus($isInStock);
+                //$stock->setQty($quantity);
+                $stock->setIsInStock($isInStock);
+                $stock->setMaximumSaleQuantity(10000.0000);
+                $stock->setNotifyStockQuantity(1);
+                $stock->setManageStock(true);
+                $stock->setQuantityIncrements(1);
+            }
         }
 
         /*$stock = $product->defaultStockItem();
@@ -303,6 +319,7 @@ class ProductHelper extends AbstractHelper
         /* Adding quantity ends */
 
         /** Category and Custom attribute assignment starts */
+        $categoryFlag = false;
         $categoryIds = [];
         $customAttrbutes = [];
         if (isset($data->ItemDetail->ManufacturerName)) {
@@ -335,7 +352,10 @@ class ProductHelper extends AbstractHelper
         }
         if ($categoryIds) {
             $categoryIds = array_filter(array_unique($categoryIds));
-            $product->addCategoryIds($categoryIds);
+            if (array_diff($categoryIds, $oldCategoryIds)) {
+                $categoryFlag = true;
+                $product->addCategoryIds($categoryIds);
+            }
         }
         if ($customAttrbutes) {
             foreach ($customAttrbutes as $attrbuteCode => $optionName) {
@@ -349,15 +369,21 @@ class ProductHelper extends AbstractHelper
         }
         /** Category and Custom attribute assignment ends */
         if (isset($this->existingSkusWithSupplier[$sku])) {
+            $oldPrice = $this->existingSkusWithSupplier[$sku]['price'] ?? 0;
             $supplier = $this->existingSkusWithSupplier[$sku]['supplier'] ?? "";
             if (($supplier != $this->supplierOptionId)) {
-                $oldPrice = $this->existingSkusWithSupplier[$sku]['price'] ?? 0;
-                if ($price < $oldPrice) {
+                if (round($price, 2) < round($oldPrice, 2)) {
                     $global->setSelectAttribute('supplier', self::SUPPLIER);
                 } else {
+                    unset($product);
                     return;
                 }
             }
+            if ($categoryFlag != true && $quantityFlag != true && (round($price, 2) - round($oldPrice, 2)) == 0) {
+                unset($product);
+                return;
+            }
+
             //if ($oldUpdateAt <= $currentUpdateAT) {
             $product->setIsUpdate(true);
             $j++;

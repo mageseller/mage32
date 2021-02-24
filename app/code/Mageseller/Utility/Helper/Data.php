@@ -315,8 +315,25 @@ class Data extends AbstractHelper
         $productCollection->getSelect()->reset(Select::COLUMNS)->columns(['sku']);
         $productCollection->addAttributeToSelect('supplier', 'left');
         $productCollection->addAttributeToSelect('price', 'left');
-        $productCollection->getSelect()->where("sku IN (?)", $skus);
+        //$productCollection->getSelect()->where("sku IN (?)", $skus);
         $connection = $productCollection->getConnection();
+        $productCollection->getSelect()
+            ->joinLeft(
+                [ 'isi' => $connection->getTableName('inventory_source_item')],
+                'isi.sku=e.sku',
+                [
+                    'source_code' => new \Zend_Db_Expr('GROUP_CONCAT(source_code)'),
+                    'quantity' => new \Zend_Db_Expr('GROUP_CONCAT(quantity)')
+                ]
+            )
+            ->joinLeft(
+                [ 'ccp' => $connection->getTableName('catalog_category_product')],
+                'ccp.product_id=e.entity_id',
+                [
+                    'category_ids' => new \Zend_Db_Expr('GROUP_CONCAT(category_id)'),
+                ]
+            )->group('e.entity_id')
+            ->group('e.sku');
         return $connection->fetchAssoc($productCollection->getSelect());
     }
     public function getAttributeCode($attributeId)

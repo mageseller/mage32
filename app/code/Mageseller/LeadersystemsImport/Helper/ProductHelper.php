@@ -288,6 +288,18 @@ class ProductHelper extends AbstractHelper
         /* Adding price ends*/
 
         /* Adding quantity starts*/
+        $oldCategoryIds = [];
+        $quantityFlag = false;
+        $oldQuantities = [];
+        if (isset($this->existingSkusWithSupplier[$sku])) {
+            $currentProductData = $this->existingSkusWithSupplier[$sku];
+            $sources = explode(",", $currentProductData['source_code']);
+            $quantities = explode(",", $currentProductData['quantity']);
+            $oldCategoryIds = array_unique(explode(",", $currentProductData['category_ids']));
+            foreach ($sources as $k => $source) {
+                $oldQuantities[$source] = $quantities[$k] ?? 0;
+            }
+        }
         $quantities = [];
 
         /*
@@ -316,14 +328,18 @@ class ProductHelper extends AbstractHelper
                 }
                 $isInStock = $quantity > 0;
             }
-            $product->sourceItem($stockType)->setQuantity($quantity);
-            $product->sourceItem($stockType)->setStatus($isInStock);
-            //$stock->setQty($quantity);
-            $stock->setIsInStock($isInStock);
-            $stock->setMaximumSaleQuantity(10000.0000);
-            $stock->setNotifyStockQuantity(1);
-            $stock->setManageStock(true);
-            $stock->setQuantityIncrements(1);
+            $oldQuantity = $oldQuantities[$stockType] ?? "";
+            if (!isset($oldQuantities[$stockType]) || (round($oldQuantity) - round($quantity)) != 0) {
+                $quantityFlag = 1;
+                $product->sourceItem($stockType)->setQuantity($quantity);
+                $product->sourceItem($stockType)->setStatus($isInStock);
+                //$stock->setQty($quantity);
+                $stock->setIsInStock($isInStock);
+                $stock->setMaximumSaleQuantity(10000.0000);
+                $stock->setNotifyStockQuantity(1);
+                $stock->setManageStock(true);
+                $stock->setQuantityIncrements(1);
+            }
         }
 
         /* $isInStock = $quantity > 0;
@@ -346,8 +362,7 @@ class ProductHelper extends AbstractHelper
          }*/
         /* Adding quantity ends */
 
-
-
+        $categoryFlag = false;
         $categoryIds = [];
         $customAttrbutes = [];
         if ($data[$this->headers['MANUFACTURER']]) {
@@ -378,7 +393,10 @@ class ProductHelper extends AbstractHelper
         }
         if ($categoryIds) {
             $categoryIds = array_filter(array_unique($categoryIds));
-            $product->addCategoryIds($categoryIds);
+            if (array_diff($categoryIds, $oldCategoryIds)) {
+                $categoryFlag = true;
+                $product->addCategoryIds($categoryIds);
+            }
         }
         if ($customAttrbutes) {
             foreach ($customAttrbutes as $attrbuteCode => $optionName) {
@@ -392,13 +410,18 @@ class ProductHelper extends AbstractHelper
         }
         if (isset($this->existingSkusWithSupplier[$sku])) {
             $supplier = $this->existingSkusWithSupplier[$sku]['supplier'] ?? "";
+            $oldPrice = $this->existingSkusWithSupplier[$sku]['price'] ?? 0;
             if (($supplier != $this->supplierOptionId)) {
-                $oldPrice = $this->existingSkusWithSupplier[$sku]['price'] ?? 0;
-                if ($price < $oldPrice) {
+                if (round($price, 2) < round($oldPrice, 2)) {
                     $global->setSelectAttribute('supplier', self::SUPPLIER);
                 } else {
+                    unset($product);
                     return;
                 }
+            }
+            if ($categoryFlag != true && $quantityFlag != true && (round($price, 2) - round($oldPrice, 2)) == 0) {
+                unset($product);
+                return;
             }
             $j++;
             $product->setIsUpdate(true);

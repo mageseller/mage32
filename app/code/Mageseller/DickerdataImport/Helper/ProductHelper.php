@@ -275,6 +275,18 @@ class ProductHelper extends AbstractHelper
         /* Adding price ends*/
 
         /* Adding quantity starts*/
+        $oldCategoryIds = [];
+        $quantityFlag = false;
+        $oldQuantities = [];
+        if (isset($this->existingSkusWithSupplier[$sku])) {
+            $currentProductData = $this->existingSkusWithSupplier[$sku];
+            $sources = explode(",", $currentProductData['source_code']);
+            $quantities = explode(",", $currentProductData['quantity']);
+            $oldCategoryIds = array_unique(explode(",", $currentProductData['category_ids']));
+            foreach ($sources as $k => $source) {
+                $oldQuantities[$source] = $quantities[$k] ?? 0;
+            }
+        }
         $quantity = $data[$this->headers['StockAvailable']];
         $isBackOrder = false;
         if (in_array(strtolower($quantity), $this->backOrderValues)) {
@@ -285,27 +297,31 @@ class ProductHelper extends AbstractHelper
             $quantity =  $trimmedQty;
         }
         $isInStock = $quantity > 0;
-
-        $stock = $product->defaultStockItem();
-        if ($isBackOrder) {
-            $product->sourceItem("default")->setQuantity(0);
-            $product->sourceItem("default")->setStatus(1);
-            $stock->setQty(0);
-            $stock->setIsInStock(1);
-            $stock->setBackorders(ProductStockItem::BACKORDERS_ALLOW_QTY_BELOW_0_AND_NOTIFY_CUSTOMER);
-            $stock->setUseConfigBackorders(false);
-        } else {
-            $product->sourceItem("default")->setQuantity($quantity);
-            $product->sourceItem("default")->setStatus($isInStock);
-            $stock->setQty($quantity);
-            $stock->setIsInStock($isInStock);
-            $stock->setMaximumSaleQuantity(10000.0000);
-            $stock->setNotifyStockQuantity(1);
-            $stock->setManageStock(true);
-            $stock->setQuantityIncrements(1);
+        $oldQuantity = $oldQuantities["default"] ?? "";
+        if (!isset($oldQuantities["default"]) || (round($oldQuantity) - round($quantity)) != 0) {
+            $quantityFlag = 1;
+            $stock = $product->defaultStockItem();
+            if ($isBackOrder) {
+                $product->sourceItem("default")->setQuantity(0);
+                $product->sourceItem("default")->setStatus(1);
+                $stock->setQty(0);
+                $stock->setIsInStock(1);
+                $stock->setBackorders(ProductStockItem::BACKORDERS_ALLOW_QTY_BELOW_0_AND_NOTIFY_CUSTOMER);
+                $stock->setUseConfigBackorders(false);
+            } else {
+                $product->sourceItem("default")->setQuantity($quantity);
+                $product->sourceItem("default")->setStatus($isInStock);
+                $stock->setQty($quantity);
+                $stock->setIsInStock($isInStock);
+                $stock->setMaximumSaleQuantity(10000.0000);
+                $stock->setNotifyStockQuantity(1);
+                $stock->setManageStock(true);
+                $stock->setQuantityIncrements(1);
+            }
         }
-        /* Adding quantity ends */
 
+        /* Adding quantity ends */
+        $categoryFlag = false;
         $categoryIds = [];
         $customAttrbutes = [];
         if ($data[$this->headers['Vendor']]) {
@@ -336,7 +352,10 @@ class ProductHelper extends AbstractHelper
         }
         if ($categoryIds) {
             $categoryIds = array_filter(array_unique($categoryIds));
-            $product->addCategoryIds($categoryIds);
+            if (array_diff($categoryIds, $oldCategoryIds)) {
+                $categoryFlag = true;
+                $product->addCategoryIds($categoryIds);
+            }
         }
         if ($customAttrbutes) {
             foreach ($customAttrbutes as $attrbuteCode => $optionName) {
@@ -351,13 +370,18 @@ class ProductHelper extends AbstractHelper
 
         if (isset($this->existingSkusWithSupplier[$sku])) {
             $supplier = $this->existingSkusWithSupplier[$sku]['supplier'] ?? "";
+            $oldPrice = $this->existingSkusWithSupplier[$sku]['price'] ?? 0;
             if (($supplier != $this->supplierOptionId)) {
-                $oldPrice = $this->existingSkusWithSupplier[$sku]['price'] ?? 0;
-                if ($price < $oldPrice) {
+                if (round($price, 2) < round($oldPrice, 2)) {
                     $global->setSelectAttribute('supplier', self::SUPPLIER);
                 } else {
+                    unset($product);
                     return;
                 }
+            }
+            if ($categoryFlag != true && $quantityFlag != true && (round($price, 2) - round($oldPrice, 2)) == 0) {
+                unset($product);
+                return;
             }
             $j++;
             $product->setIsUpdate(true);

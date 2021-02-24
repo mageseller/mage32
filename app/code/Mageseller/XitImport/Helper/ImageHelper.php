@@ -189,7 +189,7 @@ class ImageHelper extends ProductHelper
             }
             // Reindex
             $process->output(__('Reindexing...'), true);
-            $this->utilityHelper->reindexProducts($productIdsToReindex);
+           // $this->utilityHelper->reindexProducts($productIdsToReindex);
         }
         $process->output(__('Done!'));
     }
