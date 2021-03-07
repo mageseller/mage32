@@ -11,6 +11,7 @@
         "sort-packages": true
     },
     "require": {
+        "ext-curl": "*",
         "magento/module-bundle-sample-data": "100.3.*",
         "magento/module-catalog-rule-sample-data": "100.3.*",
         "magento/module-catalog-sample-data": "100.3.*",
@@ -32,7 +33,7 @@
         "magento/module-wishlist-sample-data": "100.3.*",
         "magento/product-community-edition": "2.3.2",
         "magento/sample-data-media": "100.3.*",
-        "ext-curl": "*"
+        "phpoffice/phpexcel": "^1.8"
     },
     "require-dev": {
         "allure-framework/allure-phpunit": "~1.2.0",

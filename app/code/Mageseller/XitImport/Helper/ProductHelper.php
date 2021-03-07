@@ -81,6 +81,14 @@ class ProductHelper extends AbstractHelper
      * @var array
      */
     protected $supplierOptionId;
+    /**
+     * @var array
+     */
+    private $allAttirbutesOptions;
+    /**
+     * @var array
+     */
+    private $existingSkusCategoriesWithSupplier;
 
     /**
      * @param Context $context
@@ -113,18 +121,23 @@ class ProductHelper extends AbstractHelper
             }
             $option = $this->utilityHelper->loadOptionValues('supplier');
             $this->supplierOptionId = $option[self::SUPPLIER] ?? "";
-            $this->existingSkusWithSupplier = $this->utilityHelper->getExistingSkusWithSupplier($allSkus);
+            $this->existingXitCategoryAttributeIds = $this->utilityHelper->getExistingCategoryAttributeIds('xit');
+            $attributes = array_values($this->existingXitCategoryAttributeIds);
+            $attributes[] = "brand";
+            $attributes = array_unique($attributes);
+            $this->allAttirbutesOptions = $this->utilityHelper->getAllAttributesOptions($attributes);
+            $this->existingSkusWithSupplier = $this->utilityHelper->getExistingSkusWithSupplier($allSkus,$attributes);
+            $this->existingSkusCategoriesWithSupplier = $this->utilityHelper->getExistingSkusCategoriesWithSupplier($allSkus);
             //$this->existingSkus = $this->utilityHelper->getExistingSkus($allSkus);
             $this->existingXitCategoryIds = $this->utilityHelper->getExistingCategoryIds('xit');
-            $this->existingXitCategoryAttributeIds = $this->utilityHelper->getExistingCategoryAttributeIds('xit');
+
             $this->optionReplaceMents =  $this->utilityHelper->getOptionReplaceMents();
             $this->backOrderValues = $this->utilityHelper->getBackOrderValues('xit');
 
-            $attributes = array_values($this->existingXitCategoryAttributeIds);
-            $attributes[] = "supplier";
-            $attributes[] = "brand";
+
 
             $config = new ImportConfig();
+            $attributes[] = "supplier";
             $config->autoCreateOptionAttributes = array_unique($attributes);
             $config->duplicateUrlKeyStrategy = ImportConfig::DUPLICATE_KEY_STRATEGY_ADD_SKU;
             // a callback function to postprocess imported products
@@ -259,7 +272,8 @@ class ProductHelper extends AbstractHelper
             $currentProductData = $this->existingSkusWithSupplier[$sku];
             $sources = explode(",", $currentProductData['source_code']);
             $quantities = explode(",", $currentProductData['quantity']);
-            $oldCategoryIds = array_unique(explode(",", $currentProductData['category_ids']));
+            $currentProductCategoryData = $this->existingSkusCategoriesWithSupplier[$sku];
+            $oldCategoryIds = array_unique(explode(",", $currentProductCategoryData['category_ids']));
             foreach ($sources as $k => $source) {
                 $oldQuantities[$source] = $quantities[$k] ?? 0;
             }
@@ -357,13 +371,23 @@ class ProductHelper extends AbstractHelper
                 $product->addCategoryIds($categoryIds);
             }
         }
+        $optionFlag = false;
         if ($customAttrbutes) {
             foreach ($customAttrbutes as $attrbuteCode => $optionName) {
                 if (isset($this->optionReplaceMents[$attrbuteCode][$optionName])) {
                     $optionId = $this->optionReplaceMents[$attrbuteCode][$optionName];
                     $global->setSelectAttributeOptionId($attrbuteCode, $optionId);
                 } else {
-                    $global->setSelectAttribute($attrbuteCode, $optionName);
+                    $oldOptionValue =  $this->existingSkusWithSupplier[$sku][$attrbuteCode] ?? "";
+                    $currentOptionValue = $this->allAttirbutesOptions[$attrbuteCode][strtolower($optionName)] ?? "";
+                    if($oldOptionValue != $currentOptionValue || $currentOptionValue == ""){
+                        $optionFlag = true;
+                        if( $currentOptionValue ){
+                            $global->setSelectAttributeOptionId($attrbuteCode, $currentOptionValue);
+                        } else {
+                            $global->setSelectAttribute($attrbuteCode, $optionName);
+                        }
+                    }
                 }
             }
         }
@@ -379,11 +403,10 @@ class ProductHelper extends AbstractHelper
                     return;
                 }
             }
-            if ($categoryFlag != true && $quantityFlag != true && (round($price, 2) - round($oldPrice, 2)) == 0) {
+            if ($optionFlag != true && $categoryFlag != true && $quantityFlag != true && (round($price, 2) - round($oldPrice, 2)) == 0) {
                 unset($product);
                 return;
             }
-
             //if ($oldUpdateAt <= $currentUpdateAT) {
             $product->setIsUpdate(true);
             $j++;

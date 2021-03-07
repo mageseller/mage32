@@ -292,7 +292,6 @@ class Dickerdata extends AbstractHelper
         $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
         $file = $directoryRead->openFile(self::FILENAME);
         $headers = array_flip($file->readCsv());
-
         while (false !== ($row = $file->readCsv())) {
             $categoryLevel1 = $row[$headers[self::PRIMARY_CATEGORY]] ?? "";
             $categoryLevel2 = $row[$headers[self::SECONDARY_CATEGORY]] ?? "";
@@ -377,6 +376,7 @@ class Dickerdata extends AbstractHelper
         $tmpFileName = self::TMP_FILENAME;
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $filepath = $downloadFolder . '/' . $fileName;
+        //return $filepath;
         //check if directory exists
         if (!is_dir($downloadFolder)) {
             $this->fileFactory->mkdir($downloadFolder, 0775);
@@ -405,6 +405,7 @@ class Dickerdata extends AbstractHelper
             $this->fileFactory->open(['path' => $downloadFolder]);
             $this->fileFactory->mv($tmpFileName, $fileName);
         }
+        file_put_contents($filepath, str_replace('\\"', '"', file_get_contents($filepath)));
         return $filepath;
     }
 

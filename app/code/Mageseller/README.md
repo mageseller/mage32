@@ -71,3 +71,7 @@ UPDATE `catalog_product_entity_varchar` SET `value`=LCASE(`value`) WHERE `attrib
 
 
 SELECT * FROM `catalog_product_entity_varchar` WHERE `attribute_id` IN (87,88,89) AND `entity_id` in (SELECT `entity_id` FROM `catalog_product_entity_media_gallery_value_to_entity` WHERE `value_id` IN (SELECT `value_id` FROM `catalog_product_entity_media_gallery` WHERE `value_id` > '110364844' AND `value` in (SELECT `value` FROM `catalog_product_entity_media_gallery` WHERE `value_id` < '110364844'))) LIMIT 50
+
+To Find Duplicate brands :
+SELECT COUNT(*) c, V.`value` FROM eav_attribute_option O INNER JOIN eav_attribute_option_value V ON V.option_id =
+O.option_id WHERE O.`attribute_id` = 155 AND V.store_id = 0 GROUP BY V.`value` HAVING c > 1;

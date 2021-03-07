@@ -277,7 +277,7 @@ class Xit extends AbstractHelper
         ini_set("memory_limit", "-1");
         set_time_limit(0);
         $apiUrl = $this->getCsvApiUrl();
-        //$filepath = $this->downloadFile($apiUrl, true);
+        $filepath = $this->downloadFile($apiUrl, true);
         $downloadFolder = $this->_dirReader->getPath('var') . '/' . self::DOWNLOAD_FOLDER;
         $directoryRead = $this->filesystem->getDirectoryReadByPath($downloadFolder);
         $file = $directoryRead->openFile(self::FILENAME_TSV);

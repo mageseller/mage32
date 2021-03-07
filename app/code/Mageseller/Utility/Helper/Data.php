@@ -225,11 +225,142 @@ class Data extends AbstractHelper
     {
         return (boolean) preg_match('/^((s|i|d|b|a|O|C):|N;)/', $value);
     }
+    public function updateDuplicateAttibuteCode(string $attributeCode)
+    {
 
+            $optionValues = $this->db->fetchMap(
+                "
+                SELECT  V.`value`,COUNT(*) c
+                FROM {$this->metaData->attributeTable} A
+                INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
+                INNER JOIN {$this->metaData->attributeOptionValueTable} V ON V.option_id = O.option_id
+                WHERE A.`attribute_code` = ? AND A.`entity_type_id` = ? AND V.store_id = 0
+                GROUP BY V.`value` HAVING c > 1;
+            ",
+                [
+                    $attributeCode,
+                    $this->metaData->productEntityTypeId
+                ]
+            );
+
+        $lastOptionIds = [];
+        foreach ($optionValues as $optionValue => $optionCount){
+
+            $lastOptionIds[$optionValue] = $this->db->fetchSingleCell(
+                "
+                SELECT   O.`option_id`
+                FROM {$this->metaData->attributeTable} A
+                INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
+                INNER JOIN {$this->metaData->attributeOptionValueTable} V ON V.option_id = O.option_id
+                WHERE A.`attribute_code` = ? AND A.`entity_type_id` = ? AND V.store_id = 0
+                AND V.`value` = ? ORDER BY O.`option_id` DESC limit 1;
+            ",
+                [
+                    $attributeCode,
+                    $this->metaData->productEntityTypeId,
+                    $optionValue
+                ]
+            );
+        }
+        $secondLastOptionIds =  [];
+        foreach ($optionValues as $optionValue => $optionCount){
+            if($optionCount > 2 ){
+                $secondLastOptionIds[$optionValue] = $this->db->fetchSingleCell(
+                    "
+                    SELECT   O.`option_id`
+                    FROM {$this->metaData->attributeTable} A
+                    INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
+                    INNER JOIN {$this->metaData->attributeOptionValueTable} V ON V.option_id = O.option_id
+                    WHERE A.`attribute_code` = ? AND A.`entity_type_id` = ? AND V.store_id = 0
+                    AND V.`value` = ? ORDER BY O.`option_id` DESC LIMIT 1, 2;
+                ",
+                        [
+                            $attributeCode,
+                            $this->metaData->productEntityTypeId,
+                            $optionValue
+                        ]
+                    );
+            }
+
+        }
+
+        $firstOptionIds = [];
+        foreach ($optionValues as $optionValue => $optionCount){
+
+            $firstOptionIds[$optionValue] = $this->db->fetchSingleCell(
+                "
+                SELECT   O.`option_id`
+                FROM {$this->metaData->attributeTable} A
+                INNER JOIN {$this->metaData->attributeOptionTable} O ON O.attribute_id = A.attribute_id
+                INNER JOIN {$this->metaData->attributeOptionValueTable} V ON V.option_id = O.option_id
+                WHERE A.`attribute_code` = ? AND A.`entity_type_id` = ? AND V.store_id = 0
+                AND V.`value` = ? ORDER BY O.`option_id` ASC limit 1;
+            ",
+                [
+                    $attributeCode,
+                    $this->metaData->productEntityTypeId,
+                    $optionValue
+                ]
+            );
+        }
+        $firstOptionIds = array_change_key_case($firstOptionIds);
+        $attributeId = $this->db->fetchSingleCell(
+            "
+            SELECT `attribute_id`
+            FROM {$this->metaData->attributeTable}
+            WHERE `entity_type_id` = ? AND attribute_code = '{$attributeCode}'
+        ", [
+                $this->metaData->productEntityTypeId
+            ]
+        );
+
+        foreach ($lastOptionIds as $optionValue => $lastOptionId){
+            $newOptionId = $firstOptionIds[strtolower($optionValue)] ?? "";
+            if($newOptionId){
+                $this->db->execute("
+                    UPDATE {$this->metaData->productEntityTable}_int
+                    SET `value` = ?
+                    WHERE `value` = ? AND `attribute_id` = ?
+                ", [
+                    $newOptionId,
+                    $lastOptionId,
+                    $attributeId
+                ]);
+                $this->db->execute("DELETE FROM  {$this->metaData->attributeOptionTable}
+                        WHERE`option_id` = ?",[
+                    $lastOptionId
+                ]);
+            }
+        }
+        foreach ($secondLastOptionIds as $optionValue => $secondLastOptionId){
+            $newOptionId = $firstOptionIds[strtolower($optionValue)] ?? "";
+            if($newOptionId){
+                $this->db->execute("
+                    UPDATE {$this->metaData->productEntityTable}_int
+                    SET `value` = ?
+                    WHERE `value` = ? AND `attribute_id` = ?
+                ", [
+                    $newOptionId,
+                    $secondLastOptionId,
+                    $attributeId
+                ]);
+                $this->db->execute("DELETE FROM {$this->metaData->attributeOptionTable}
+                        WHERE  `option_id` = ?
+                        ",[
+                    $secondLastOptionId
+                ]);
+            }
+        }
+
+
+
+
+        return $optionValues;
+    }
     public function loadOptionValues(string $attributeCode)
     {
-        if (!$this->optionsValues) {
-            $this->optionsValues = $this->db->fetchMap(
+        if (!isset($this->optionsValues[$attributeCode])) {
+            $this->optionsValues[$attributeCode] = $this->db->fetchMap(
                 "
             SELECT V.`value`, O.`option_id`
             FROM {$this->metaData->attributeTable} A
@@ -244,7 +375,18 @@ class Data extends AbstractHelper
             );
         }
 
-        return $this->optionsValues;
+        return $this->optionsValues[$attributeCode];
+    }
+    public function getAllAttributesOptions($attributeCodes){
+        $attributeOptions = [];
+        if($attributeCodes ){
+            foreach ($attributeCodes as $attributeCode ){
+                //$attributeOptions[$attributeCode] =  array_change_key_case($this->loadOptionValues($attributeCode));
+                $attributeOptions[$attributeCode] =  $this->loadOptionValues($attributeCode);
+            }
+        }
+        return $attributeOptions;
+
     }
     public function getAllSkus($supplierName)
     {
@@ -300,40 +442,60 @@ class Data extends AbstractHelper
             array_values($skus)
         );
     }
+    public function getExistingSkusCategoriesWithSupplier(array $skus)
+    {
+        if (empty($skus)) {
+            return [];
+        }
+
+        $productCollection = $this->_productCollectionFactory->create();
+        $productCollection->getSelect()->reset(Select::COLUMNS)->columns(['sku']);
+        $connection = $productCollection->getConnection();
+        $productCollection->getSelect()
+                ->joinLeft(
+                 [ 'ccp' => $connection->getTableName('catalog_category_product')],
+                 'ccp.product_id=e.entity_id',
+                 [
+                     'category_ids' => new \Zend_Db_Expr('GROUP_CONCAT(category_id)'),
+                 ]
+             )->group('e.entity_id');
+        return $connection->fetchAssoc($productCollection->getSelect());
+    }
     /**
      * Returns an sku => supplier_id map for all existing skus.
      *
      * @param  string[] $skus
      * @return array
      */
-    public function getExistingSkusWithSupplier(array $skus)
+    public function getExistingSkusWithSupplier(array $skus,$attributes = [])
     {
         if (empty($skus)) {
             return [];
         }
+
         $productCollection = $this->_productCollectionFactory->create();
         $productCollection->getSelect()->reset(Select::COLUMNS)->columns(['sku']);
         $productCollection->addAttributeToSelect('supplier', 'left');
         $productCollection->addAttributeToSelect('price', 'left');
+        if($attributes){
+            foreach ($attributes as $attribute){
+                $productCollection->addAttributeToSelect($attribute, 'left');
+            }
+        }
         $productCollection->getSelect()->where("e.sku IN (?)", $skus);
         $connection = $productCollection->getConnection();
         $productCollection->getSelect()
             ->joinLeft(
                 [ 'isi' => $connection->getTableName('inventory_source_item')],
-                'isi.sku=e.sku',
+                'isi.sku = e.sku',
                 [
                     'source_code' => new \Zend_Db_Expr('GROUP_CONCAT(source_code)'),
                     'quantity' => new \Zend_Db_Expr('GROUP_CONCAT(quantity)')
                 ]
             )
-            ->joinLeft(
-                [ 'ccp' => $connection->getTableName('catalog_category_product')],
-                'ccp.product_id=e.entity_id',
-                [
-                    'category_ids' => new \Zend_Db_Expr('GROUP_CONCAT(category_id)'),
-                ]
-            )->group('e.entity_id')
+            ->group('e.entity_id')
             ->group('e.sku');
+        //echo $productCollection->getSelect();die;
         return $connection->fetchAssoc($productCollection->getSelect());
     }
     public function getAttributeCode($attributeId)
@@ -487,18 +649,18 @@ class Data extends AbstractHelper
     {
         if (is_array($productIdsToReindex) && count($productIdsToReindex) > 0) {
             $indexer = $this->indexerRegistry->get(\Magento\Catalog\Model\Indexer\Product\Category::INDEXER_ID);
-            if (!$indexer->isScheduled()) {
+            //if (!$indexer->isScheduled()) {
                 $indexer->reindexList($productIdsToReindex);
-            }
+            //}
             if (!$this->_productEavIndexerProcessor->isIndexerScheduled()) {
                 $this->_productEavIndexerProcessor->reindexList($productIdsToReindex);
             }
-            if (!$this->stockIndexerProcessor->isIndexerScheduled()) {
+            //if (!$this->stockIndexerProcessor->isIndexerScheduled()) {
                 $this->stockIndexerProcessor->reindexList($productIdsToReindex);
-            }
-            if (!$this->priceIndexer->isIndexerScheduled()) {
+            //}
+            //if (!$this->priceIndexer->isIndexerScheduled()) {
                 $this->priceIndexer->reindexList($productIdsToReindex);
-            }
+            //}
             $searchIndexer =  $this->indexerRegistry->get(\Magento\CatalogSearch\Model\Indexer\Fulltext::INDEXER_ID);
             if (!$searchIndexer->isScheduled()) {
                 $searchIndexer->reindexList($productIdsToReindex);

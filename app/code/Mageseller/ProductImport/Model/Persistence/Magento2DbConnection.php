@@ -33,22 +33,22 @@ class Magento2DbConnection
     const REQUEST_PATHS_PER_CHUNK = 3500;
 
     /**
-     * @var ResourceConnection $connection 
+     * @var ResourceConnection $connection
      */
     protected $connection;
 
     /**
-     * @var PDO 
+     * @var PDO
      */
     protected $pdo;
 
     /**
-     * @var bool Debug option: print slow queries 
+     * @var bool Debug option: print slow queries
      */
     protected $echoSlowQueries = false;
 
     /**
-     * @var int MySQL maximum allowed packet (in kB) 
+     * @var int MySQL maximum allowed packet (in kB)
      */
     protected $maxAllowedPacket;
 
@@ -57,12 +57,12 @@ class Magento2DbConnection
         $this->connection = $connection;
 
         /**
- * @var Mysql $mysql 
+ * @var Mysql $mysql
 */
         $mysql = $connection->getConnection();
 
         /**
- * @var PDO $pdo 
+ * @var PDO $pdo
 */
         $this->pdo = $mysql->getConnection();
 
@@ -128,7 +128,7 @@ class Magento2DbConnection
     {
         $this->chunkedGroupExecute(
             "
-            INSERT INTO `{$table}` (`" . implode('`, `', $columns) . "`) 
+            INSERT INTO `{$table}` (`" . implode('`, `', $columns) . "`)
             VALUES {{marks}}",
             $columns, $values, $magnitude
         );
@@ -147,7 +147,7 @@ class Magento2DbConnection
     {
         $this->chunkedGroupExecute(
             "
-            REPLACE INTO `{$table}` (`" . implode('`, `', $columns) . "`) 
+            REPLACE INTO `{$table}` (`" . implode('`, `', $columns) . "`)
             VALUES {{marks}}",
             $columns, $values, $magnitude
         );
@@ -167,7 +167,7 @@ class Magento2DbConnection
     {
         $this->chunkedGroupExecute(
             "
-            INSERT INTO `{$table}` (`" . implode('`, `', $columns) . "`) 
+            INSERT INTO `{$table}` (`" . implode('`, `', $columns) . "`)
             VALUES {{marks}}
             ON DUPLICATE KEY UPDATE {$updateClause}",
             $columns, $values, $magnitude
@@ -187,7 +187,7 @@ class Magento2DbConnection
     {
         $this->chunkedGroupExecute(
             "
-            INSERT IGNORE INTO `{$table}` (`" . implode('`, `', $columns) . "`) 
+            INSERT IGNORE INTO `{$table}` (`" . implode('`, `', $columns) . "`)
             VALUES {{marks}}",
             $columns, $values, $magnitude
         );
@@ -205,7 +205,7 @@ class Magento2DbConnection
         foreach (array_chunk($keys, self::DELETES_PER_CHUNK) as $chunk) {
             $this->execute(
                 "
-                DELETE FROM`{$table}`  
+                DELETE FROM`{$table}`
                 WHERE `{$keyColumn}` IN (" . $this->getMarks($chunk) . ")",
                 $chunk
             );
@@ -226,7 +226,7 @@ class Magento2DbConnection
         foreach (array_chunk($keys, self::DELETES_PER_CHUNK) as $chunk) {
             $this->execute(
                 "
-                DELETE FROM`{$table}`  
+                DELETE FROM`{$table}`
                 WHERE `{$keyColumn}` IN (?" . str_repeat(',?', count($chunk) - 1) . ") AND {$whereClause}",
                 $chunk
             );

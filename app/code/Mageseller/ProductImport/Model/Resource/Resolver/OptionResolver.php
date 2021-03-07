@@ -11,17 +11,17 @@ use Mageseller\ProductImport\Model\Resource\MetaData;
 class OptionResolver
 {
     /**
-     * @var Magento2DbConnection 
+     * @var Magento2DbConnection
      */
     protected $db;
 
     /**
-     * @var MetaData 
+     * @var MetaData
      */
     protected $metaData;
 
     /**
-     * @var array 
+     * @var array
      */
     protected $allOptionValues = [];
 
@@ -101,15 +101,15 @@ class OptionResolver
 
             // lazy load option values
             $this->loadOptionValues($attributeCode);
-
-            if (!array_key_exists($optionName, $this->allOptionValues[$attributeCode])) {
+            $allOptionValues = array_change_key_case($this->allOptionValues[$attributeCode]);
+            if (!array_key_exists(strtolower($optionName), $allOptionValues)) {
                 if (in_array($attributeCode, $autoCreateOptionAttributes)) {
                     $id = $this->addAttributeOption($attributeCode, $optionName);
                 } else {
                     $error = "option '" . $optionName . "' not found in attribute '" . $attributeCode . "'";
                 }
             } else {
-                $id = $this->allOptionValues[$attributeCode][$optionName];
+                $id = $allOptionValues[strtolower($optionName)];
             }
         }
 
@@ -127,17 +127,17 @@ class OptionResolver
 
             // lazy load option values
             $this->loadOptionValues($attributeCode);
-
+            $allOptionValues = array_change_key_case($this->allOptionValues[$attributeCode]);
             $missingOptions = [];
             foreach ($optionNames as $optionName) {
-                if (!array_key_exists($optionName, $this->allOptionValues[$attributeCode])) {
+                if (!array_key_exists(strtolower($optionName), $allOptionValues)) {
                     if (in_array($attributeCode, $autoCreateOptionAttributes)) {
                         $ids[] = $this->addAttributeOption($attributeCode, $optionName);
                     } else {
                         $missingOptions[] = $optionName;
                     }
                 } else {
-                    $ids[] = $this->allOptionValues[$attributeCode][$optionName];
+                    $ids[] = $allOptionValues[strtolower($optionName)];
                 }
             }
 
